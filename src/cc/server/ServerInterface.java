@@ -28,7 +28,7 @@ public interface ServerInterface  {
      * Register a Challenge to a server
      * @return 
      */
-    public boolean regirsterChallenge();
+    public boolean registerChallenge();
     
     /**
      * Accept challenge, and ask to receive the challenge info.

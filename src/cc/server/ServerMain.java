@@ -5,11 +5,52 @@
  */
 package cc.server;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.Map;
+
 /**
  *
  * @author ruioliveiras
  */
 public class ServerMain {
+    private final static int DEFAULT_PORT = 1010;
+    public static ServerState state;
+    public static ServerFacade facade;
+    private final ServerSocket ss;
     //vai estar declado static aqui um server state, e um server facade.
     //vai ter um metodo para comeessar o server handler 
+
+    public ServerMain(int listingPort) throws IOException {
+        this.ss = new ServerSocket(listingPort);
+    }
+    
+    
+    public void init( String initIp, String initPort){
+        
+    }
+
+    
+    public void start() throws IOException{
+         while(true){
+            Socket cn = ss.accept();
+            ServerHandler handler = new ServerHandler(state, facade, cn);
+            Thread t = new Thread(handler);           
+            t.start();
+        }
+    }
+    
+
+    public static void main(String[] args) throws IOException {
+        int port;
+        if(args.length >= 2){
+            port = Integer.parseInt(args[1]);
+        } else {
+            port = DEFAULT_PORT;
+        }
+        ServerMain main = new ServerMain(port);
+        main.start();
+    }
+    
 }

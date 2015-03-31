@@ -5,10 +5,14 @@
  */
 package cc.server;
 
+import java.util.Map;
+
 /**
  *
  * @author ruioliveiras
  */
 public class ServerState {
+    public static Map<String, ServerClient> neighbors;
+    
     //this will have every data that we need  
 }

@@ -5,24 +5,42 @@
  */
 package cc.server;
 
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+
 /**
  *
  * @author ruioliveiras
  */
-public class ServerHandler {
+public class ServerHandler implements Runnable {
+            
+    private final ServerCommunication comm;
+    private final ServerState state;
+    private final ServerFacade facade;
+    
+    public ServerHandler(ServerState state, ServerFacade facade, Socket socket) throws IOException {
+        this.state = state;
+        this.facade = facade;
+        comm = new ServerCommunication(socket);
+    }
     //contrutor disto vai receber a porta a atuar e dados inciiais
     
-    public void init(){
-        //init ServerCommuncation blablabla
+    
+    @Override
+    public void run() {
+        comm.init();
+        
+        ServerPDU pdu;
+        
+        while((pdu = comm.readNext()) != null){
+            foward01(pdu);
+        }
     }
     
-    public void run(){
-        //Start new thread
-        //thread com um while serverCommm readNext()...
-        //foward
-    }
-    
-    protected void foward(ServerPDU p){
+    protected void foward01(ServerPDU p){
         // the foward for eacth type will parse the p and call the currect facade function, and after send response back if need.
     }
-}
+
+
+    }
