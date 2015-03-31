@@ -5,11 +5,9 @@
  */
 package cc.server;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.ServerSocket;
 import java.net.Socket;
 
 /**
@@ -44,12 +42,15 @@ public class ServerCommunication {
     
     public ServerPDU readNext() throws IOException{
         ServerPDU pdu = new ServerPDU();
+        byte[] headerBuffer = new byte[8];
+        byte[] bodyBuffer = new byte[255];
         
-        while(pdu.appendByte(is.read())){
-            
+        while(is.read(headerBuffer, 0, 8) == 8) {
+            pdu.appendHeader(headerBuffer);
+            is.read(bodyBuffer, 0, pdu.getSizeBytes());
+            pdu.appendArgsBytes(bodyBuffer);
         }
-        //for a ler byte to byte
-        //a a medida que le byte usar appdendByte(Byte )
+        
         return pdu;
     }
     
