@@ -9,7 +9,7 @@ package cc;
  *
  * @author ruioliveiras
  */
-public class ApplicationExecption extends RuntimeException{
+public class ApplicationException extends RuntimeException{
     private int lvl; //define the level's (lvl will has an action associated) send error back, just log, stop, restart, send 
     private String msg;
     

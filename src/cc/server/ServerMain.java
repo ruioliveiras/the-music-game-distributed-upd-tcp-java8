@@ -19,8 +19,8 @@ public class ServerMain {
     public static ServerState state;
     public static ServerFacade facade;
     private final ServerSocket ss;
-    //vai estar declado static aqui um server state, e um server facade.
-    //vai ter um metodo para comeessar o server handler 
+    //vai estar declarado static aqui um server state, e um server facade.
+    //vai ter um metodo para começar o server handler 
 
     public ServerMain(int listingPort) throws IOException {
         this.ss = new ServerSocket(listingPort);

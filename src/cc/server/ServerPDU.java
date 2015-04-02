@@ -18,11 +18,11 @@ import javafx.util.Pair;
  * @author ruioliveiras
  */
 public class ServerPDU {
-    public interface ByteReadeble{
+    public interface ByteReadable{
         public Pair<Object,Integer> read(byte[] b,int offset);
     };
     
-    public enum ArgsType implements ByteReadeble{
+    public enum ArgsType implements ByteReadable{
         string {
             public Pair<Object,Integer> read(byte[] b,int offset){
                 try {
@@ -66,7 +66,7 @@ public class ServerPDU {
         };
     }
     
-    public  enum TypePDU {
+    public enum TypePDU {
         REPLAY(1,0),
         HELLO(1,0),
         REGISTER(1,0),
