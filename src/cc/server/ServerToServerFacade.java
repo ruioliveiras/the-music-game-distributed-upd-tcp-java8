@@ -9,56 +9,63 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 /**
+ * This interface declare all the business that can be done in server to server
+ * communication.
  *
  * @author ruioliveiras
  */
-public interface ServerInterface  {
-    
+public interface ServerToServerFacade {
+
     /**
-     * This function will be called in the init of the server to register than 
+     * This function will be called in the init of the server to register than
      * in a branch of server
+     *
      * @param ip
      * @param port
-     * @return 
+     * @return
      */
-    public boolean registerMySelfServer(byte[] ip,int port);
-    
+    public boolean registerMySelfServer(byte[] ip, int port);
+
     /**
-     * This function is to ask the server to registry a new server,  
-     * @return 
+     * This function is to ask the server to registry a new server,
+     *
+     * @return
      */
     public boolean registerServer(byte[] ip, int port);
-    
+
     /**
      * Register a Challenge to a server
+     *
      * @param challeName
      * @param d
      * @param time
-     * @return 
+     * @return
      */
-    public boolean registerChallenge(String challeName, LocalDate d, LocalTime time, 
+    public boolean registerChallenge(String challeName, LocalDate d, LocalTime time,
             String user, String nick);
-    
+
     /**
      * Accept challenge, and ask to receive the challenge info.
+     *
      * @param challeName
      * @param nick
-     * @return 
+     * @return
      */
     public boolean acceptChallenge(String challeName, String nick);
-    
+
     /**
      * Get the challengeResult
+     *
      * @param ChalleName
-     * @return 
+     * @return
      */
     public String[] challengeResult(String ChalleName);
-    
+
     /**
      * Get the userRating
-     * @return 
+     *
+     * @return
      */
     public String[] userResult();
-    
-    
+
 }

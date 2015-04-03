@@ -3,8 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package cc.server;
+package cc.server.communication;
 
+import cc.server.ServerState;
+import cc.pdu.PDU;
+import cc.pdu.PDUType;
+import cc.server.ServerToServerFacade;
+import cc.server.facade.ServerToServer;
 import java.io.IOException;
 import java.net.Socket;
 import java.util.logging.Level;
@@ -19,9 +24,9 @@ public class ServerHandler implements Runnable {
     
     private final ServerCommunication comm;
     private final ServerState state;
-    private final ServerFacade facade;
+    private final ServerToServerFacade facade;
     
-    public ServerHandler(ServerState state, ServerFacade facade, Socket socket) throws IOException {
+    public ServerHandler(ServerState state, ServerToServer facade, Socket socket) throws IOException {
         this.state = state;
         this.facade = facade;
         comm = new ServerCommunication(socket);
@@ -34,7 +39,7 @@ public class ServerHandler implements Runnable {
         try {
             comm.init();
             
-            ServerPDU pdu;
+            PDU pdu;
             
             while((pdu = comm.readNext()) != null){
                 if(pdu.getVersion() == 0){
@@ -50,24 +55,24 @@ public class ServerHandler implements Runnable {
         }
     }
     
-    protected void foward01(ServerPDU p){
-        if (p.getType().id() != ServerPDU.TypePDU.INFO.id()){
+    protected void foward01(PDU p){
+        if (p.getType().getId() != PDUType.INFO.getId()){
             // error this is just INFOS 
         }
         
         
         //- Um registo dum novo desafio;
-        if (p.hasArg(ServerPDU.TypePDU.INFO_CHALLE)
-                && p.hasArg(ServerPDU.TypePDU.INFO_DATE)
-                && p.hasArg(ServerPDU.TypePDU.INFO_HOUR)
-                && p.hasArg(ServerPDU.TypePDU.INFO_NAME)
-                && p.hasArg(ServerPDU.TypePDU.INFO_NICK)
+        if (p.hasParameter(PDUType.INFO_CHALLE)
+                && p.hasParameter(PDUType.INFO_DATE)
+                && p.hasParameter(PDUType.INFO_HOUR)
+                && p.hasParameter(PDUType.INFO_NAME)
+                && p.hasParameter(PDUType.INFO_NICK)
         ) {
             facade.registerChallenge();
         } else
         //- Um registo dum novo servidor no sistema;
-        if(p.hasArg(ServerPDU.TypePDU.INFO_IPSERVER)
-                && p.hasArg(ServerPDU.TypePDU.INFO_PORT)
+        if(p.hasParameter(PDUType.INFO_IPSERVER)
+                && p.hasParameter(PDUType.INFO_PORT)
         ){
             facade.registerServer();
             //if origin is from know server: do nothing
@@ -76,8 +81,8 @@ public class ServerHandler implements Runnable {
             
         } else
         //- A lista dos desafios disponíveis localmente (criados por utilizadores locais);
-//        if(p.hasArg(ServerPDU.TypePDU.INFO_IPSERVER)
-//                && p.hasArg(ServerPDU.TypePDU.INFO_PORT)
+//        if(p.hasParameter(PDU.TypePDU.INFO_IPSERVER)
+//                && p.hasParameter(PDU.TypePDU.INFO_PORT)
 //        ){
 //            facade.registerServer();
 //            //if origin is from know server: do nothing
@@ -86,8 +91,8 @@ public class ServerHandler implements Runnable {
 //            
 //        } else 
         //- Um registo de aceitação dum desafio;
-        if(p.hasArg(ServerPDU.TypePDU.INFO_IPSERVER)
-                && p.hasArg(ServerPDU.TypePDU.INFO_PORT)
+        if(p.hasParameter(PDUType.INFO_IPSERVER)
+                && p.hasParameter(PDUType.INFO_PORT)
         ){
             facade.registerServer();
             //if origin is from know server: do nothing
@@ -96,8 +101,8 @@ public class ServerHandler implements Runnable {
             
         } else
         //- Os resultados dum desafio;
-                if(p.hasArg(ServerPDU.TypePDU.INFO_IPSERVER)
-                && p.hasArg(ServerPDU.TypePDU.INFO_PORT)
+                if(p.hasParameter(PDUType.INFO_IPSERVER)
+                && p.hasParameter(PDUType.INFO_PORT)
         ){
             facade.registerServer();
             //if origin is from know server: do nothing
@@ -106,8 +111,8 @@ public class ServerHandler implements Runnable {
             
         } else
         //- O ranking dos utilizadores locais.
-        if(p.hasArg(ServerPDU.TypePDU.INFO_IPSERVER)
-                && p.hasArg(ServerPDU.TypePDU.INFO_PORT)
+        if(p.hasParameter(PDUType.INFO_IPSERVER)
+                && p.hasParameter(PDUType.INFO_PORT)
         ){
             facade.registerServer();
             //if origin is from know server: do nothing

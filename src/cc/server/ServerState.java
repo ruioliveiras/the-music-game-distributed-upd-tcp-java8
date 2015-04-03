@@ -5,6 +5,7 @@
  */
 package cc.server;
 
+import cc.server.facade.ServerToServerClient;
 import java.util.Map;
 
 /**
@@ -12,7 +13,7 @@ import java.util.Map;
  * @author ruioliveiras
  */
 public class ServerState {
-    public static Map<String, ServerClient> neighbors;
+    public static Map<String, ServerToServerClient> neighbors;
     
     //this will have every data that we need  
 }

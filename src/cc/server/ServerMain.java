@@ -5,6 +5,8 @@
  */
 package cc.server;
 
+import cc.server.facade.ServerToServer;
+import cc.server.communication.ServerHandler;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -17,7 +19,7 @@ import java.util.Map;
 public class ServerMain {
     private final static int DEFAULT_PORT = 1010;
     public static ServerState state;
-    public static ServerFacade facade;
+    public static ServerToServer facade;
     private final ServerSocket ss;
     //vai estar declarado static aqui um server state, e um server facade.
     //vai ter um metodo para começar o server handler 
