@@ -3,8 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package cc.server;
+package cc.server.communication;
 
+import cc.pdu.PDU;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -15,15 +16,20 @@ import java.net.Socket;
  * @author ruioliveiras
  */
 public class ServerCommunication {
-    private static int bufferSize = 1024;
-    
     private Socket socket;
     private InputStream is;
     private OutputStream os;
     
-    public ServerCommunication() throws IOException {
-    }
     
+    //this class is a capsutation the the socket to our PDU.
+    // ths read bytes from socket and return PDU.
+    // This receive a PDU and sent it.
+    // ? also will has some static functions to be more easy to contruct some PDU like OK
+
+    public ServerCommunication(Socket socket) {
+        this.socket = socket;
+    }
+        
     public void init() throws IOException {
 
         is = socket.getInputStream();
@@ -31,30 +37,22 @@ public class ServerCommunication {
         os = socket.getOutputStream();
     }
     
-    //this class is a capsutation the the socket to our PDU.
-    // ths read bytes from socket and return ServerPDU.
-    // This receive a ServerPDU and sent it.
-    // ? also will has some static functions to be more easy to contruct some PDU like OK
-
-    public ServerCommunication(Socket socket) {
-        this.socket = socket;
-    }
     
-    public ServerPDU readNext() throws IOException{
-        ServerPDU pdu = new ServerPDU();
+    public PDU readNext() throws IOException{
+        PDU pdu = new PDU();
         byte[] headerBuffer = new byte[8];
         byte[] bodyBuffer = new byte[255];
         
         while(is.read(headerBuffer, 0, 8) == 8) {
-            pdu.appendHeader(headerBuffer);
+            pdu.initHeaderFromBytes(headerBuffer);
             is.read(bodyBuffer, 0, pdu.getSizeBytes());
-            pdu.appendArgsBytes(bodyBuffer);
+            pdu.initParametersFromBytes(bodyBuffer);
         }
         
         return pdu;
     }
     
-    public void sendPDU(ServerPDU p){
+    public void sendPDU(PDU p){
         
     }
 
