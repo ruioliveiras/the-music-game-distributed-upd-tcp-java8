@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.logging.Level;
@@ -65,7 +66,43 @@ public class UDPClient {
     /**
      * Comunicação multicast
      */
-    //public void multicastConnection();
+    //nao esta a funcionar, provavelmente por culpa do group_ip... perguntar a prof que ip se usa
+    public void multicastConnection(String group, int port){
+        MulticastSocket mc_socket = null;
+        InetAddress group_ip = null;
+        String user_input = null, resposta = null;
+        DatagramPacket send_packet = null, receive_packet = null;
+        byte[] dadosEnviar = new byte[1024];
+        byte[] dadosReceber = new byte[1024];
+        
+        try {
+            group_ip = InetAddress.getByName(group);
+            mc_socket = new MulticastSocket();//também se pode criar numa porta especifica
+            
+            mc_socket.joinGroup(group_ip);
+
+        while(true){
+            user_input = stdinput.readLine();
+            dadosEnviar = user_input.getBytes();
+            send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, group_ip, port);
+            this.getC_socket().send(send_packet);   
+            
+            receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
+            this.getC_socket().receive(receive_packet);
+            resposta = new String(dadosReceber, "UTF-8");
+            System.out.println("Grupo: "+ resposta);
+        }
+        
+           // mc_socket.leaveGroup(group_ip);
+        } catch (IOException ex) {
+            System.out.println("Não foi possível obter endereço de grupo.");
+        }
+
+        
+        
+        
+        
+    }
        
     public static void main(String args[])
     {
@@ -78,11 +115,12 @@ public class UDPClient {
         }
         
         UDPClient c1 = new UDPClient();
-        try {
-            c1.unicastConnection(dest_ip, server_port);
-        } catch (IOException ex) {
+       // try {
+            //c1.unicastConnection(dest_ip, server_port);
+            c1.multicastConnection("228.1.1.1", server_port);
+       /* } catch (IOException ex) {
             Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
         
         c1.getC_socket().close();
     } 
