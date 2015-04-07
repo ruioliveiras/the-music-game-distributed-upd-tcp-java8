@@ -19,14 +19,15 @@ public class AppMain extends Application {
 	public void start(Stage primaryStage) {
 		primaryStage.setTitle("Event Handling");	
 		try {
-			FXMLLoader loader;                        
+                    FXMLLoader loader;                        
                     loader = new FXMLLoader(getClass().getResource("AppInterface.fxml"));
-                        AnchorPane page = (AnchorPane) loader.load();
-			Scene scene = new Scene(page);
-			primaryStage.setScene(scene);
-			primaryStage.show();
+                    AnchorPane page = (AnchorPane) loader.load();
+                    Scene scene = new Scene(page);
+                    primaryStage.setScene(scene);
+                    primaryStage.show();
                         
 		} catch (IOException e) {
+                    System.out.println("Erro na main.");
 		}
 	}
 	

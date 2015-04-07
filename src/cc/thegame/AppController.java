@@ -12,7 +12,8 @@ import javafx.scene.control.TextArea;
 public class AppController {
 
     @FXML
-    private Button r1_button;
+    private Button r1_button, r2_button, r3_button;
+    
     
     @FXML
     private TextArea outputTextArea;
@@ -26,5 +27,4 @@ public class AppController {
 	r1_button.setText("Hello, World.");
         });
     }    
-    
 }
