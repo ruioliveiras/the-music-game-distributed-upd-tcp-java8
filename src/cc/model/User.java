@@ -22,10 +22,28 @@ public class User {
      * User nick name.
      */
     private String nick;
-
+    /**
+     * The current Rating of the user.
+     * This rating can be local or global.
+     */
+    private int rating;
+    
     public User() {
+        rating = 0;
     }
 
+    /** Main constructor
+     * 
+     * @param name
+     * @param nick 
+     */
+    public User(String name, String nick) {
+        this.name = name;
+        this.nick = nick;
+        rating = 0;
+        pass = "";
+    }
+    
     /** Main constructor
      * 
      * @param name
@@ -36,6 +54,7 @@ public class User {
         this.name = name;
         this.pass = pass;
         this.nick = nick;
+        rating = 0;
     }
 
     public String getName() {
@@ -49,4 +68,13 @@ public class User {
     public String getNick() {
         return nick;
     }
+
+    public int getRating() {
+        return rating;
+    }
+
+    public void setRating(int rating) {
+        this.rating = rating;
+    }
+    
 }
