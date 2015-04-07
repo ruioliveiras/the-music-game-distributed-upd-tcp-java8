@@ -5,8 +5,11 @@
  */
 package cc.server;
 
+import cc.model.Challenge;
+import cc.model.User;
 import cc.server.facade.ServerToServerClient;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -14,29 +17,190 @@ import java.util.Map;
  * @author ruioliveiras
  */
 public class ServerState {
-    public static Map<String, ServerToServerClient> neighbors;
-    
-    //this will have every data that we need  
 
+    /**
+     * Map to save the servers neighbors, this goes from IP to the facade
+     * client.
+     */
+    public Map<String, ServerToServerFacade> neighbors;
+
+    /**
+     * Map to save the local users, goes from NickName to User.
+     */
+    public Map<String, User> localUsers;
+
+    /**
+     * Map to save the All users for global rating.
+     */
+    public Map<String, User> globalUsers;
+    
+    /**
+     * Map to store all the current challenges in the System.
+     *
+     * @see challangeOwner#challengeOwner
+     */
+    public Map<String, Challenge> challenges;
+
+    /**
+     * Map to store what challenges are from the current server, Goes from
+     * challenge name to server ip or localhost.
+     *
+     * if is the current Why? because when we do an answer if is in the current
+     * server we store, else we forward to the server
+     */
+    public Map<String, String> challengeOwner;
+
+    public ServerState() {
+        neighbors = new HashMap<>();
+        localUsers = new HashMap<>();
+        challenges = new HashMap<>();
+        challengeOwner = new HashMap<>();
+    }
+
+    /**
+     *  Check if this neighbor exist
+     * @param who
+     * @return 
+     */
     public boolean hasNeighbors(String who) {
         return neighbors.containsKey(who);
     }
-    
-    public void addNeighbors(String who, String ip, int port){
-        neighbors.put(who,new ServerToServerClient(ip, port));
+
+    /**
+     * Add a new neighbor.
+     * @param who
+     * @param ip
+     * @param port 
+     */
+    public void addNeighbors(String who, String ip, int port) {
+        neighbors.put(who, new ServerToServerClient(ip, port));
     }
-    
-    public ServerToServerClient getNeighbors(String who){
+
+    /**
+     * Get a neighbor from is ip
+     * @param who
+     * @return 
+     */
+    public ServerToServerFacade getNeighbor(String who) {
         return neighbors.get(who);
     }
-    
-    public Collection<ServerToServerClient> getNeighbors(){
+
+    /**
+     * get all neighbors
+     * @return 
+     */
+    public Collection<ServerToServerFacade> getNeighbors() {
         return neighbors.values();
     }
-    
-    public ServerToServerClient get(String ip){
-        return neighbors.get(ip);
+
+        /**
+     *  Check if this User exist
+     * @param who
+     * @return 
+     */
+    public boolean hasLocalUser(String who) {
+        return localUsers.containsKey(who);
     }
+
+    /**
+     * Add a new User.
+     * @param who
+     * @param u
+     */
+    public void addLocalUser(String who, User u) {
+        localUsers.put(who, u);
+    }
+
+    /**
+     * Get a User from is nick
+     * @param who
+     * @return 
+     */
+    public User getLocalUser(String who) {
+        return localUsers.get(who);
+    }
+
+    /**
+     * get all User
+     * @return 
+     */
+    public Collection<User> getLocalUsers() {
+        return localUsers.values();
+    }
+
+    /**
+     *  Check if this User exist
+     * @param who
+     * @return 
+     */
+    public boolean hasGlobalUser(String who) {
+        return globalUsers.containsKey(who);
+    }
+
+    /**
+     * Add a new User.
+     * @param who
+     * @param u
+     */
+    public void addGlobalUser(String who, User u) {
+        globalUsers.put(who, u);
+    }
+
+    /**
+     * Get a User from is nick
+     * @param who
+     * @return 
+     */
+    public User getGlobalUses(String who) {
+        return globalUsers.get(who);
+    }
+
+    /**
+     * get all Global users
+     * @return 
+     */
+    public Collection<User> getGlobalUsers() {
+        return globalUsers.values();
+    }
+
+    /**
+     *  Check if this challenge exist
+     * @param who
+     * @return 
+     */
+    public boolean hasChallenge(String who) {
+        return challenges.containsKey(who);
+    }
+
+    /**
+     * Add a new challenge.
+     * @param who
+     * @param c
+     */
+    public void addChallenge(String who, Challenge c) {
+        challenges.put(who, c);
+    }
+
+    /**
+     * Get a challenge from is name
+     * @param who
+     * @return 
+     */
+    public Challenge getChallenge(String who) {
+        return challenges.get(who);
+    }
+
+    /**
+     * get all challenges
+     * @return 
+     */
+    public Collection<Challenge> getChallenges() {
+        return challenges.values();
+    }
+
+
+
+
+
     
 }
-
