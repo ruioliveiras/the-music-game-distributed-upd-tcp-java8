@@ -31,8 +31,8 @@ public class UDPMulticastTest {
             String cenas = inResposta.readLine();
             dadosEnviar = cenas.getBytes();
             
-            DatagramPacket sendPacket = new DatagramPacket(dadosEnviar, dadosEnviar.length, group);
-            serverSocket.send(sendPacket);         
+            //DatagramPacket sendPacket = new DatagramPacket(dadosEnviar, dadosEnviar.length, group);
+            //serverSocket.send(sendPacket);         
         }
     }
 }

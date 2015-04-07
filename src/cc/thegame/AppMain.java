@@ -17,11 +17,11 @@ public class AppMain extends Application {
 	
 	@Override
 	public void start(Stage primaryStage) {
-		primaryStage.setTitle("Event Handling");
-		
+		primaryStage.setTitle("Event Handling");	
 		try {
-			FXMLLoader loader = new FXMLLoader(getClass().getResource("AppInterface.fxml"));
-			AnchorPane page = (AnchorPane) loader.load();
+			FXMLLoader loader;                        
+                    loader = new FXMLLoader(getClass().getResource("AppInterface.fxml"));
+                        AnchorPane page = (AnchorPane) loader.load();
 			Scene scene = new Scene(page);
 			primaryStage.setScene(scene);
 			primaryStage.show();
