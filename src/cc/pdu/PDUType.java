@@ -55,9 +55,9 @@ public enum PDUType {
         INFO_PORT(INFO, 31, PDUDataType.port);
 
     //--------------------
-    int id, numParam;
-    PDUType parent;
-    PDUDataType dataType;
+    private int id, numParam;
+    private PDUType parent;
+    private PDUDataType dataType;
 
     private PDUType() {
     }

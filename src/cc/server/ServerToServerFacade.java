@@ -29,6 +29,8 @@ public interface ServerToServerFacade {
     /**
      * This function is to ask the server to registry a new server,
      *
+     * @param ip
+     * @param port
      * @return
      */
     public boolean registerServer(byte[] ip, int port);
@@ -39,33 +41,29 @@ public interface ServerToServerFacade {
      * @param challeName
      * @param d
      * @param time
+     * @param user
+     * @param nick
      * @return
      */
     public boolean registerChallenge(String challeName, LocalDate d, LocalTime time,
             String user, String nick);
 
     /**
-     * Accept challenge, and ask to receive the challenge info.
+     * Accept challenge, and ask to receive the challenge info. This request
+     * should be send only to the server owner of the Challenge
      *
      * @param challeName
      * @param nick
      * @return
      */
-    public boolean acceptChallenge(String challeName, String nick);
+    public boolean registerAcceptChallenge(String challeName, String nick);
 
     /**
-     * Get the challengeResult
+     * In the end of challenge should register the score of each person
      *
-     * @param ChalleName
+     * @param nick
+     * @param score
      * @return
      */
-    public String[] challengeResult(String ChalleName);
-
-    /**
-     * Get the userRating
-     *
-     * @return
-     */
-    public String[] userResult();
-
+    public boolean registerScore(String nick, int score);
 }

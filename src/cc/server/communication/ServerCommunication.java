@@ -43,17 +43,30 @@ public class ServerCommunication {
         byte[] headerBuffer = new byte[8];
         byte[] bodyBuffer = new byte[255];
         
-        while(is.read(headerBuffer, 0, 8) == 8) {
+        if(is.read(headerBuffer, 0, 8) == 8) {
             pdu.initHeaderFromBytes(headerBuffer);
             is.read(bodyBuffer, 0, pdu.getSizeBytes());
             pdu.initParametersFromBytes(bodyBuffer);
         }
+        
+        //if (pdu.hasNext()){
+        //   create fragPDU =  FragmentedPDU(initialPdu)
+        //    while (fragPDU.append(comm.readNext)){
+        //   
+        //    }
+        //}
+                
+        
         
         return pdu;
     }
     
     public void sendPDU(PDU p){
         
+    }
+
+    public String who() {
+       return socket.getInetAddress().toString();
     }
 
     

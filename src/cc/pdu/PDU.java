@@ -30,6 +30,21 @@ public class PDU {
         parameters = new HashMap<>();
     }
 
+    public PDU(PDUType type) {
+        this();
+        this.pduType = type;
+    }
+    
+    public PDU(int version, boolean secure, int label, PDUType pduType, int nField) {
+        this.version = version;
+        this.secure = secure;
+        this.label = label;
+        this.pduType = pduType;
+        this.nField = nField;
+        this.parameters = new HashMap<>();
+    }
+    
+
     /**
      * This function initialize the headers of the PDU from a buffer of Bytes.
      * After call this function should call initParametersFromBytes, to
@@ -93,7 +108,11 @@ public class PDU {
     public boolean hasParameter(PDUType p) {
         return parameters.containsKey(p);
     }
-
+    
+    public void addParameter(PDUType pduType, Object obj) {
+        parameters.put(pduType, obj);
+    }
+    
     //.. outrs funções uteis por index
     /*Versão [1 byte] (por defeito, 0)
      Segurança [1 byte] (por defeito, 0 – sem segurança)
@@ -103,4 +122,6 @@ public class PDU {
      Tamanho em bytes da Lista de Campos Seguintes [2 bytes]
      Lista de Campos Seguintes (dependente do Tipo, pode ser vazia)
      */
+
+ 
 }
