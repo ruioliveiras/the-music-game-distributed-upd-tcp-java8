@@ -14,7 +14,16 @@ public class Duvidas {
      * 
      * ServerState tem 2 maps localUsers e globalUser, faz sentido?
      * 
+     * Remover o bool que esta a ser retornado no facade
      * 
+     * Criar challange para que quero saber quem criou o challange? (registerChallenge)
+     * 
+     * (registerMySelfServer) esta função pode ser apagada
+     * 
+     * (registerAcceptChallenge) adicionar nome do gajo 
+     * 
+     * (registerChallenge) criar tambem registerChallengeFoward para reencaminhar
+     *      (iŕa ser chamado pela aplicação)
      * 
      */
 }

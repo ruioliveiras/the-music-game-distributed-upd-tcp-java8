@@ -22,24 +22,24 @@ public class ServerState {
      * Map to save the servers neighbors, this goes from IP to the facade
      * client.
      */
-    public Map<String, ServerToServerFacade> neighbors;
+    private final Map<String, ServerToServerFacade> neighbors;
 
     /**
      * Map to save the local users, goes from NickName to User.
      */
-    public Map<String, User> localUsers;
+    private final Map<String, User> localUsers;
 
     /**
      * Map to save the All users for global rating.
      */
-    public Map<String, User> globalUsers;
+    private final Map<String, User> globalUsers;
     
     /**
      * Map to store all the current challenges in the System.
      *
      * @see challangeOwner#challengeOwner
      */
-    public Map<String, Challenge> challenges;
+    private final Map<String, Challenge> challenges;
 
     /**
      * Map to store what challenges are from the current server, Goes from
@@ -48,13 +48,14 @@ public class ServerState {
      * if is the current Why? because when we do an answer if is in the current
      * server we store, else we forward to the server
      */
-    public Map<String, String> challengeOwner;
+    private final Map<String, String> challengeOwner;
 
     public ServerState() {
         neighbors = new HashMap<>();
         localUsers = new HashMap<>();
         challenges = new HashMap<>();
         challengeOwner = new HashMap<>();
+        globalUsers = new HashMap<>();
     }
 
     /**
@@ -93,7 +94,7 @@ public class ServerState {
         return neighbors.values();
     }
 
-        /**
+    /**
      *  Check if this User exist
      * @param who
      * @return 
@@ -198,9 +199,18 @@ public class ServerState {
         return challenges.values();
     }
 
-
-
-
-
+        
+    /**
+     * Get the Ip owner of the challange
+     * @param challengeName 
+     * @return 
+     */
+    public String getOwnerIp(String challengeName){
+        return this.challengeOwner.get(challengeName);
+    }
     
+    public void addOwner(String challengeName, String ip){
+        this.challengeOwner.put(challengeName, ip);
+    }
+
 }

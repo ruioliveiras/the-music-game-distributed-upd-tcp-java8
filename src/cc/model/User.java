@@ -29,8 +29,21 @@ public class User {
     private int rating;
     
     public User() {
+        rating = 0;
     }
 
+    /** Main constructor
+     * 
+     * @param name
+     * @param nick 
+     */
+    public User(String name, String nick) {
+        this.name = name;
+        this.nick = nick;
+        rating = 0;
+        pass = "";
+    }
+    
     /** Main constructor
      * 
      * @param name

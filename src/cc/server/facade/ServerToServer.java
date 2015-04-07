@@ -5,6 +5,8 @@
  */
 package cc.server.facade;
 
+import cc.model.Challenge;
+import cc.model.User;
 import cc.server.ServerState;
 import cc.server.ServerToServerFacade;
 import java.net.InetAddress;
@@ -48,17 +50,28 @@ public class ServerToServer implements ServerToServerFacade {
 
     @Override
     public boolean registerChallenge(String challeName, LocalDate d, LocalTime time, String user, String nick) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        state.addChallenge(challeName, new Challenge(challeName, d, time));
+        state.addOwner(challeName, "localhost"); //????
+        return true;
     }
-
+    
+     
     @Override
     public boolean registerAcceptChallenge(String challeName, String nick) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String ip = state.getOwnerIp(challeName);
+        if (ip.equals("localhost")){
+            state.getChallenge(challeName)
+                    .addSubscribers(new User(nick, nick));
+        }else {
+            state.getNeighbor(ip).registerAcceptChallenge(challeName, nick);
+        }
+        return true;
     }
 
     @Override
     public boolean registerScore(String nick, int score) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        
+        return true;
     }
 
     // this guy will has a copy of the serverState
