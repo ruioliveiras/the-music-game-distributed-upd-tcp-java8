@@ -20,7 +20,7 @@ public class AppMain extends Application {
 		primaryStage.setTitle("Event Handling");
 		
 		try {
-			FXMLLoader loader = new FXMLLoader(AppMain.class.getResource("AppInterface.fxml"));
+			FXMLLoader loader = new FXMLLoader(getClass().getResource("AppInterface.fxml"));
 			AnchorPane page = (AnchorPane) loader.load();
 			Scene scene = new Scene(page);
 			primaryStage.setScene(scene);
