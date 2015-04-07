@@ -17,3 +17,4 @@ public class ServerState {
     
     //this will have every data that we need  
 }
+

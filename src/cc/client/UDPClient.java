@@ -67,6 +67,7 @@ public class UDPClient {
      * Comunicação multicast
      */
     //nao esta a funcionar, provavelmente por culpa do group_ip... perguntar a prof que ip se usa
+    //arranjar para broadcast
     public void multicastConnection(String group, int port){
         MulticastSocket mc_socket = null;
         InetAddress group_ip = null;
@@ -97,10 +98,6 @@ public class UDPClient {
         } catch (IOException ex) {
             System.out.println("Não foi possível obter endereço de grupo.");
         }
-
-        
-        
-        
         
     }
        
