@@ -1,5 +1,6 @@
 package cc.thegame;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -8,6 +9,8 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 import javafx.stage.Stage;
 
 /**
@@ -27,6 +30,11 @@ public class AppMain extends Application {
                     Scene scene = new Scene(page);
                     primaryStage.setScene(scene);
                     primaryStage.show();
+                    
+                    File songfile = new File("./etc/musica/000001.mp3");
+                    Media media = new Media(songfile.toURI().toString());
+                    MediaPlayer mp = new MediaPlayer(media);
+                    mp.play();
                         
             } catch (IOException ex) {
                 Logger.getLogger(AppMain.class.getName()).log(Level.SEVERE, null, ex);
