@@ -10,6 +10,7 @@ import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.ServerToServerFacade;
 import cc.server.facade.ServerToServer;
+import cc.server.facade.ServerToServerHub;
 import java.io.IOException;
 import java.net.Socket;
 import java.time.LocalDate;
@@ -28,11 +29,13 @@ public class ServerHandler implements Runnable {
 
     private final ServerCommunication comm;
     private final ServerState state;
-    private final ServerToServerFacade facade;
+    private final ServerToServer facadeMem;
+    private final ServerToServerHub facadeHub;
 
     public ServerHandler(ServerState state, ServerToServer facade, Socket socket) throws IOException {
         this.state = state;
-        this.facade = facade;
+        this.facadeMem = new ServerToServer(state);
+        this.facadeHub =  new ServerToServerHub(state);
         comm = new ServerCommunication(socket);
     }
     //contrutor disto vai receber a porta a atuar e dados inciiais
@@ -71,7 +74,7 @@ public class ServerHandler implements Runnable {
         Object[] p;
 
         if ((p = checkRequest(pdu, newChallenge)) != null) {
-            facade.registerChallenge(
+            facadeMem.registerChallenge(
                     (String) p[0],
                     (LocalDate) p[1],
                     (LocalTime) p[2],
@@ -82,24 +85,24 @@ public class ServerHandler implements Runnable {
             
             // if the server that are announcing don't exist announce the the other server
             if (!state.hasNeighbors(comm.who())) {
-                facade.registerMySelfServer(
+                facadeMem.registerMySelfServer(
                     (byte[]) p[0],
                     (Integer) p[1]
                 );
-            } 
-            facade.registerServer(
+            }
+            facadeMem.registerServer(
                     (byte[]) p[0],
                     (Integer) p[1]
             );
             //if origin is from know server: do nothing
             //if not: resend it to my neightbors;
         } else if ((p = checkRequest(pdu, registerAcceptChallenge)) != null) {
-            facade.registerAcceptChallenge(
+            facadeMem.registerAcceptChallenge(
                     (String) p[0],
                     (String) p[1]
             );
         } else if ((p = checkRequest(pdu, registerScore)) != null) {
-            facade.registerScore(
+            facadeMem.registerScore(
                     (String) p[0],
                     (Integer) p[1]
             );

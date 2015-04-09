@@ -13,31 +13,22 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-/**
+/** 
  *
  * @author ruioliveiras
  */
 public class ServerToServer implements ServerToServerFacade {
 
-    private ServerState state;
+    private final ServerState state;
 
     public ServerToServer(ServerState s) {
         this.state = s;
     }
 
-    @Override
-    public boolean registerMySelfServer(byte[] ip, int port) {
-        for (ServerToServerFacade sts : state.getNeighbors()) {
-            sts.registerServer(ip, port);
-        }
-        return true;
-    }
 
     @Override
-    public boolean registerServer(byte[] ip, int port) {
+    public void registerServer(byte[] ip, int port) {
         try {
             InetAddress inet;
             inet = InetAddress.getByAddress(ip);
@@ -45,19 +36,17 @@ public class ServerToServer implements ServerToServerFacade {
         } catch (UnknownHostException ex) {
             throw new RuntimeException();
         }
-        return true;
     }
 
     @Override
-    public boolean registerChallenge(String challeName, LocalDate d, LocalTime time, String user, String nick) {
+    public void registerChallenge(String challeName, LocalDate d, LocalTime time, String user, String nick) {
         state.addChallenge(challeName, new Challenge(challeName, d, time));
-        state.addOwner(challeName, "localhost"); //????
-        return true;
+        state.addOwner(challeName, "localhost");
     }
     
      
     @Override
-    public boolean registerAcceptChallenge(String challeName, String nick) {
+    public void registerAcceptChallenge(String challeName, String nick) {
         String ip = state.getOwnerIp(challeName);
         if (ip.equals("localhost")){
             state.getChallenge(challeName)
@@ -65,13 +54,11 @@ public class ServerToServer implements ServerToServerFacade {
         }else {
             state.getNeighbor(ip).registerAcceptChallenge(challeName, nick);
         }
-        return true;
     }
 
     @Override
-    public boolean registerScore(String nick, int score) {
+    public void registerScore(String nick, int score) {
         
-        return true;
     }
 
     // this guy will has a copy of the serverState

@@ -17,23 +17,12 @@ import java.time.LocalTime;
 public interface ServerToServerFacade {
 
     /**
-     * This function will be called in the init of the server to register than
-     * in a branch of server
-     *
-     * @param ip
-     * @param port
-     * @return
-     */
-    public boolean registerMySelfServer(byte[] ip, int port);
-
-    /**
      * This function is to ask the server to registry a new server,
      *
      * @param ip
      * @param port
-     * @return
      */
-    public boolean registerServer(byte[] ip, int port);
+    public void registerServer(byte[] ip, int port);
 
     /**
      * Register a Challenge to a server
@@ -43,9 +32,8 @@ public interface ServerToServerFacade {
      * @param time
      * @param user
      * @param nick
-     * @return
      */
-    public boolean registerChallenge(String challeName, LocalDate d, LocalTime time,
+    public void registerChallenge(String challeName, LocalDate d, LocalTime time,
             String user, String nick);
 
     /**
@@ -54,16 +42,14 @@ public interface ServerToServerFacade {
      *
      * @param challeName
      * @param nick
-     * @return
      */
-    public boolean registerAcceptChallenge(String challeName, String nick);
+    public void registerAcceptChallenge(String challeName, String nick);
 
     /**
      * In the end of challenge should register the score of each person
      *
      * @param nick
      * @param score
-     * @return
      */
-    public boolean registerScore(String nick, int score);
+    public void registerScore(String nick, int score);
 }
