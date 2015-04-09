@@ -1,6 +1,8 @@
 package cc.thegame;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -19,15 +21,16 @@ public class AppMain extends Application {
 	public void start(Stage primaryStage) {
 		primaryStage.setTitle("Event Handling");	
 		try {
-			FXMLLoader loader;                        
+                    FXMLLoader loader;                        
                     loader = new FXMLLoader(getClass().getResource("AppInterface.fxml"));
-                        AnchorPane page = (AnchorPane) loader.load();
-			Scene scene = new Scene(page);
-			primaryStage.setScene(scene);
-			primaryStage.show();
+                    AnchorPane page = (AnchorPane) loader.load();
+                    Scene scene = new Scene(page);
+                    primaryStage.setScene(scene);
+                    primaryStage.show();
                         
-		} catch (IOException e) {
-		}
+            } catch (IOException ex) {
+                Logger.getLogger(AppMain.class.getName()).log(Level.SEVERE, null, ex);
+            }
 	}
 	
         public static void main(String[] args) {

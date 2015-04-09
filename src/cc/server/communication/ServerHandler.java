@@ -85,15 +85,9 @@ public class ServerHandler implements Runnable {
             
             // if the server that are announcing don't exist announce the the other server
             if (!state.hasNeighbors(comm.who())) {
-                facadeMem.registerMySelfServer(
-                    (byte[]) p[0],
-                    (Integer) p[1]
-                );
+               facadeHub.registerServer(  (byte[]) p[0], (Integer) p[1]);
             }
-            facadeMem.registerServer(
-                    (byte[]) p[0],
-                    (Integer) p[1]
-            );
+            facadeMem.registerServer((byte[]) p[0], (Integer) p[1] );
             //if origin is from know server: do nothing
             //if not: resend it to my neightbors;
         } else if ((p = checkRequest(pdu, registerAcceptChallenge)) != null) {

@@ -20,8 +20,6 @@ public class Duvidas {
      * Criar challange para que quero saber quem criou o challange?
      * (registerChallenge)
      *
-     * (registerMySelfServer) esta função pode ser apagada
-     *
      * (registerAcceptChallenge) adicionar nome do gajo
      *
      * (registerChallenge) criar tambem registerChallengeFoward para
