@@ -1,6 +1,8 @@
 package cc.thegame;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
@@ -26,9 +28,9 @@ public class AppMain extends Application {
                     primaryStage.setScene(scene);
                     primaryStage.show();
                         
-		} catch (IOException e) {
-                    System.out.println("Erro na main.");
-		}
+            } catch (IOException ex) {
+                Logger.getLogger(AppMain.class.getName()).log(Level.SEVERE, null, ex);
+            }
 	}
 	
         public static void main(String[] args) {
