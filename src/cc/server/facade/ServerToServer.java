@@ -14,7 +14,7 @@ import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
-/** 
+/**
  *
  * @author ruioliveiras
  */
@@ -26,43 +26,30 @@ public class ServerToServer implements ServerToServerFacade {
         this.state = s;
     }
 
-
     @Override
-    public void registerServer(byte[] ip, int port) {
-        try {
-            InetAddress inet;
-            inet = InetAddress.getByAddress(ip);
-            state.addNeighbors(inet.getHostAddress(), port);
-        } catch (UnknownHostException ex) {
-            throw new RuntimeException();
-        }
+    public void registerServer(InetAddress ip, int port) {
+        state.addNeighbors(ip, port);
     }
 
     @Override
     public void registerChallenge(String challeName, LocalDate d, LocalTime time, String user, String nick) {
         state.addChallenge(challeName, new Challenge(challeName, d, time));
-        if (state.hasLocalUser(nick)){
-            state.addOwner(challeName, "localhost");
-        } else {
-            state.addOwner(challeName, );            
-        }
     }
-    
-     
+
     @Override
     public void registerAcceptChallenge(String challeName, String nick) {
         String ip = state.getOwnerIp(challeName);
-        if (ip.equals("localhost")){
+        if (ip.equals("localhost")) {
             state.getChallenge(challeName)
                     .addSubscribers(new User(nick, nick));
-        }else {
+        } else {
             state.getNeighbor(ip).registerAcceptChallenge(challeName, nick);
         }
     }
 
     @Override
     public void registerScore(String nick, int score) {
-        
+
     }
 
     // this guy will has a copy of the serverState

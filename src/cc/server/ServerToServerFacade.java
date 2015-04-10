@@ -5,6 +5,7 @@
  */
 package cc.server;
 
+import java.net.InetAddress;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -22,7 +23,7 @@ public interface ServerToServerFacade {
      * @param ip
      * @param port
      */
-    public void registerServer(byte[] ip, int port);
+    public void registerServer(InetAddress ip, int port);
 
     /**
      * Register a Challenge to a server

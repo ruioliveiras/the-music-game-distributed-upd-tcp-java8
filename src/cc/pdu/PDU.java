@@ -72,7 +72,7 @@ public class PDU {
     public void initParametersFromBytes(byte[] b) {
         int offset = 0, i = 0;
 
-        while (offset < b.length && i < sizeBytes) {
+        while (offset < b.length && offset < sizeBytes && i < nField) {
             // the first byte are the identifier of the Parameter Type.
             PDUType parameter = pduType.getParameterById(b[offset++]);
 
@@ -80,6 +80,7 @@ public class PDU {
 
             offset += parameter.getDataType().getSize(obj);
             parameters.put(parameter, obj);
+            i++;
         }
     }
 
@@ -89,6 +90,7 @@ public class PDU {
         for (Map.Entry<PDUType, Object> entrySet : parameters.entrySet()) {
             PDUType key = entrySet.getKey();
             Object value = entrySet.getValue();
+            sizeBytes++; // count the byte of param_type
             sizeBytes += key.getDataType().getSize(value);
         }
         ByteBuffer b = ByteBuffer.allocate(sizeBytes);
@@ -97,11 +99,13 @@ public class PDU {
         b.put((byte) ((secure) ? 1 : 0));
         b.putShort((short) label);
         b.put((byte) pduType.getId());
-        b.putShort((short) parameters.size());
+        b.put((byte) parameters.size());
+        b.putShort((short) sizeBytes);
         //params:
         for (Map.Entry<PDUType, Object> entrySet : parameters.entrySet()) {
             PDUType key = entrySet.getKey();
-            Object value = entrySet.getValue();            
+            Object value = entrySet.getValue();
+            b.put((byte) key.getId());
             b.put(key.getDataType().toByte(value));
         }
         

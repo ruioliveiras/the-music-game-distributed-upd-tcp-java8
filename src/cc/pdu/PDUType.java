@@ -37,7 +37,7 @@ public enum PDUType {
     ANSWER(1, 0),
     RETRANSMIT(1, 0),
     LIST_RANKING(1, 0),
-    INFO(1, 10),
+    INFO(31, 10),
         INFO_NAME(INFO, 1, PDUDataType.string),
         INFO_NICK(INFO, 2, PDUDataType.string),
         INFO_CHALLE(INFO, 7, PDUDataType.string),
@@ -73,6 +73,7 @@ public enum PDUType {
     private PDUType(PDUType parent, int id, PDUDataType dataType) {
         this.parent = parent;
         this.dataType = dataType;
+        this.id = id;
     }
 
     public int getId() {

@@ -9,7 +9,10 @@ import cc.pdu.PDU;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.InetAddress;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -27,21 +30,20 @@ public class ServerCommunication {
     // ? also will has some static functions to be more easy to contruct some PDU like OK
 
     public ServerCommunication(Socket socket) {
-        this.socket = socket;
-    }
-        
-    public void init() throws IOException {
-
-        is = socket.getInputStream();
-        
-        os = socket.getOutputStream();
+        try {
+            this.socket = socket;
+            is = socket.getInputStream();   
+            os = socket.getOutputStream();
+        } catch (IOException ex) {
+            throw  new RuntimeException("a");
+        }
     }
     
     
     public PDU readNext() throws IOException{
         PDU pdu = new PDU();
         byte[] headerBuffer = new byte[8];
-        byte[] bodyBuffer = new byte[255];
+        byte[] bodyBuffer = new byte[1024];
         
         if(is.read(headerBuffer, 0, 8) == 8) {
             pdu.initHeaderFromBytes(headerBuffer);
@@ -52,14 +54,27 @@ public class ServerCommunication {
         return pdu;
     }
     
-    public void sendPDU(PDU p) throws IOException{
-       os.write(p.toByte());
-       os.flush();
+    public void sendPDU(PDU p){
+        try {
+            os.write(p.toByte());
+            os.flush();
+        } catch (IOException ex) {
+            throw  new RuntimeException("a");
+        }
     }
 
-    public String who() {
+    public String getIp() {
        return socket.getInetAddress().toString();
     }
+
+    public int getPort() {
+        return socket.getPort();
+    }
+
+    public InetAddress getIpByte() {
+        return socket.getInetAddress();
+    }
+
 
     
 }

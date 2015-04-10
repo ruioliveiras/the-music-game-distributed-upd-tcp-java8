@@ -6,9 +6,13 @@
 package cc.pdu;
 
 import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -56,8 +60,8 @@ public enum PDUDataType {
             },
     date {
                 public Object read(byte[] b, int offset) {
-                    ByteBuffer bb = ByteBuffer.wrap(b);
-                    
+                    ByteBuffer bb = ByteBuffer.wrap(b,offset,6);
+
                     int year = bb.getShort() + 2000;//2000 + (b[offset + 0] << 8) + (b[offset + 1]);
                     int month = bb.getShort();//(b[offset + 2] << 8) + (b[offset + 3]);
                     int day = bb.getShort();//(b[offset + 4] << 8) + (b[offset + 5]);
@@ -82,9 +86,9 @@ public enum PDUDataType {
             },
     hour {
                 public Object read(byte[] b, int offset) {
-                    ByteBuffer bb = ByteBuffer.wrap(b);
-                    
-                    int hour= bb.getShort();// 2000 + (b[offset + 0] << 8) + (b[offset + 1]);
+                    ByteBuffer bb = ByteBuffer.wrap(b,offset,6);
+
+                    int hour = bb.getShort();// 2000 + (b[offset + 0] << 8) + (b[offset + 1]);
                     int min = bb.getShort();//(b[offset + 2] << 8) + (b[offset + 3]);
                     int sec = bb.getShort();// (b[offset + 4] << 8) + (b[offset + 5]);
 
@@ -108,11 +112,13 @@ public enum PDUDataType {
             },
     ip {
                 public Object read(byte[] b, int offset) {
-                    byte[] ip = new byte[4];
-                    for (int i = 0; i < 5; i++) {
-                        ip[i] = b[offset + i];
+                    try {
+                        byte[] buffer = new byte[4];
+                        ByteBuffer.wrap(b, offset, 4).get(buffer);
+                        return InetAddress.getByAddress(buffer);
+                    } catch (UnknownHostException ex) {
+                        throw  new RuntimeException(ex.getCause());
                     }
-                    return ip;
                 }
 
                 public int getSize(Object o) {
@@ -120,14 +126,14 @@ public enum PDUDataType {
                 }
 
                 public byte[] toByte(Object o) {
-                     return (byte[]) o;
+                    return ((InetAddress) o).getAddress();
                 }
 
             },
     port {
                 public Object read(byte[] b, int offset) {
                     //int port = (b[0] << 8) + (b[1]);
-                    return ByteBuffer.wrap(b).getShort();
+                    return ByteBuffer.wrap(b, offset, 2).getShort();
                 }
 
                 public int getSize(Object o) {
@@ -135,7 +141,7 @@ public enum PDUDataType {
                 }
 
                 public byte[] toByte(Object o) {
-                    return ByteBuffer.allocate(2).putShort((short) o).array();
+                    return ByteBuffer.allocate(2).putShort(((Integer) o).shortValue()).array();
                 }
 
             };

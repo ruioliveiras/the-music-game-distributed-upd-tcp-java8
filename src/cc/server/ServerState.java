@@ -8,6 +8,7 @@ package cc.server;
 import cc.model.Challenge;
 import cc.model.User;
 import cc.server.facade.ServerToServerClient;
+import java.net.InetAddress;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,8 +73,8 @@ public class ServerState {
      * @param ip
      * @param port 
      */
-    public void addNeighbors(String ip, int port) {
-        neighbors.put(ip+":"+port, new ServerToServerClient(ip, port));
+    public void addNeighbors(InetAddress ip, int port) {
+        neighbors.put(ip.toString(), new ServerToServerClient(ip, port));
     }
    
     /**

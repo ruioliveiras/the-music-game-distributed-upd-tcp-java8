@@ -7,6 +7,7 @@ package cc.server.facade;
 
 import cc.server.ServerState;
 import cc.server.ServerToServerFacade;
+import java.net.InetAddress;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -23,7 +24,7 @@ public class ServerToServerHub implements ServerToServerFacade {
     }
 
     @Override
-    public void registerServer(byte[] ip, int port) {
+    public void registerServer(InetAddress ip, int port) {
         for (ServerToServerFacade sts : state.getNeighbors()) {
             sts.registerServer(ip, port);
         }

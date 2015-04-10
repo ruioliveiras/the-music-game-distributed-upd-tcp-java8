@@ -10,6 +10,7 @@ import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.ServerToServerFacade;
 import cc.server.facade.ServerToServer;
+import cc.server.facade.ServerToServerClient;
 import cc.server.facade.ServerToServerHub;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -35,10 +36,10 @@ public class ServerHandler implements Runnable {
     private final ServerToServer facadeMem;
     private final ServerToServerHub facadeHub;
 
-    public ServerHandler(ServerState state, Socket socket, ServerToServer facadeMem, ServerToServerHub facadeHub ) throws IOException {
+    public ServerHandler(ServerState state, Socket socket, ServerToServer facadeMem, ServerToServerHub facadeHub) throws IOException {
         this.state = state;
         this.facadeMem = facadeMem;
-        this.facadeHub =  facadeHub;
+        this.facadeHub = facadeHub;
         comm = new ServerCommunication(socket);
     }
     //contrutor disto vai receber a porta a atuar e dados inciiais
@@ -46,8 +47,6 @@ public class ServerHandler implements Runnable {
     @Override
     public void run() {
         try {
-            comm.init();
-
             PDU pdu;
 
             while ((pdu = comm.readNext()) != null) {
@@ -55,9 +54,9 @@ public class ServerHandler implements Runnable {
                     // somefucking unsoported error
                 }
                 //if this pdu are fragmented, don't wory, because the the serverConnunication work on this and this pdu area already done
-                
+
                 foward01(pdu);
-               
+
             }
 
         } catch (IOException ex) {
@@ -84,19 +83,29 @@ public class ServerHandler implements Runnable {
                     (String) p[3],
                     (String) p[4]
             );
-        } else  if ((p = checkRequest(pdu, newServer)) != null) {
-            
+            state.addOwner((String) p[0], comm.getIp());
+        } else if ((p = checkRequest(pdu, newServer)) != null) {
+
             // if the server that are announcing don't exist announce the the other server
-            if (!state.hasNeighbors(comm.who())) {
-                facadeHub.registerServer(  (byte[]) p[0], (Integer) p[1]);
-                facadeMem.registerServer((byte[]) p[0], (Integer) p[1] );
-                for (String ip : state.getNeighborIps()) {
-                    byte[] ipBytes = InetAddress.getByName(ip.split(":")[0]).getAddress();
-                    int port = Integer.parseInt(ip.split(":")[1]);
-                    state.getNeighbor(ip).registerServer(ipBytes, port);
+            if (!state.hasNeighbors(comm.getIp())) {
+                // register all server in the server 
+                for (ServerToServerFacade server : state.getNeighbors()) {
+                    if (server instanceof ServerToServerClient) {
+                        PDU response = new PDU(PDUType.INFO);
+                        response.addParameter(PDUType.INFO_IPSERVER, ((ServerToServerClient) server).getServerIpByte());
+                        response.addParameter(PDUType.INFO_PORT, ((ServerToServerClient) server).getServerPort());
+                        comm.sendPDU(response);
+//                        state.getNeighbor(((InetAddress) p[0]).toString())
+//                                .registerServer(, );
+                    }
                 }
-            }else{
-                facadeMem.registerServer((byte[]) p[0], (Integer) p[1] );
+                // register in other servers
+                facadeHub.registerServer((InetAddress) p[0], (Short) p[1]);
+                // register in the current server
+                facadeMem.registerServer((InetAddress) p[0], (Short) p[1]);
+
+            } else {
+                facadeMem.registerServer((InetAddress) p[0], (Short) p[1]);
             }
             //if origin is from know server: do nothing
             //if not: resend it to my neightbors;

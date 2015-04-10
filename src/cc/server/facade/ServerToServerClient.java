@@ -10,6 +10,7 @@ import cc.pdu.PDUType;
 import cc.server.ServerToServerFacade;
 import cc.server.communication.ServerCommunication;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -22,7 +23,7 @@ public class ServerToServerClient implements ServerToServerFacade {
 
     ServerCommunication comm;
 
-    public ServerToServerClient(String ip, int port) {
+    public ServerToServerClient(InetAddress ip, int port) {
         try {
             comm = new ServerCommunication(new Socket(ip, port));
         } catch (IOException ex) {
@@ -31,7 +32,7 @@ public class ServerToServerClient implements ServerToServerFacade {
     }
 
     @Override
-    public void registerServer(byte[] ip, int port) {
+    public void registerServer(InetAddress ip, int port) {
         PDU pdu = new PDU(PDUType.INFO);
         pdu.addParameter(PDUType.INFO_IPSERVER, ip);
         pdu.addParameter(PDUType.INFO_PORT, port);
@@ -66,4 +67,15 @@ public class ServerToServerClient implements ServerToServerFacade {
         comm.sendPDU(pdu);
     }
 
+    public int getServerPort(){
+        return comm.getPort();
+    } 
+
+    public String getServerIp(){
+        return comm.getIp();
+    } 
+    
+    public InetAddress getServerIpByte(){
+        return comm.getIpByte();
+    } 
 }
