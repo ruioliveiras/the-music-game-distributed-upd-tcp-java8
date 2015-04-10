@@ -16,7 +16,7 @@ import java.net.Socket;
  * @author ruioliveiras
  */
 public class ServerCommunication {
-    private Socket socket;
+    private final Socket socket;
     private InputStream is;
     private OutputStream os;
     
@@ -47,22 +47,14 @@ public class ServerCommunication {
             pdu.initHeaderFromBytes(headerBuffer);
             is.read(bodyBuffer, 0, pdu.getSizeBytes());
             pdu.initParametersFromBytes(bodyBuffer);
-        }
-        
-        //if (pdu.hasNext()){
-        //   create fragPDU =  FragmentedPDU(initialPdu)
-        //    while (fragPDU.append(comm.readNext)){
-        //   
-        //    }
-        //}
-                
-        
+        }      
         
         return pdu;
     }
     
-    public void sendPDU(PDU p){
-        
+    public void sendPDU(PDU p) throws IOException{
+       os.write(p.toByte());
+       os.flush();
     }
 
     public String who() {

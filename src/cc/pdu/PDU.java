@@ -5,6 +5,7 @@
  */
 package cc.pdu;
 
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import javafx.util.Pair;
@@ -14,6 +15,7 @@ import javafx.util.Pair;
  * @author ruioliveiras
  */
 public class PDU {
+
     public final static int HEADER_SIZE_BYTES = 8;
 
     // header parameters
@@ -34,7 +36,7 @@ public class PDU {
         this();
         this.pduType = type;
     }
-    
+
     public PDU(int version, boolean secure, int label, PDUType pduType, int nField) {
         this.version = version;
         this.secure = secure;
@@ -43,7 +45,6 @@ public class PDU {
         this.nField = nField;
         this.parameters = new HashMap<>();
     }
-    
 
     /**
      * This function initialize the headers of the PDU from a buffer of Bytes.
@@ -57,12 +58,13 @@ public class PDU {
         if (b.length < 8) {
             //throw new Exec
         }
-        version = b[0];
-        secure = b[1] != 0;
-        label = b[2] | b[3] << 8;
-        pduType = PDUType.getById(b[4]);
-        nField = b[5] | b[6] << 8;
-        sizeBytes = b[7];
+        ByteBuffer bb = ByteBuffer.wrap(b);
+        version = bb.get();
+        secure = bb.get() != 0;
+        label = bb.getShort();
+        pduType = PDUType.getById(bb.get());
+        nField = bb.get();
+        sizeBytes = bb.getShort();
 
         return true;
     }
@@ -74,11 +76,36 @@ public class PDU {
             // the first byte are the identifier of the Parameter Type.
             PDUType parameter = pduType.getParameterById(b[offset++]);
 
-            Pair<Object, Integer> obj = parameter.getDataType().read(b, offset);
+            Object obj = parameter.getDataType().read(b, offset);
 
-            offset += obj.getValue();
-            parameters.put(parameter, obj.getKey());
+            offset += parameter.getDataType().getSize(obj);
+            parameters.put(parameter, obj);
         }
+    }
+
+    public byte[] toByte() {
+        //calc space
+        sizeBytes = 8;
+        for (Map.Entry<PDUType, Object> entrySet : parameters.entrySet()) {
+            PDUType key = entrySet.getKey();
+            Object value = entrySet.getValue();
+            sizeBytes += key.getDataType().getSize(value);
+        }
+        ByteBuffer b = ByteBuffer.allocate(sizeBytes);
+        //header
+        b.put((byte) version);
+        b.put((byte) ((secure) ? 1 : 0));
+        b.putShort((short) label);
+        b.put((byte) pduType.getId());
+        b.putShort((short) parameters.size());
+        //params:
+        for (Map.Entry<PDUType, Object> entrySet : parameters.entrySet()) {
+            PDUType key = entrySet.getKey();
+            Object value = entrySet.getValue();            
+            b.put(key.getDataType().toByte(value));
+        }
+        
+        return b.array();
     }
 
     public int getSizeBytes() {
@@ -108,11 +135,11 @@ public class PDU {
     public boolean hasParameter(PDUType p) {
         return parameters.containsKey(p);
     }
-    
+
     public void addParameter(PDUType pduType, Object obj) {
         parameters.put(pduType, obj);
     }
-    
+
     //.. outrs funções uteis por index
     /*Versão [1 byte] (por defeito, 0)
      Segurança [1 byte] (por defeito, 0 – sem segurança)
@@ -122,6 +149,4 @@ public class PDU {
      Tamanho em bytes da Lista de Campos Seguintes [2 bytes]
      Lista de Campos Seguintes (dependente do Tipo, pode ser vazia)
      */
-
- 
 }

@@ -69,14 +69,13 @@ public class ServerState {
 
     /**
      * Add a new neighbor.
-     * @param who
      * @param ip
      * @param port 
      */
-    public void addNeighbors(String who, String ip, int port) {
-        neighbors.put(who, new ServerToServerClient(ip, port));
+    public void addNeighbors(String ip, int port) {
+        neighbors.put(ip+":"+port, new ServerToServerClient(ip, port));
     }
-
+   
     /**
      * Get a neighbor from is ip
      * @param who
@@ -94,6 +93,15 @@ public class ServerState {
         return neighbors.values();
     }
 
+    /**
+     * Get all Ips of neightboars
+     * @return 
+     */
+    public Collection<String> getNeighborIps() {
+        return neighbors.keySet();
+    }
+
+    
     /**
      *  Check if this User exist
      * @param who

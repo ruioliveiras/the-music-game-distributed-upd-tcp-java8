@@ -32,7 +32,7 @@ public class ServerToServer implements ServerToServerFacade {
         try {
             InetAddress inet;
             inet = InetAddress.getByAddress(ip);
-            state.addNeighbors(inet.getHostAddress(), inet.getHostAddress(), port);
+            state.addNeighbors(inet.getHostAddress(), port);
         } catch (UnknownHostException ex) {
             throw new RuntimeException();
         }
@@ -41,7 +41,11 @@ public class ServerToServer implements ServerToServerFacade {
     @Override
     public void registerChallenge(String challeName, LocalDate d, LocalTime time, String user, String nick) {
         state.addChallenge(challeName, new Challenge(challeName, d, time));
-        state.addOwner(challeName, "localhost");
+        if (state.hasLocalUser(nick)){
+            state.addOwner(challeName, "localhost");
+        } else {
+            state.addOwner(challeName, );            
+        }
     }
     
      

@@ -34,6 +34,10 @@ public class Duvidas {
      * TODO:
      *
      * 3º rever o servertoserverfacade, e os campos em falta.
+     *          adicionar owner no challagen
+     *          adicioanr regirster questao
+     *          adicionar regirter answer
+     *          ..?
      *
      * 4º adicionar funçoes no facade para contrutir desafio. Ou seja passar
      * perguntas uma a uma, passar a musica e a imagem.
