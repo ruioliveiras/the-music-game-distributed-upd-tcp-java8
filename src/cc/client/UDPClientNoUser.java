@@ -22,16 +22,17 @@ import java.util.logging.Logger;
  * @author paulo
  */
 
-public class UDPClient {
+public class UDPClientNoUser {
     //private InetAddress client_ip;
     private BufferedReader stdinput;
     private DatagramSocket c_socket;
     
-    public UDPClient(){
+    public UDPClientNoUser () throws UnknownHostException{
         stdinput = new BufferedReader(new InputStreamReader(System.in));
         try {
             //client_ip = InetAddress.getByName("localhost");
             c_socket = new DatagramSocket();
+
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Cliente.");
         }
@@ -50,11 +51,12 @@ public class UDPClient {
         byte[] dadosReceber = new byte[1024];
         DatagramPacket send_packet = null, receive_packet = null;
         
+        
         while(true){
-            user_input = stdinput.readLine();
+            /*user_input = stdinput.readLine();
             dadosEnviar = user_input.getBytes();
             send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest, port);
-            this.getC_socket().send(send_packet);   
+            this.getC_socket().send(send_packet);   */
             
             receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
             this.getC_socket().receive(receive_packet);
@@ -100,7 +102,7 @@ public class UDPClient {
         }
     }*/
        
-    public static void main(String args[])
+    public static void main(String args[]) throws UnknownHostException
     {
         int server_port = 12345;
         InetAddress dest_ip = null; 
@@ -110,7 +112,7 @@ public class UDPClient {
             Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        UDPClient c1 = new UDPClient();
+        UDPClientNoUser c1 = new UDPClientNoUser();
         try {
             c1.unicastConnection(dest_ip, server_port);
             //c1.multicastConnection("228.1.1.1", server_port);

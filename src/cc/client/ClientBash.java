@@ -102,7 +102,7 @@ public class ClientBash {
                 break;
             case "LOGIN":
                 if (checkTotalArgs(nargs, 3)){
-                    //call func
+                    
                 }
                 else {
                     System.out.println("Número de argumentos inválido!");
