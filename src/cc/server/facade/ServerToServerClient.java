@@ -32,7 +32,7 @@ public class ServerToServerClient implements ServerToServerFacade {
     }
 
     @Override
-    public void registerServer(InetAddress ip, int port) {
+    synchronized public void registerServer(InetAddress ip, int port) {
         PDU pdu = new PDU(PDUType.INFO);
         pdu.addParameter(PDUType.INFO_IPSERVER, ip);
         pdu.addParameter(PDUType.INFO_PORT, port);
@@ -40,7 +40,7 @@ public class ServerToServerClient implements ServerToServerFacade {
     }
 
     @Override
-    public void registerChallenge(String challeName, LocalDate d, LocalTime time, String user, String nick) {
+    synchronized public void registerChallenge(String challeName, LocalDate d, LocalTime time, String user, String nick) {
         PDU pdu = new PDU(PDUType.INFO);
         pdu.addParameter(PDUType.INFO_CERT, challeName);
         pdu.addParameter(PDUType.INFO_DATE, d);
@@ -52,7 +52,7 @@ public class ServerToServerClient implements ServerToServerFacade {
     }
 
     @Override
-    public void registerAcceptChallenge(String challeName, String nick) {
+    synchronized public void registerAcceptChallenge(String challeName, String nick) {
         PDU pdu = new PDU(PDUType.INFO);
         pdu.addParameter(PDUType.INFO_CERT, challeName);
         pdu.addParameter(PDUType.INFO_NAME, nick);
@@ -60,22 +60,22 @@ public class ServerToServerClient implements ServerToServerFacade {
     }
 
     @Override
-    public void registerScore(String nick, int score) {
+    synchronized public void registerScore(String nick, int score) {
         PDU pdu = new PDU(PDUType.INFO);
         pdu.addParameter(PDUType.INFO_NAME, nick);
         pdu.addParameter(PDUType.INFO_SCORE, score);
         comm.sendPDU(pdu);
     }
 
-    public int getServerPort(){
+    synchronized public int getServerPort(){
         return comm.getPort();
     } 
 
-    public String getServerIp(){
+    synchronized public String getServerIp(){
         return comm.getIp();
     } 
     
-    public InetAddress getServerIpByte(){
+    synchronized public InetAddress getServerIpByte(){
         return comm.getIpByte();
     } 
 }

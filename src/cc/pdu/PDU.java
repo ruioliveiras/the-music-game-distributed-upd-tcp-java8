@@ -85,15 +85,16 @@ public class PDU {
     }
 
     public byte[] toByte() {
-        //calc space
-        sizeBytes = 8;
+        //calc
+        sizeBytes = 0;
         for (Map.Entry<PDUType, Object> entrySet : parameters.entrySet()) {
             PDUType key = entrySet.getKey();
             Object value = entrySet.getValue();
             sizeBytes++; // count the byte of param_type
             sizeBytes += key.getDataType().getSize(value);
         }
-        ByteBuffer b = ByteBuffer.allocate(sizeBytes);
+        //plus 8 because of header
+        ByteBuffer b = ByteBuffer.allocate(sizeBytes + 8);
         //header
         b.put((byte) version);
         b.put((byte) ((secure) ? 1 : 0));
@@ -144,6 +145,7 @@ public class PDU {
         parameters.put(pduType, obj);
     }
 
+    
     //.. outrs funções uteis por index
     /*Versão [1 byte] (por defeito, 0)
      Segurança [1 byte] (por defeito, 0 – sem segurança)
@@ -153,4 +155,9 @@ public class PDU {
      Tamanho em bytes da Lista de Campos Seguintes [2 bytes]
      Lista de Campos Seguintes (dependente do Tipo, pode ser vazia)
      */
+
+    @Override
+    public String toString() {
+        return "PDU,parameters:" + parameters.toString();
+    }
 }

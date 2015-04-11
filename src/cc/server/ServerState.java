@@ -10,8 +10,8 @@ import cc.model.User;
 import cc.server.facade.ServerToServerClient;
 import java.net.InetAddress;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  *
@@ -52,11 +52,11 @@ public class ServerState {
     private final Map<String, String> challengeOwner;
 
     public ServerState() {
-        neighbors = new HashMap<>();
-        localUsers = new HashMap<>();
-        challenges = new HashMap<>();
-        challengeOwner = new HashMap<>();
-        globalUsers = new HashMap<>();
+        neighbors = new ConcurrentHashMap<>();
+        localUsers = new ConcurrentHashMap<>();
+        challenges = new ConcurrentHashMap<>();
+        challengeOwner = new ConcurrentHashMap<>();
+        globalUsers = new ConcurrentHashMap<>();
     }
 
     /**

@@ -35,8 +35,10 @@ public class ServerHandler implements Runnable {
     private final ServerState state;
     private final ServerToServer facadeMem;
     private final ServerToServerHub facadeHub;
-
-    public ServerHandler(ServerState state, Socket socket, ServerToServer facadeMem, ServerToServerHub facadeHub) throws IOException {
+    private final String name;
+    
+    public ServerHandler(String name, ServerState state, Socket socket, ServerToServer facadeMem, ServerToServerHub facadeHub) throws IOException {
+        this.name = name;
         this.state = state;
         this.facadeMem = facadeMem;
         this.facadeHub = facadeHub;
@@ -54,9 +56,9 @@ public class ServerHandler implements Runnable {
                     // somefucking unsoported error
                 }
                 //if this pdu are fragmented, don't wory, because the the serverConnunication work on this and this pdu area already done
-
+                System.out.println("i'm:" + name + ",attending:"+comm.getIp()+" - " +pdu );
                 foward01(pdu);
-
+                
             }
 
         } catch (IOException ex) {
@@ -85,25 +87,27 @@ public class ServerHandler implements Runnable {
             );
             state.addOwner((String) p[0], comm.getIp());
         } else if ((p = checkRequest(pdu, newServer)) != null) {
+            final InetAddress ip = (InetAddress) p[0];
+            final Short port = (Short) p[1];
+            if (ip.toString().equals("/127.0.0.2") && name.equals("8081") ){
+                System.out.println("ERRO");
+            }
 
             // if the server that are announcing don't exist announce the the other server
             if (!state.hasNeighbors(comm.getIp())) {
-                // register all server in the server 
-                for (ServerToServerFacade server : state.getNeighbors()) {
-                    if (server instanceof ServerToServerClient) {
-                        PDU response = new PDU(PDUType.INFO);
-                        response.addParameter(PDUType.INFO_IPSERVER, ((ServerToServerClient) server).getServerIpByte());
-                        response.addParameter(PDUType.INFO_PORT, ((ServerToServerClient) server).getServerPort());
-                        comm.sendPDU(response);
-//                        state.getNeighbor(((InetAddress) p[0]).toString())
-//                                .registerServer(, );
-                    }
-                }
                 // register in other servers
-                facadeHub.registerServer((InetAddress) p[0], (Short) p[1]);
+                facadeHub.registerServer(ip, (Short) p[1]);
                 // register in the current server
-                facadeMem.registerServer((InetAddress) p[0], (Short) p[1]);
-
+                facadeMem.registerServer(ip, (Short) p[1]);
+                // register all server in the server
+                state.getNeighbors().stream()
+                        .filter((server) -> (server instanceof ServerToServerClient))
+                        .map(server -> (ServerToServerClient) server)
+                        .filter((server) -> (!server.getServerIp().equals(ip.toString())))
+                        .forEach((server) -> {
+                            state.getNeighbor(ip.toString())
+                                .registerServer(server.getServerIpByte(), server.getServerPort());
+                        });
             } else {
                 facadeMem.registerServer((InetAddress) p[0], (Short) p[1]);
             }

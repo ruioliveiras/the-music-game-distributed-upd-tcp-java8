@@ -46,13 +46,13 @@ public class ServerMain {
     public void start() throws IOException {
         while (true) {
             Socket cn = ss.accept();
-            ServerHandler handler = new ServerHandler(state, cn,facadeMem,facadeHub);
+            ServerHandler handler = new ServerHandler(name,state, cn,facadeMem,facadeHub);
             Thread t = new Thread(handler,name+"|handle:"+cn.getRemoteSocketAddress().toString());
             t.start();
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         int port;
         if (args.length >= 2) {
             port = Integer.parseInt(args[1]);
@@ -75,17 +75,27 @@ public class ServerMain {
     }
 
     
-    public static void test() throws IOException{
+    public static void test() throws IOException, InterruptedException{
         int port = 8080;        
+        Thread.sleep(400);
+        System.out.println("2-------");
+
         // comment this is want to test
         ServerMain main2 = new ServerMain(port + 1,InetAddress.getByName("127.0.0.2"));
         main2.init("127.0.0.1", port +"");
         startInOtherThread(main2, "MainServer2");
         
+                Thread.sleep(1000);
+        System.out.println("3-------");
+
+        
         ServerMain main3 = new ServerMain(port + 2,InetAddress.getByName("127.0.0.3"));
         main3.init("127.0.0.1", port +"");
         startInOtherThread(main3, "MainServer2");
         
+                Thread.sleep(1000);
+        System.out.println("4-------");
+
         ServerMain main4 = new ServerMain(port + 3,InetAddress.getByName("127.0.0.4"));
         main4.init("127.0.0.1", port +"");
         startInOtherThread(main4, "MainServer4");

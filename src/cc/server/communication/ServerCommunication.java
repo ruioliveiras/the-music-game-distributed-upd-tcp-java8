@@ -6,6 +6,7 @@
 package cc.server.communication;
 
 import cc.pdu.PDU;
+import static com.sun.corba.se.impl.util.Utility.printStackTrace;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -47,7 +48,13 @@ public class ServerCommunication {
         
         if(is.read(headerBuffer, 0, 8) == 8) {
             pdu.initHeaderFromBytes(headerBuffer);
-            is.read(bodyBuffer, 0, pdu.getSizeBytes());
+            if (pdu.getSizeBytes() > bodyBuffer.length){
+                printStackTrace();
+            }
+            
+            if (is.read(bodyBuffer, 0, pdu.getSizeBytes()) !=  pdu.getSizeBytes()){
+                printStackTrace();                
+            }
             pdu.initParametersFromBytes(bodyBuffer);
         }      
         
