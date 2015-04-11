@@ -1,16 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cc.client;
 
+import cc.pdu.PDU;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,11 +18,15 @@ import java.util.logging.Logger;
 public class UDPServer {
     private DatagramSocket s_socket;
     private int port; 
+    private UDPCommunication com;
     
     //porta predefinida
     public UDPServer(int port){
         try {
+            //Constructs a datagram socket and binds it to the specified port on the local host machine.
+            //É possivel definir outro endereço ip
             s_socket = new DatagramSocket(port);
+            com = new UDPCommunication();
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Servidor.");
         }   
@@ -42,13 +43,25 @@ public class UDPServer {
         DatagramPacket send_packet = null, receive_packet = null;
         InetAddress dest_ip;
         int dest_port;
+        PDU msg_received = null;
+        
         
         while(true){
             receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
-            this.getS_socket().receive(receive_packet);
-            client_msg = new String(dadosReceber, "UTF-8");
-            System.out.println("Cliente: "+ client_msg);
-            dest_ip = receive_packet.getAddress();
+            this.getS_socket().receive(receive_packet); //fica à espera de receber o pacote
+            
+            msg_received = com.readDatagram(receive_packet.getData());
+            
+            
+            
+            
+            
+            
+            client_msg = new String(dadosReceber, "UTF-8"); //descodifica a mensagem que ficou no array de bytes
+            
+            
+            System.out.println("Cliente: "+ client_msg); 
+            dest_ip = receive_packet.getAddress();  // obtem o endereço ip e porta do cliente que enviou o datagrama para enviar resposta
             dest_port = receive_packet.getPort();
             
             resposta = "Pacote entregue com sucesso do cliente com a porta " + dest_port;
@@ -61,42 +74,32 @@ public class UDPServer {
     
 
     // arranjar para fazer a conexao fora do metodo
-    public void multicastConnection(String group, int port){
-        MulticastSocket mc_socket = null;
-        InetAddress group_ip = null;
+    public void multicastConnection() throws UnknownHostException, IOException{
+        //MulticastSocket mc_socket = null;
+        this.getS_socket().setBroadcast(true);
         String resposta = null, client_msg = null;
         DatagramPacket send_packet = null, receive_packet = null;
         byte[] dadosEnviar = new byte[1024];
         byte[] dadosReceber = new byte[1024];
-        InetAddress dest_ip;
+        InetAddress dest_ip = InetAddress.getByName("255.255.255.255");
         int dest_port;
         
-        
-        try {
-            group_ip = InetAddress.getByName(group);
-            mc_socket = new MulticastSocket(port);
-            
-            mc_socket.joinGroup(group_ip);
-
         while(true){
             receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
             this.getS_socket().receive(receive_packet);
             client_msg = new String(dadosReceber, "UTF-8");
-            System.out.println("Cliente: "+ client_msg);
-            dest_ip = receive_packet.getAddress(); // desnecessario
+            //dest_ip = receive_packet.getAddress(); // desnecessario
             dest_port = receive_packet.getPort(); //
             
-            resposta = "Pacote entregue com sucesso do cliente com a porta " + dest_port;
+            System.out.println("Cliente " +dest_port+": "+ client_msg);
+            
+            resposta = "Pacote entregue com sucesso. Porta: " + dest_port;
 
             dadosEnviar = resposta.getBytes();
-            send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, group_ip, dest_port); //aqui tem group_ip e nao dest_ip
+            send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest_ip, dest_port);
             this.getS_socket().send(send_packet);   
         }
-        
-           // mc_socket.leaveGroup(group_ip);
-        } catch (IOException ex) {
-            System.out.println("Não foi possível obter endereço de grupo.");
-        }
+
     }
     
     public static void main(String args[])
@@ -104,12 +107,12 @@ public class UDPServer {
         int server_port = 12345;
         
         UDPServer s1 = new UDPServer(12345);
-        //try {
+        try {
             //s1.unicastConnection();
-            s1.multicastConnection("228.1.1.1", server_port);
-       /* } catch (IOException ex) {
+            s1.multicastConnection();
+        } catch (IOException ex) {
             Logger.getLogger(UDPServer.class.getName()).log(Level.SEVERE, null, ex);
-        }*/
+        }
         
     }
 }
