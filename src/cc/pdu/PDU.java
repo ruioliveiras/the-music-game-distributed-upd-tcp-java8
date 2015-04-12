@@ -8,7 +8,6 @@ package cc.pdu;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
-import javafx.util.Pair;
 
 /**
  *
@@ -79,7 +78,14 @@ public class PDU {
             Object obj = parameter.getDataType().read(b, offset);
 
             offset += parameter.getDataType().getSize(obj);
-            parameters.put(parameter, obj);
+
+            Object oldObj = parameters.put(parameter, obj);
+            // if is fragmented, and there alreay exist one object, and is from type ByteBuffer
+            if (this.label > 0 && oldObj != null && oldObj instanceof ByteBuffer) {
+                ((ByteBuffer) oldObj).put((ByteBuffer) obj);
+                parameters.put(parameter, oldObj);
+            }
+
             i++;
         }
     }
@@ -109,7 +115,7 @@ public class PDU {
             b.put((byte) key.getId());
             b.put(key.getDataType().toByte(value));
         }
-        
+
         return b.array();
     }
 
@@ -145,7 +151,6 @@ public class PDU {
         parameters.put(pduType, obj);
     }
 
-    
     //.. outrs funções uteis por index
     /*Versão [1 byte] (por defeito, 0)
      Segurança [1 byte] (por defeito, 0 – sem segurança)
@@ -155,7 +160,6 @@ public class PDU {
      Tamanho em bytes da Lista de Campos Seguintes [2 bytes]
      Lista de Campos Seguintes (dependente do Tipo, pode ser vazia)
      */
-
     @Override
     public String toString() {
         return "PDU,parameters:" + parameters.toString();

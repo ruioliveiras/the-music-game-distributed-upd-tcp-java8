@@ -6,13 +6,11 @@
 package cc.server.communication;
 
 import cc.pdu.PDU;
-import static com.sun.corba.se.impl.util.Utility.printStackTrace;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -49,13 +47,19 @@ public class ServerCommunication {
         if(is.read(headerBuffer, 0, 8) == 8) {
             pdu.initHeaderFromBytes(headerBuffer);
             if (pdu.getSizeBytes() > bodyBuffer.length){
-                printStackTrace();
+                //error
             }
+            // if has label then is fragmented
+//            if (pdu.getLabel()){
+//                
+//            }
             
             if (is.read(bodyBuffer, 0, pdu.getSizeBytes()) !=  pdu.getSizeBytes()){
-                printStackTrace();                
+                //error
             }
             pdu.initParametersFromBytes(bodyBuffer);
+        }else {
+            //error
         }      
         
         return pdu;

@@ -15,33 +15,16 @@ public class Duvidas {
      *
      * ServerState tem 2 maps localUsers e globalUser, faz sentido?
      *
-     * Remover o bool que esta a ser retornado no facade
      *
-     * Criar challange para que quero saber quem criou o challange?
-     * (registerChallenge)
+     * (registerAcceptChallenge) adicionar nome do gajo .... adicionar função
+     * para registo de Questao imagem e musica
      *
-     * (registerAcceptChallenge) adicionar nome do gajo
-     *
-     * (registerChallenge) criar tambem registerChallengeFoward para
-     * reencaminhar (iŕa ser chamado pela aplicação)
-     *
-     * ERRO Partiu do principio que este o serverToServer mexe em memoria e vai
-     * avisar os outros mas nao pode fazer as duas coisas. e tambem de ter pouca
-     * logica do lado do cliente, podesse por os fors dos visinhos em alguns
-     * casos lá. Antes de pensar nisso deve-se pensar quem vai usar e que
-     * implentação e que vai usar.
-     *
-     * TODO:
-     *
-     * 3º rever o servertoserverfacade, e os campos em falta.
-     *          adicionar owner no challagen
-     *          adicioanr regirster questao
-     *          adicionar regirter answer
-     *          ..?
-     *
-     * 4º adicionar funçoes no facade para contrutir desafio. Ou seja passar
-     * perguntas uma a uma, passar a musica e a imagem.
-     *
-     3*
+     * Sockets? é necessario fechar os sockets? mas entao vai-se estar sempre a
+     * abrir sockets para toda a gente? Para ser mais facil de gerir posso
+     * utilizar os sockets num so sentido? - porque? pensar em caso em que se um
+     * fecha mas o outro continua a enviar, e depois ja quer enviar.
+     * Entao umas vezes usa o mesmo outras vezes nao?.
+     * 
+     * 
      */
 }

@@ -5,7 +5,7 @@
  */
 package cc.server;
 
-import cc.server.facade.ServerToServer;
+import cc.server.facade.ServerToServerLocal;
 import cc.server.communication.ServerHandler;
 import cc.server.facade.ServerToServerHub;
 import java.io.IOException;
@@ -23,7 +23,7 @@ public class ServerMain {
     private final static int DEFAULT_PORT = 8080;
     private final ServerState state;
     private final ServerSocket ss;
-    private final ServerToServer facadeMem;
+    private final ServerToServerLocal facadeMem;
     private final ServerToServerHub facadeHub;
     private final String name;
 
@@ -32,7 +32,7 @@ public class ServerMain {
     public ServerMain(int listingPort,InetAddress adr) throws IOException {
         this.ss = new ServerSocket(listingPort,0,adr);
         this.state = new ServerState();
-        this.facadeMem = new ServerToServer(state);
+        this.facadeMem = new ServerToServerLocal(state);
         this.facadeHub =  new ServerToServerHub(state);
         name = ""+listingPort;
     }

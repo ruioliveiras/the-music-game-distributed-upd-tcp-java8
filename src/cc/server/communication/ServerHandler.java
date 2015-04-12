@@ -9,7 +9,7 @@ import cc.server.ServerState;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.ServerToServerFacade;
-import cc.server.facade.ServerToServer;
+import cc.server.facade.ServerToServerLocal;
 import cc.server.facade.ServerToServerClient;
 import cc.server.facade.ServerToServerHub;
 import java.io.IOException;
@@ -33,11 +33,11 @@ public class ServerHandler implements Runnable {
 
     private final ServerCommunication comm;
     private final ServerState state;
-    private final ServerToServer facadeMem;
+    private final ServerToServerLocal facadeMem;
     private final ServerToServerHub facadeHub;
     private final String name;
     
-    public ServerHandler(String name, ServerState state, Socket socket, ServerToServer facadeMem, ServerToServerHub facadeHub) throws IOException {
+    public ServerHandler(String name, ServerState state, Socket socket, ServerToServerLocal facadeMem, ServerToServerHub facadeHub) throws IOException {
         this.name = name;
         this.state = state;
         this.facadeMem = facadeMem;
