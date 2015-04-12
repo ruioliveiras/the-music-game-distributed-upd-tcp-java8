@@ -58,7 +58,7 @@ public enum PDUDataType {
             },
     date {
                 public Object read(byte[] b, int offset) {
-                    ByteBuffer bb = ByteBuffer.wrap(b,offset,6);
+                    ByteBuffer bb = ByteBuffer.wrap(b, offset, 6);
 
                     int year = bb.getShort() + 2000;//2000 + (b[offset + 0] << 8) + (b[offset + 1]);
                     int month = bb.getShort();//(b[offset + 2] << 8) + (b[offset + 3]);
@@ -84,7 +84,7 @@ public enum PDUDataType {
             },
     hour {
                 public Object read(byte[] b, int offset) {
-                    ByteBuffer bb = ByteBuffer.wrap(b,offset,6);
+                    ByteBuffer bb = ByteBuffer.wrap(b, offset, 6);
 
                     int hour = bb.getShort();// 2000 + (b[offset + 0] << 8) + (b[offset + 1]);
                     int min = bb.getShort();//(b[offset + 2] << 8) + (b[offset + 3]);
@@ -115,7 +115,7 @@ public enum PDUDataType {
                         ByteBuffer.wrap(b, offset, 4).get(buffer);
                         return InetAddress.getByAddress(buffer);
                     } catch (UnknownHostException ex) {
-                        throw  new RuntimeException(ex.getCause());
+                        throw new RuntimeException(ex.getCause());
                     }
                 }
 
@@ -149,12 +149,23 @@ public enum PDUDataType {
      *
      * @param b the buffer array
      * @param offset the offset of the buffer array
-     * @return Pair<Object, Integer> where the Object is the read object and the
-     * Integer is the number of read bytes
+     * @return read object Integer is the number of read bytes
      */
     public abstract Object read(byte[] b, int offset);
 
+    /**
+     * Get the size in bytes of the Object o, that is used to calculate buffers
+     * offsets
+     *
+     * @param o
+     * @return
+     */
     public abstract int getSize(Object o);
 
+    /**
+     * Convert to bytes a certain Object.
+     * @param o
+     * @return return the byte array result
+     */
     public abstract byte[] toByte(Object o);
 }

@@ -67,14 +67,26 @@ public class ServerToServerClient implements ServerToServerFacade {
         comm.sendPDU(pdu);
     }
 
+    /**
+     * Get this port where this Client are connected
+     * @return the port number
+     */
     synchronized public int getServerPort(){
         return comm.getPort();
     } 
 
+    /**
+     * Get Ip as String
+     * @return 
+     */
     synchronized public String getServerIp(){
         return comm.getIp();
     } 
     
+    /**
+     * Get ip As 
+     * @return 
+     */
     synchronized public InetAddress getServerIpByte(){
         return comm.getIpByte();
     } 

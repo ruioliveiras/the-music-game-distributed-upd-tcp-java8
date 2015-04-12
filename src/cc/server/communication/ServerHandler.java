@@ -8,24 +8,20 @@ package cc.server.communication;
 import cc.server.ServerState;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
-import cc.server.ServerToServerFacade;
 import cc.server.facade.ServerToServerLocal;
 import cc.server.facade.ServerToServerClient;
 import cc.server.facade.ServerToServerHub;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * This class meets a client and call the correct functions has need.
  *
  * @author ruioliveiras
  */
@@ -36,15 +32,26 @@ public class ServerHandler implements Runnable {
     private final ServerToServerLocal facadeMem;
     private final ServerToServerHub facadeHub;
     private final String name;
-    
-    public ServerHandler(String name, ServerState state, Socket socket, ServerToServerLocal facadeMem, ServerToServerHub facadeHub) throws IOException {
+
+    /**
+     * Main Constructor of ServerHandler
+     * 
+     * @param name
+     * @param state
+     * @param socket
+     * @param facadeMem
+     * @param facadeHub
+     * @throws IOException 
+     */
+    public ServerHandler(String name, ServerState state, Socket socket,
+            ServerToServerLocal facadeMem, ServerToServerHub facadeHub
+    ) throws IOException {
         this.name = name;
         this.state = state;
         this.facadeMem = facadeMem;
         this.facadeHub = facadeHub;
         comm = new ServerCommunication(socket);
     }
-    //contrutor disto vai receber a porta a atuar e dados inciiais
 
     @Override
     public void run() {
@@ -56,9 +63,9 @@ public class ServerHandler implements Runnable {
                     // somefucking unsoported error
                 }
                 //if this pdu are fragmented, don't wory, because the the serverConnunication work on this and this pdu area already done
-                System.out.println("i'm:" + name + ",attending:"+comm.getIp()+" - " +pdu );
+                System.out.println("i'm:" + name + ",attending:" + comm.getIp() + " - " + pdu);
                 foward01(pdu);
-                
+
             }
 
         } catch (IOException ex) {
@@ -66,6 +73,15 @@ public class ServerHandler implements Runnable {
         }
     }
 
+    /**
+     * This function receive a PDU and call the correct function, also there are
+     * some exceptional cases - where can't only call a method
+     *
+     * Note this function works for the version 01 of the PDU.
+     * 
+     * @param pdu
+     * @throws UnknownHostException
+     */
     protected void foward01(PDU pdu) throws UnknownHostException {
         if (pdu.getType().getId() != PDUType.INFO.getId()) {
             // error this is just INFOS 
@@ -89,30 +105,30 @@ public class ServerHandler implements Runnable {
         } else if ((p = checkRequest(pdu, newServer)) != null) {
             final InetAddress ip = (InetAddress) p[0];
             final Short port = (Short) p[1];
-            if (ip.toString().equals("/127.0.0.2") && name.equals("8081") ){
-                System.out.println("ERRO");
-            }
 
-            // if the server that are announcing don't exist announce the the other server
-            if (!state.hasNeighbors(comm.getIp())) {
+            // Test if it is exceptional cases
+            if (state.hasNeighbors(comm.getIp())) {
+                facadeMem.registerServer(ip, port);
+            } else {
+                // if the server that are announcing don't exist (are not in the neighbors):
+                //     -> announce the newServer to my neighbors
+            
                 // register in other servers
-                facadeHub.registerServer(ip, (Short) p[1]);
+                facadeHub.registerServer(ip, port);
                 // register in the current server
-                facadeMem.registerServer(ip, (Short) p[1]);
-                // register all server in the server
+                facadeMem.registerServer(ip, port);
+                // register all server in the newServer
                 state.getNeighbors().stream()
                         .filter((server) -> (server instanceof ServerToServerClient))
                         .map(server -> (ServerToServerClient) server)
+                        // Because the new server are my neighbor, test it.
                         .filter((server) -> (!server.getServerIp().equals(ip.toString())))
                         .forEach((server) -> {
                             state.getNeighbor(ip.toString())
-                                .registerServer(server.getServerIpByte(), server.getServerPort());
+                            .registerServer(server.getServerIpByte(), server.getServerPort());
                         });
-            } else {
-                facadeMem.registerServer((InetAddress) p[0], (Short) p[1]);
+
             }
-            //if origin is from know server: do nothing
-            //if not: resend it to my neightbors;
         } else if ((p = checkRequest(pdu, registerAcceptChallenge)) != null) {
             facadeMem.registerAcceptChallenge(
                     (String) p[0],
@@ -126,6 +142,12 @@ public class ServerHandler implements Runnable {
         }
     }
 
+    /**
+     * Simple auxiliary function
+     * @param pdu
+     * @param required
+     * @return 
+     */
     private Object[] checkRequest(PDU pdu, PDUType[] required) {
         Object[] ret = new Object[required.length];
         int i = 0;
