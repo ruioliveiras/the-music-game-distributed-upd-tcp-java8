@@ -10,7 +10,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
+ * 
+ * To fragment a pdu, assuming the existence of 'int currentLabel' and 'pdu lastPDU.'
+ *  
+ * on readDatagram do something like this:
+ * msg_received.initHeaderFromBytes(headerBuffer);
+ * if (msg_received.getLabel == currentLabel){
+ *   lastPDU.initHeaderFromBytes(headerBuffer);
+ *   msg_received = lastPDU;
+ * } 
+ * msg_received.initParametersFromBytes(bodyBuffer);
+ * 
  * @author paulo
  */
 public class UDPClientCommunication {
@@ -66,7 +76,7 @@ public class UDPClientCommunication {
         
         msg_received.initHeaderFromBytes(headerBuffer);
         msg_received.initParametersFromBytes(bodyBuffer);
-    
+        
         return msg_received;
     }
     

@@ -9,12 +9,13 @@ import javax.imageio.ImageIO;
  * @author ruioliveiras
  */
 public class Question {
+
     /**
      * The text of the Question
      */
     public String question;
     /**
-     * All the possibles answers 
+     * All the possibles answers
      */
     public String[] answer;
     /**
@@ -29,20 +30,20 @@ public class Question {
      * Music path of the Music, null if don't have one
      */
     public String musicPath;
-    
+
     /**
      * Byte array of this question's Image
      */
     public byte[] imageArray;
-    
+
     /**
      * Byte array of this question's Music
      */
     public byte[] musicArray;
-    
+
     /**
-     * Main constructor 
-     * 
+     * Main constructor
+     *
      * @param question
      * @param anwser
      * @param correct
@@ -60,7 +61,7 @@ public class Question {
         this.imageArray = imageArray;
         this.musicArray = musicArray;
     }
-    
+
     public Question(String question, String[] anwser, int correct, byte[] imageArray, byte[] musicArray) {
         this.question = question;
         this.answer = anwser;
@@ -70,8 +71,7 @@ public class Question {
         this.imageArray = imageArray;
         this.musicArray = musicArray;
     }
-    
-    
+
     public String getQuestion() {
         return question;
     }
@@ -91,20 +91,23 @@ public class Question {
     public String getMusicPath() {
         return musicPath;
     }
-    
 
-    public byte[] getMusicArray(){
+    public byte[] getMusicArray() {
         return musicArray;
     }
-    
-    public byte[] getImageArray(){
-        return imageArray;
 
-    public String toString(){
+    public byte[] getImageArray() {
+        return imageArray;
+    }
+
+    @Override
+    public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(question + "\n");
-        sb.append(answer[0] + " , " + answer[1] + " , " + answer[2] + "\n");
-        sb.append(correct + "\n");
+        sb.append(question).append("\n")
+                .append(answer[0]).append(" , ")
+                .append(answer[1]).append(" , ")
+                .append(answer[2]).append("\n")
+                .append(correct).append("\n");
         return sb.toString();
     }
 }

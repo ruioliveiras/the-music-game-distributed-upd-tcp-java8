@@ -155,7 +155,7 @@ public class ServerHandler implements Runnable {
             if (!pdu.hasParameter(p)) {
                 return null;
             } else {
-                ret[i++] = pdu.getParameter(p);
+                ret[i++] = pdu.popParameter(p);
             }
         }
         return ret;
