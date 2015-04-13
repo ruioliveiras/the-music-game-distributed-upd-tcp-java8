@@ -92,11 +92,19 @@ public class Question {
         return musicPath;
     }
     
+
     public byte[] getMusicArray(){
         return musicArray;
     }
     
     public byte[] getImageArray(){
         return imageArray;
+
+    public String toString(){
+        StringBuilder sb = new StringBuilder();
+        sb.append(question + "\n");
+        sb.append(answer[0] + " , " + answer[1] + " , " + answer[2] + "\n");
+        sb.append(correct + "\n");
+        return sb.toString();
     }
 }
