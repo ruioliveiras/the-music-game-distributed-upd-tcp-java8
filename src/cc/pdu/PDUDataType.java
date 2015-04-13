@@ -42,7 +42,35 @@ public enum PDUDataType {
                 }
 
             },
-    integer {
+    int8 {
+                public Byte read(byte[] b, int offset) {
+                    return (Byte) b[offset];
+                }
+
+                public int getSize(Object o) {
+                    return 1;
+                }
+
+                public byte[] toByte(Object o) {
+                    return ByteBuffer.allocate(1).put((Byte) o).array();
+                }
+
+            },
+    int16 {
+                public Short read(byte[] b, int offset) {
+                    return ByteBuffer.wrap(b, offset, 2).getShort();
+                }
+
+                public int getSize(Object o) {
+                    return 2;
+                }
+
+                public byte[] toByte(Object o) {
+                    return ByteBuffer.allocate(2).putShort((Short) o).array();
+                }
+
+            },
+    int32 {
                 public Object read(byte[] b, int offset) {
                     return ByteBuffer.wrap(b, offset, 4).getInt();
                 }
@@ -142,6 +170,34 @@ public enum PDUDataType {
                     return ByteBuffer.allocate(2).putShort(((Integer) o).shortValue()).array();
                 }
 
+            },
+    byteBlock {
+                public Object read(byte[] b, int offset) {
+                    //int port = (b[0] << 8) + (b[1]);
+                    return b;
+                }
+
+                public int getSize(Object o) {
+                    return 2;
+                }
+
+                public byte[] toByte(Object o) {
+                    return ByteBuffer.allocate(2).putShort(((Integer) o).shortValue()).array();
+                }
+
+            },
+    nothing {
+                public Byte read(byte[] b, int offset) {
+                    return 0;
+                }
+
+                public int getSize(Object o) {
+                    return 1;
+                }
+
+                public byte[] toByte(Object o) {
+                    return ByteBuffer.allocate(1).put((byte)0).array();
+                }
             };
 
     /**
@@ -160,10 +216,12 @@ public enum PDUDataType {
      * @param o
      * @return
      */
-    public abstract int getSize(Object o);
+
+public abstract int getSize(Object o);
 
     /**
      * Convert to bytes a certain Object.
+     *
      * @param o
      * @return return the byte array result
      */
