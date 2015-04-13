@@ -1,10 +1,6 @@
 package cc.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -12,10 +8,10 @@ import java.util.logging.Logger;
  */
 public class ClientBash {
     
-    private static UDPCommunication udpCom;
+    private static UDPClientCommunication udpCom;
 
     public ClientBash(){
-        udpCom = new UDPCommunication();
+        udpCom = new UDPClientCommunication();
     }
     
     /**

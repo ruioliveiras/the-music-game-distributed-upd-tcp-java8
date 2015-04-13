@@ -8,7 +8,6 @@ package cc.server.communication;
 import cc.server.ServerState;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
-import cc.server.facade.ServerToServer;
 import cc.server.facade.ServerToServerLocal;
 import cc.server.facade.ServerToServerClient;
 import cc.server.facade.ServerToServerHub;

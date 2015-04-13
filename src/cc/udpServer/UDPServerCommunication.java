@@ -1,4 +1,9 @@
-package cc.client;
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package cc.udpServer;
 
 import cc.pdu.PDU;
 
@@ -6,10 +11,16 @@ import cc.pdu.PDU;
  *
  * @author paulo
  */
-public class UDPCommunication {
-
-    //receber PDU -> ler -> construir objeto
-    //construir PDU -> enviar
+public class UDPServerCommunication {
+ 
+    
+    
+    
+    
+    
+    
+    
+    
     
     public PDU readDatagram(byte[] pData){
         PDU msg_received = new PDU();
@@ -26,15 +37,6 @@ public class UDPCommunication {
     
         return msg_received;
     }
-    
-    
-    public void makeDatagram(int request_type){
-    
-    
-    
-    }
-        
-    
     
     
     
