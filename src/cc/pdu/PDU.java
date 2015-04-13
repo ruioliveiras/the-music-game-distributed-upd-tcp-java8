@@ -6,7 +6,9 @@
 package cc.pdu;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -25,7 +27,7 @@ public class PDU {
     private int nField; //2 bytes
     private int sizeBytes; //1 byte
     // Other Parameters
-    private Map<PDUType, Object> parameters;
+    private Map<PDUType, List<Object>> parameters;
 
     public PDU() {
         parameters = new HashMap<>();
@@ -74,33 +76,36 @@ public class PDU {
         while (offset < b.length && offset < sizeBytes && i < nField) {
             // the first byte are the identifier of the Parameter Type.
             PDUType parameter = pduType.getParameterById(b[offset++]);
-
-            Object obj = parameter.getDataType().read(b, offset);
+            int byteSize = b[offset++];
+            Object obj = parameter.getDataType().read(b, offset, byteSize);
 
             offset += parameter.getDataType().getSize(obj);
 
-            Object oldObj = parameters.put(parameter, obj);
+            this.addParameter(parameter, obj);
+//            Object oldObj = parameters.put(parameter, obj);
             // if is fragmented, and there alreay exist one object, and is from type ByteBuffer
-            if (this.label > 0 && oldObj != null && oldObj instanceof ByteBuffer) {
-                ((ByteBuffer) oldObj).put((ByteBuffer) obj);
-                parameters.put(parameter, oldObj);
-            }
+            //if (this.label > 0 && oldObj != null && oldObj instanceof ByteBuffer) {
+            //        ((ByteBuffer) oldObj).put((ByteBuffer) obj);
+//                parameters.put(parameter, oldObj);
+//            }
 
             i++;
         }
     }
 
     public byte[] toByte() {
-        //calc
+        //calc the number of bytes need to the buffer
         sizeBytes = 0;
-        for (Map.Entry<PDUType, Object> entrySet : parameters.entrySet()) {
+        parameters.entrySet().stream().forEach((entrySet) -> {
             PDUType key = entrySet.getKey();
-            Object value = entrySet.getValue();
-            sizeBytes++; // count the byte of param_type
-            sizeBytes += key.getDataType().getSize(value);
-        }
-        //plus 8 because of header
-        ByteBuffer b = ByteBuffer.allocate(sizeBytes + 8);
+            sizeBytes += entrySet.getValue().stream()
+                    .reduce(0,
+                            (sum, b) -> sum + 2 + key.getDataType().getSize(b),
+                            Integer::sum
+                    ).intValue();
+        });
+        //plus 8 because of header  
+        final ByteBuffer b = ByteBuffer.allocate(sizeBytes + 8);
         //header
         b.put((byte) version);
         b.put((byte) ((secure) ? 1 : 0));
@@ -109,12 +114,16 @@ public class PDU {
         b.put((byte) parameters.size());
         b.putShort((short) sizeBytes);
         //params:
-        for (Map.Entry<PDUType, Object> entrySet : parameters.entrySet()) {
+        parameters.entrySet().stream().forEach((entrySet) -> {
             PDUType key = entrySet.getKey();
-            Object value = entrySet.getValue();
-            b.put((byte) key.getId());
-            b.put(key.getDataType().toByte(value));
-        }
+            entrySet.getValue()
+                    .stream()
+                    .forEach((value) -> {
+                        b.put((byte) key.getId());
+                        b.put((byte) key.getDataType().getSize(value));
+                        b.put(key.getDataType().toByte(value));
+                    });
+        });
 
         return b.array();
     }
@@ -139,8 +148,8 @@ public class PDU {
         return secure;
     }
 
-    public Object getParameter(PDUType p) {
-        return parameters.get(p);
+    public Object popParameter(PDUType p) {
+        return parameters.get(p).remove(0);
     }
 
     public boolean hasParameter(PDUType p) {
@@ -148,7 +157,12 @@ public class PDU {
     }
 
     public void addParameter(PDUType pduType, Object obj) {
-        parameters.put(pduType, obj);
+        List<Object> l;
+        if ((l = parameters.get(pduType)) == null) {
+            l = new ArrayList<>();
+            parameters.put(pduType, l);
+        }
+        l.add(obj);
     }
 
     //.. outrs funções uteis por index

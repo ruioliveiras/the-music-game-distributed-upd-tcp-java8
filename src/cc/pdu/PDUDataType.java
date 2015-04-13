@@ -19,10 +19,13 @@ import java.time.LocalTime;
 public enum PDUDataType {
 
     string {
-                public Object read(byte[] b, int offset) {
+                public Object read(byte[] b, int offset, int sizeByte) {
                     try {
                         int i;
                         for (i = 0; i < b.length && b[offset + i] != 0; i++) {
+                        }
+                        if (sizeByte != i) {
+                            //erro
                         }
                         String str = new String(b, offset, i, "UTF-8");
 
@@ -43,7 +46,11 @@ public enum PDUDataType {
 
             },
     int8 {
-                public Byte read(byte[] b, int offset) {
+                public Byte read(byte[] b, int offset, int sizeByte) {
+                    if (sizeByte != 1) {
+                        //erro
+                    }
+
                     return (Byte) b[offset];
                 }
 
@@ -57,7 +64,11 @@ public enum PDUDataType {
 
             },
     int16 {
-                public Short read(byte[] b, int offset) {
+                public Short read(byte[] b, int offset, int sizeByte) {
+                    if (sizeByte != 2) {
+                        //erro
+                    }
+
                     return ByteBuffer.wrap(b, offset, 2).getShort();
                 }
 
@@ -71,7 +82,10 @@ public enum PDUDataType {
 
             },
     int32 {
-                public Object read(byte[] b, int offset) {
+                public Object read(byte[] b, int offset, int sizeByte) {
+                    if (sizeByte != 4) {
+                        //erro
+                    }
                     return ByteBuffer.wrap(b, offset, 4).getInt();
                 }
 
@@ -85,8 +99,12 @@ public enum PDUDataType {
 
             },
     date {
-                public Object read(byte[] b, int offset) {
+                public Object read(byte[] b, int offset, int sizeByte) {
                     ByteBuffer bb = ByteBuffer.wrap(b, offset, 6);
+
+                    if (sizeByte != 6) {
+                        //erro
+                    }
 
                     int year = bb.getShort() + 2000;//2000 + (b[offset + 0] << 8) + (b[offset + 1]);
                     int month = bb.getShort();//(b[offset + 2] << 8) + (b[offset + 3]);
@@ -111,8 +129,12 @@ public enum PDUDataType {
 
             },
     hour {
-                public Object read(byte[] b, int offset) {
+                public Object read(byte[] b, int offset, int sizeByte) {
                     ByteBuffer bb = ByteBuffer.wrap(b, offset, 6);
+
+                    if (sizeByte != 6) {
+                        //erro
+                    }
 
                     int hour = bb.getShort();// 2000 + (b[offset + 0] << 8) + (b[offset + 1]);
                     int min = bb.getShort();//(b[offset + 2] << 8) + (b[offset + 3]);
@@ -137,7 +159,11 @@ public enum PDUDataType {
 
             },
     ip {
-                public Object read(byte[] b, int offset) {
+                public Object read(byte[] b, int offset, int sizeByte) {
+                    if (sizeByte != 4) {
+                        //erro
+                    }
+
                     try {
                         byte[] buffer = new byte[4];
                         ByteBuffer.wrap(b, offset, 4).get(buffer);
@@ -157,8 +183,11 @@ public enum PDUDataType {
 
             },
     port {
-                public Object read(byte[] b, int offset) {
-                    //int port = (b[0] << 8) + (b[1]);
+                public Object read(byte[] b, int offset, int sizeByte) {
+                    if (sizeByte != 2) {
+                        //erro
+                    }
+
                     return ByteBuffer.wrap(b, offset, 2).getShort();
                 }
 
@@ -172,9 +201,8 @@ public enum PDUDataType {
 
             },
     byteBlock {
-                public Object read(byte[] b, int offset) {
-                    //int port = (b[0] << 8) + (b[1]);
-                    return b;
+                public Object read(byte[] b, int offset, int sizeByte) {
+                    return ByteBuffer.allocate(sizeByte).put(b, offset, sizeByte).array();
                 }
 
                 public int getSize(Object o) {
@@ -182,12 +210,12 @@ public enum PDUDataType {
                 }
 
                 public byte[] toByte(Object o) {
-                    return ByteBuffer.allocate(2).putShort(((Integer) o).shortValue()).array();
+                    return (byte[]) o;
                 }
 
             },
     nothing {
-                public Byte read(byte[] b, int offset) {
+                public Byte read(byte[] b, int offset, int sizeByte) {
                     return 0;
                 }
 
@@ -196,7 +224,7 @@ public enum PDUDataType {
                 }
 
                 public byte[] toByte(Object o) {
-                    return ByteBuffer.allocate(1).put((byte)0).array();
+                    return ByteBuffer.allocate(1).put((byte) 0).array();
                 }
             };
 
@@ -207,7 +235,7 @@ public enum PDUDataType {
      * @param offset the offset of the buffer array
      * @return read object Integer is the number of read bytes
      */
-    public abstract Object read(byte[] b, int offset);
+    public abstract Object read(byte[] b, int offset, int sizeByte);
 
     /**
      * Get the size in bytes of the Object o, that is used to calculate buffers
@@ -216,8 +244,7 @@ public enum PDUDataType {
      * @param o
      * @return
      */
-
-public abstract int getSize(Object o);
+    public abstract int getSize(Object o);
 
     /**
      * Convert to bytes a certain Object.

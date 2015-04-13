@@ -27,7 +27,7 @@ public enum PDUType {
     REGISTER(2, 3),
         REGISTER_NAME(REGISTER,1,PDUDataType.string),
         REGISTER_NICK(REGISTER,2,PDUDataType.string),
-        REGISTER_PASS(REGISTER,3,PDUDataType.string), // should not be string?
+        REGISTER_PASS(REGISTER,3,PDUDataType.byteBlock), // should not be string?
     LOGIN(3, 2),
         LOGIN_NICK(LOGIN,2,PDUDataType.string),
         LOGIN_PASS(LOGIN,3,PDUDataType.string),
