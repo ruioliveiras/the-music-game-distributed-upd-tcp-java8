@@ -165,8 +165,8 @@ public class ServerMain {
                     aux[5]=aux[5].trim();
                     answers[2]= aux[5].substring(1, aux[5].length()-1);
                     correctAnsIndex = Integer.parseInt(aux[6]);
-                    question = new Question(questionText, answers.clone(), correctAnsIndex, imgPath, musicPath);
-                    state.addQuestion(question);
+                   // question = new Question(questionText, answers.clone(), correctAnsIndex, imgPath, musicPath);
+                   // state.addQuestion(question);
                 }
             }
             

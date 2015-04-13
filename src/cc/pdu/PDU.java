@@ -155,7 +155,8 @@ public class PDU {
     public boolean hasParameter(PDUType p) {
         return parameters.containsKey(p);
     }
-
+    
+    // is fragmeted 
     public void addParameter(PDUType pduType, Object obj) {
         List<Object> l;
         if ((l = parameters.get(pduType)) == null) {
