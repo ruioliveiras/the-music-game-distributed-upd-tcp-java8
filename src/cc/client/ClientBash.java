@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cc.client;
 
 import java.io.BufferedReader;
@@ -17,22 +12,10 @@ import java.util.logging.Logger;
  */
 public class ClientBash {
     
-        
-     
-    public static void main(String[] args) {
-        
-        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-        String command;
-        
-        try {
-            while(!(command=in.readLine()).toUpperCase().equals("END")){
-                execute(command.toUpperCase());
-            }
-            System.out.println("Obrigado e Até à Próxima!");
-        } catch (IOException ex) {
-            Logger.getLogger(ClientBash.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+    private static UDPCommunication udpCom;
+
+    public ClientBash(){
+        udpCom = new UDPCommunication();
     }
     
     /**
@@ -64,10 +47,6 @@ public class ClientBash {
         return true;
     }
     
-
-    
-    
-    //metodo que faz parse do comando e chama o método correspondente
     
     /**
      * Interpreta e ordena a execução de um dado comando
@@ -81,12 +60,10 @@ public class ClientBash {
         String operation= args[0].toUpperCase();
         int i;
         
-            
-         
         switch(operation) {
             case "HELLO": 
                 if (checkTotalArgs(nargs, 1)){
-                    //call func
+                    udpCom.makeDatagram(1);
                 }
                 else {
                     System.out.println("Número de argumentos inválido!");
@@ -168,5 +145,23 @@ public class ClientBash {
                 break;
         }
     }
-       
+    
+    /*
+    public static void main(String[] args) {
+        
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        String command;
+        
+        try {
+            while(!(command=in.readLine()).toUpperCase().equals("END")){
+                execute(command.toUpperCase());
+            }
+            System.out.println("Obrigado e Até à Próxima!");
+        } catch (IOException ex) {
+            Logger.getLogger(ClientBash.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }*/
+    
+    
 }

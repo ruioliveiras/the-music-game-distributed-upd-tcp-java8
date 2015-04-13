@@ -1,14 +1,23 @@
 package cc.thegame;
 
 import cc.model.Question;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TextArea;
+import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.media.Media;
+import javax.imageio.ImageIO;
 
 /**
  * FXML Controller class
@@ -33,6 +42,14 @@ public class AppController {
     
     private static int time_elapsed = 0;
     
+    public ImageView toImage(byte[] iArray) throws IOException{
+        //byte[] bytearray = Base64.decode(base64String);
+ 
+	BufferedImage bimage=ImageIO.read(new ByteArrayInputStream(iArray));
+        Image image = SwingFXUtils.toFXImage(bimage, null);
+	return new ImageView((Image) image);
+    }
+    
     public void createQuestion(Question quest){
         String[] answers = quest.getAnwser();
         
@@ -41,29 +58,38 @@ public class AppController {
         r3_button.setText(answers[2]);
         
         question_text.setText(quest.getQuestion());
-        question_image = new ImageView(quest.getImagePath());
-        
-        
+        try {
+            question_image = toImage(quest.getImageArray());
+        } catch (IOException ex) {
+            System.out.println("Não foi possível converter a imagem.");
+        }        
     }  
     
-    
+    /*Não esta a funcionar*/
     private void setBarStyleClass(ProgressBar bar,double t) {
         bar.getStyleClass().removeAll();
 
         if(t >= 0.5F){
-                    System.out.println("1");
             bar.getStyleClass().add("-fx-accent: green;");
         }
         if(t < 0.5F && t>0.25F){ 
-                                System.out.println("2");
             bar.getStyleClass().add("-fx-accent: yellow;");
         }
         if(t<=0.25F){
-                                System.out.println("3");
-         bar.getStyleClass().add("-fx-accent: red;");
+            bar.getStyleClass().add("-fx-accent: red;");
         } 
            
     }
+    
+    private void playMusic(){
+                            
+        /*File songfile = new File("./etc/musica/000001.mp3");
+        Media media = new Media(songfile.toURI().toString());
+        MediaPlayer mp = new MediaPlayer(media);
+        mp.play();
+        */
+    }
+    
     
     
     /**
@@ -82,7 +108,7 @@ public class AppController {
                 if (i <= 0)
                     timer.cancel();
             }
-        }, 0, 100);
+        }, 0, 1000);
    
         r1_button.setOnAction((event) -> {
             r1_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");

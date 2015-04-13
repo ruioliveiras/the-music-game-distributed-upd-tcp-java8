@@ -49,17 +49,23 @@ public class UDPClient {
         byte[] dadosEnviar = new byte[1024];
         byte[] dadosReceber = new byte[1024];
         DatagramPacket send_packet = null, receive_packet = null;
+        ClientBash cBash = new ClientBash();
         
         while(true){
             user_input = stdinput.readLine();
-            dadosEnviar = user_input.getBytes();
+            /*dadosEnviar = user_input.getBytes();
             send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest, port);
-            this.getC_socket().send(send_packet);   
+            this.getC_socket().send(send_packet);          
             
             receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
             this.getC_socket().receive(receive_packet);
             resposta = new String(dadosReceber, "UTF-8");
-            System.out.println("Servidor: "+ resposta);
+            System.out.println("Servidor: "+ resposta);*/
+            
+            cBash.execute(user_input);
+            
+            
+            
         }
     }
     
@@ -111,6 +117,7 @@ public class UDPClient {
         }
         
         UDPClient c1 = new UDPClient();
+           
         try {
             c1.unicastConnection(dest_ip, server_port);
             //c1.multicastConnection("228.1.1.1", server_port);

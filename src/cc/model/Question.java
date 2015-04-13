@@ -1,9 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cc.model;
+
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import javax.imageio.ImageIO;
 
 /**
  *
@@ -32,21 +31,46 @@ public class Question {
     public String musicPath;
     
     /**
+     * Byte array of this question's Image
+     */
+    public byte[] imageArray;
+    
+    /**
+     * Byte array of this question's Music
+     */
+    public byte[] musicArray;
+    
+    /**
      * Main constructor 
      * 
      * @param question
      * @param anwser
      * @param correct
      * @param imagePath
-     * @param musicPath 
+     * @param musicPath
+     * @param imageArray
+     * @param musicArray
      */
-    public Question(String question, String[] anwser, int correct, String imagePath, String musicPath) {
+    public Question(String question, String[] anwser, int correct, String imagePath, String musicPath, byte[] imageArray, byte[] musicArray) {
         this.question = question;
         this.answer = anwser;
         this.correct = correct;
         this.imagePath = imagePath;
         this.musicPath = musicPath;
+        this.imageArray = imageArray;
+        this.musicArray = musicArray;
     }
+    
+    public Question(String question, String[] anwser, int correct, byte[] imageArray, byte[] musicArray) {
+        this.question = question;
+        this.answer = anwser;
+        this.correct = correct;
+        this.imagePath = null;
+        this.musicPath = null;
+        this.imageArray = imageArray;
+        this.musicArray = musicArray;
+    }
+    
     
     public String getQuestion() {
         return question;
@@ -66,5 +90,13 @@ public class Question {
 
     public String getMusicPath() {
         return musicPath;
+    }
+    
+    public byte[] getMusicArray(){
+        return musicArray;
+    }
+    
+    public byte[] getImageArray(){
+        return imageArray;
     }
 }

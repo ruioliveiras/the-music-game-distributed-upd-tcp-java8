@@ -11,10 +11,6 @@ public class UDPCommunication {
     //receber PDU -> ler -> construir objeto
     //construir PDU -> enviar
     
-    public UDPCommunication(){
-        
-    }
-    
     public PDU readDatagram(byte[] pData){
         PDU msg_received = new PDU();
         int i, j;
@@ -32,7 +28,11 @@ public class UDPCommunication {
     }
     
     
-    //public PDU makeDatagram();
+    public void makeDatagram(int request_type){
+    
+    
+    
+    }
         
     
     
