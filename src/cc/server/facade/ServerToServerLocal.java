@@ -10,7 +10,6 @@ import cc.model.User;
 import cc.server.ServerState;
 import cc.server.ServerToServerFacade;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
@@ -18,11 +17,11 @@ import java.time.LocalTime;
  *
  * @author ruioliveiras
  */
-public class ServerToServer implements ServerToServerFacade {
+public class ServerToServerLocal implements ServerToServerFacade {
 
     private final ServerState state;
 
-    public ServerToServer(ServerState s) {
+    public ServerToServerLocal(ServerState s) {
         this.state = s;
     }
 

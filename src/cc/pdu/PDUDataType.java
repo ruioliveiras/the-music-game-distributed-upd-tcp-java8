@@ -11,8 +11,6 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -44,7 +42,35 @@ public enum PDUDataType {
                 }
 
             },
-    integer {
+    int8 {
+                public Byte read(byte[] b, int offset) {
+                    return (Byte) b[offset];
+                }
+
+                public int getSize(Object o) {
+                    return 1;
+                }
+
+                public byte[] toByte(Object o) {
+                    return ByteBuffer.allocate(1).put((Byte) o).array();
+                }
+
+            },
+    int16 {
+                public Short read(byte[] b, int offset) {
+                    return ByteBuffer.wrap(b, offset, 2).getShort();
+                }
+
+                public int getSize(Object o) {
+                    return 2;
+                }
+
+                public byte[] toByte(Object o) {
+                    return ByteBuffer.allocate(2).putShort((Short) o).array();
+                }
+
+            },
+    int32 {
                 public Object read(byte[] b, int offset) {
                     return ByteBuffer.wrap(b, offset, 4).getInt();
                 }
@@ -60,7 +86,7 @@ public enum PDUDataType {
             },
     date {
                 public Object read(byte[] b, int offset) {
-                    ByteBuffer bb = ByteBuffer.wrap(b,offset,6);
+                    ByteBuffer bb = ByteBuffer.wrap(b, offset, 6);
 
                     int year = bb.getShort() + 2000;//2000 + (b[offset + 0] << 8) + (b[offset + 1]);
                     int month = bb.getShort();//(b[offset + 2] << 8) + (b[offset + 3]);
@@ -86,7 +112,7 @@ public enum PDUDataType {
             },
     hour {
                 public Object read(byte[] b, int offset) {
-                    ByteBuffer bb = ByteBuffer.wrap(b,offset,6);
+                    ByteBuffer bb = ByteBuffer.wrap(b, offset, 6);
 
                     int hour = bb.getShort();// 2000 + (b[offset + 0] << 8) + (b[offset + 1]);
                     int min = bb.getShort();//(b[offset + 2] << 8) + (b[offset + 3]);
@@ -117,7 +143,7 @@ public enum PDUDataType {
                         ByteBuffer.wrap(b, offset, 4).get(buffer);
                         return InetAddress.getByAddress(buffer);
                     } catch (UnknownHostException ex) {
-                        throw  new RuntimeException(ex.getCause());
+                        throw new RuntimeException(ex.getCause());
                     }
                 }
 
@@ -144,6 +170,34 @@ public enum PDUDataType {
                     return ByteBuffer.allocate(2).putShort(((Integer) o).shortValue()).array();
                 }
 
+            },
+    byteBlock {
+                public Object read(byte[] b, int offset) {
+                    //int port = (b[0] << 8) + (b[1]);
+                    return b;
+                }
+
+                public int getSize(Object o) {
+                    return 2;
+                }
+
+                public byte[] toByte(Object o) {
+                    return ByteBuffer.allocate(2).putShort(((Integer) o).shortValue()).array();
+                }
+
+            },
+    nothing {
+                public Byte read(byte[] b, int offset) {
+                    return 0;
+                }
+
+                public int getSize(Object o) {
+                    return 1;
+                }
+
+                public byte[] toByte(Object o) {
+                    return ByteBuffer.allocate(1).put((byte)0).array();
+                }
             };
 
     /**
@@ -151,12 +205,25 @@ public enum PDUDataType {
      *
      * @param b the buffer array
      * @param offset the offset of the buffer array
-     * @return Pair<Object, Integer> where the Object is the read object and the
-     * Integer is the number of read bytes
+     * @return read object Integer is the number of read bytes
      */
     public abstract Object read(byte[] b, int offset);
 
-    public abstract int getSize(Object o);
+    /**
+     * Get the size in bytes of the Object o, that is used to calculate buffers
+     * offsets
+     *
+     * @param o
+     * @return
+     */
 
+public abstract int getSize(Object o);
+
+    /**
+     * Convert to bytes a certain Object.
+     *
+     * @param o
+     * @return return the byte array result
+     */
     public abstract byte[] toByte(Object o);
 }
