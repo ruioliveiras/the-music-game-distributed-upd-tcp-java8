@@ -81,8 +81,4 @@ public class UDPClientCommunication {
     }
     
     
-    public DatagramSocket getC_socket(){
-        return this.c_socket;
-    }    
-    
 }
