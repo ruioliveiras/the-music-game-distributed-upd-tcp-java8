@@ -17,7 +17,7 @@ public class User {
     /**
      * User password.
      */
-    private String pass;
+    private byte [] pass;
     /**
      * User nick name.
      */
@@ -41,7 +41,6 @@ public class User {
         this.name = name;
         this.nick = nick;
         rating = 0;
-        pass = "";
     }
     
     /** Main constructor
@@ -50,7 +49,7 @@ public class User {
      * @param pass
      * @param nick 
      */
-    public User(String name, String pass, String nick) {
+    public User(String name, byte [] pass, String nick) {
         this.name = name;
         this.pass = pass;
         this.nick = nick;
@@ -61,7 +60,7 @@ public class User {
         return name;
     }
 
-    public String getPass() {
+    public byte [] getPass() {
         return pass;
     }
 

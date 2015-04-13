@@ -85,7 +85,7 @@ public class Challenge {
         return scores.get(userNick);
     }    
     
-    public void awnser(String userNick, boolean isCorrect){
+    public void answer(String userNick, boolean isCorrect){
         if (isCorrect){
             scores.put(userNick, scores.get(userNick) + 2);
         } else {
