@@ -30,14 +30,9 @@ public class AppMain extends Application {
                     Scene scene = new Scene(page);
                     primaryStage.setScene(scene);
                     primaryStage.show();
-                    
-                    File songfile = new File("./etc/musica/000001.mp3");
-                    Media media = new Media(songfile.toURI().toString());
-                    MediaPlayer mp = new MediaPlayer(media);
-                    mp.play();
                         
             } catch (IOException ex) {
-                Logger.getLogger(AppMain.class.getName()).log(Level.SEVERE, null, ex);
+                System.out.println("Problema ao carregar a interface.");
             }
 	}
 	

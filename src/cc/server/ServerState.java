@@ -6,6 +6,7 @@
 package cc.server;
 
 import cc.model.Challenge;
+import cc.model.Question;
 import cc.model.User;
 import cc.server.facade.ServerToServerClient;
 import java.net.InetAddress;
@@ -41,6 +42,11 @@ public class ServerState {
      * @see challangeOwner#challengeOwner
      */
     private final Map<String, Challenge> challenges;
+    
+    /**
+     * Map to store all 
+     */
+    private final Map<Integer,Question> questions;
 
     /**
      * Map to store what challenges are from the current server, Goes from
@@ -57,6 +63,7 @@ public class ServerState {
         challenges = new ConcurrentHashMap<>();
         challengeOwner = new ConcurrentHashMap<>();
         globalUsers = new ConcurrentHashMap<>();
+        questions = new ConcurrentHashMap<>();
     }
 
     /**
@@ -220,6 +227,41 @@ public class ServerState {
     
     public void addOwner(String challengeName, String ip){
         this.challengeOwner.put(challengeName, ip);
+    }
+    
+    /**
+     *  Check if this question exist
+     * @param question
+     * @return 
+     */
+    public boolean hasQuestion(Question question) {
+        return questions.containsValue(question);
+    }
+
+    /**
+     * Add a new question.
+     * @param question
+     */
+    public void addQuestion(Question question) {
+        int lastId = questions.size();
+        questions.put(lastId+1, question);
+    }
+
+    /**
+     * Get a question from its id
+     * @param id
+     * @return 
+     */
+    public Question getQuestion(Integer id) {
+        return questions.get(id);
+    }
+
+    /**
+     * get all questions
+     * @return 
+     */
+    public Collection<Question> getQuestions() {
+        return questions.values();
     }
 
 }

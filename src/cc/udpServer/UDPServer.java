@@ -1,5 +1,6 @@
-package cc.client;
+package cc.udpServer;
 
+import cc.client.UDPClientCommunication;
 import cc.pdu.PDU;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
 public class UDPServer {
     private DatagramSocket s_socket;
     private int port; 
-    private UDPCommunication com;
+    private UDPClientCommunication com;
     
     //porta predefinida
     public UDPServer(int port){
@@ -26,7 +27,7 @@ public class UDPServer {
             //Constructs a datagram socket and binds it to the specified port on the local host machine.
             //É possivel definir outro endereço ip
             s_socket = new DatagramSocket(port);
-            com = new UDPCommunication();
+            com = new UDPClientCommunication();
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Servidor.");
         }   
@@ -51,12 +52,7 @@ public class UDPServer {
             this.getS_socket().receive(receive_packet); //fica à espera de receber o pacote
             
             msg_received = com.readDatagram(receive_packet.getData());
-            
-            
-            
-            
-            
-            
+                        
             client_msg = new String(dadosReceber, "UTF-8"); //descodifica a mensagem que ficou no array de bytes
             
             
