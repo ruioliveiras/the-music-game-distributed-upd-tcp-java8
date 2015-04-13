@@ -1,21 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cc.client;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.net.SocketException;
-import java.net.UnknownHostException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import cc.pdu.PDU;
+import cc.pdu.PDUType;
+import java.net.*;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  *
@@ -23,90 +12,129 @@ import java.util.logging.Logger;
  */
 
 public class UDPClient {
-    //private InetAddress client_ip;
-    private BufferedReader stdinput;
-    private DatagramSocket c_socket;
+      
+    private InetAddress dest_ip;
+    private int dest_port;
+    private UDPClientCommunication udp_com;
     
-    public UDPClient(){
-        stdinput = new BufferedReader(new InputStreamReader(System.in));
+    public UDPClient(String dest, int port){
         try {
-            //client_ip = InetAddress.getByName("localhost");
-            c_socket = new DatagramSocket();
-        } catch (SocketException ex) {
+            dest_ip = InetAddress.getByName(dest);
+            dest_port = port;
+            udp_com = new UDPClientCommunication();
+        } catch (UnknownHostException ex) {
             System.out.println("Não foi possível criar Cliente.");
         }
     }
     
-    public DatagramSocket getC_socket(){
-        return this.c_socket;
+    public UDPClientCommunication getUDPClientCom(){
+        return udp_com;
     }
     
-    /**
-     * Comunicação unicast com o servidor
-     */
-    public void unicastConnection(InetAddress dest, int port) throws IOException{
-        String resposta = null, user_input = null;
-        byte[] dadosEnviar = new byte[1024];
-        byte[] dadosReceber = new byte[1024];
-        DatagramPacket send_packet = null, receive_packet = null;
-        ClientBash cBash = new ClientBash();
+    public void makeDatagramHello(){
+        PDU send = new PDU(PDUType.HELLO); 
         
-        while(true){
-            user_input = stdinput.readLine();
-            /*dadosEnviar = user_input.getBytes();
-            send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest, port);
-            this.getC_socket().send(send_packet);          
-            
-            receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
-            this.getC_socket().receive(receive_packet);
-            resposta = new String(dadosReceber, "UTF-8");
-            System.out.println("Servidor: "+ resposta);*/
-            
-            cBash.execute(user_input);
-            
-            
-
-        }
+        udp_com.connection_send(dest_ip, dest_port, send);
+    }
+        
+    public void makeDatagramRegister(String name, String alcunha, byte[] sec_info){
+        PDU send = new PDU(PDUType.REGISTER);
+        
+        send.addParameter(PDUType.REGISTER_NAME, name);
+        send.addParameter(PDUType.REGISTER_NICK, alcunha);
+        send.addParameter(PDUType.REGISTER_PASS, sec_info);
+    
+        udp_com.connection_send(dest_ip, dest_port, send);
     }
     
-    /**
-     * Comunicação multicast(broadcast)
-     */
-    //nao esta a funcionar, provavelmente por culpa do group_ip... perguntar a prof que ip se usa
-    //é necessária alguma vez comunicação multicast a partir do cliente?
-    /*public void multicastConnection(String group, int port){
-        MulticastSocket mc_socket = null;
-        InetAddress group_ip = null;
-        String user_input = null, resposta = null;
-        DatagramPacket send_packet = null, receive_packet = null;
-        byte[] dadosEnviar = new byte[1024];
-        byte[] dadosReceber = new byte[1024];
+    public void makeDatagramLogin(String alcunha, byte[] sec_info){
+        PDU send = new PDU(PDUType.LOGIN);
         
-        try {
-            group_ip = InetAddress.getByName(group);
-            mc_socket = new MulticastSocket();//também se pode criar numa porta especifica
-            
-            mc_socket.joinGroup(group_ip);
+        send.addParameter(PDUType.LOGIN_NICK, alcunha);
+        send.addParameter(PDUType.LOGIN_PASS, sec_info);
+    
+        udp_com.connection_send(dest_ip, dest_port, send);
+    }
+    
+    public void makeDatagramLogout(){
+        PDU send = new PDU(PDUType.LOGOUT);
 
-        while(true){
-            user_input = stdinput.readLine();
-            dadosEnviar = user_input.getBytes();
-            send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, group_ip, port);
-            this.getC_socket().send(send_packet);   
-            
-            receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
-            this.getC_socket().receive(receive_packet);
-            resposta = new String(dadosReceber, "UTF-8");
-            System.out.println("Grupo: "+ resposta);
-        }
+        udp_com.connection_send(dest_ip, dest_port, send);        
+    }
+    
+    public void makeDatagramQuit(){
+        PDU send = new PDU(PDUType.QUIT);
+    
+        udp_com.connection_send(dest_ip, dest_port, send);
+    }
+    
+    public void makeDatagramEnd(){
+        PDU send = new PDU(PDUType.END);
         
-           // mc_socket.leaveGroup(group_ip);
-        } catch (IOException ex) {
-            System.out.println("Não foi possível obter endereço de grupo.");
-        }
-    }*/
-       
-    public static void main(String args[])
+        udp_com.connection_send(dest_ip, dest_port, send);
+    }
+    
+    public void makeDatagramList_Challenges(){
+        PDU send = new PDU(PDUType.LIST_CHALLENGES);
+        
+        udp_com.connection_send(dest_ip, dest_port, send);
+    }
+    
+    public void makeDatagramMake_Challenge(String desafio, LocalDate data, LocalTime hora){
+        PDU send = new PDU(PDUType.MAKE_CHALLENGE);
+        
+        send.addParameter(PDUType.MAKE_CHALLENGE_CHALLENGE, desafio);
+        send.addParameter(PDUType.MAKE_CHALLENGE_DATE, data);
+        send.addParameter(PDUType.MAKE_CHALLENGE_HOUR, hora);
+    
+        udp_com.connection_send(dest_ip, dest_port, send);
+    }
+    
+    public void makeDatagramAccept_Challenge(String desafio){
+        PDU send = new PDU(PDUType.ACCEPT_CHALLENGE);
+    
+        send.addParameter(PDUType.ACCEPT_CHALLENGE_CHALLENGE, send);
+
+        udp_com.connection_send(dest_ip, dest_port, send);        
+    }
+    
+    public void makeDatagramDelete_Challenge(String desafio){
+        PDU send = new PDU(PDUType.DELETE_CHALLENGE);
+        
+        send.addParameter(PDUType.DELETE_CHALLENGE_CHALLENGE, desafio);
+    
+        udp_com.connection_send(dest_ip, dest_port, send); 
+    }
+    
+    public void makeDatagramAnswer(Byte escolha, String desafio, Byte questao){
+        PDU send = new PDU(PDUType.ANSWER);
+        
+        send.addParameter(PDUType.ANSWER_CHOOSE, escolha);
+        send.addParameter(PDUType.ANSWER_CHALLENGE, desafio);
+        send.addParameter(PDUType.ANSWER_NQUESTION, questao);
+    
+        udp_com.connection_send(dest_ip, dest_port, send);
+    }
+    
+    public void makeDatagramRetransmit(String desafio, Byte questao, Byte bloco){
+        PDU send = new PDU(PDUType.RETRANSMIT);
+        
+        send.addParameter(PDUType.RETRANSMIT_CHALLENGE, desafio);
+        send.addParameter(PDUType.RETRANSMIT_NQUESTION, questao);
+        send.addParameter(PDUType.RETRANSMIT_NBLOCK, bloco);
+        
+        udp_com.connection_send(dest_ip, dest_port, send);
+    }
+    
+    public void makeDatagramList_Ranking(){
+        PDU send = new PDU(PDUType.LIST_RANKING);
+    
+        udp_com.connection_send(dest_ip, dest_port, send);
+    }
+    
+    
+    
+    /*public static void main(String args[])
     {
         int server_port = 12345;
         InetAddress dest_ip = null; 
@@ -126,5 +154,5 @@ public class UDPClient {
         }
         
         c1.getC_socket().close();
-    } 
+    } */
 }

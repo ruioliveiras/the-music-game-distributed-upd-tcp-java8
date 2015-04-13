@@ -1,6 +1,10 @@
 package cc.client;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.time.LocalDate;
+import java.time.LocalTime;
 
 /**
  *
@@ -8,10 +12,10 @@ import java.io.IOException;
  */
 public class ClientBash {
     
-    private static UDPClientCommunication udpCom;
-
+    private static UDPClient client;
+    
     public ClientBash(){
-        udpCom = new UDPClientCommunication();
+        client = new UDPClient("localhost", 12345);
     }
     
     /**
@@ -27,7 +31,6 @@ public class ClientBash {
         return true; 
     }
    
-    
     /**
      * Verifica se uma dada palavra corresponde a um número
      * 
@@ -42,8 +45,7 @@ public class ClientBash {
         }
         return true;
     }
-    
-    
+     
     /**
      * Interpreta e ordena a execução de um dado comando
      * 
@@ -59,7 +61,7 @@ public class ClientBash {
         switch(operation) {
             case "HELLO": 
                 if (checkTotalArgs(nargs, 1)){
-                    udpCom.makeDatagram(1);
+                    client.makeDatagramHello();
                 }
                 else {
                     System.out.println("Número de argumentos inválido!");
@@ -67,7 +69,7 @@ public class ClientBash {
                 break;              
             case "REGISTER":
                 if (checkTotalArgs(nargs, 4)){
-                    //call func
+                    client.makeDatagramRegister(args[1], args[2], null);
                 }
                 else {
                     System.out.println("Número de argumentos inválido!");
@@ -75,46 +77,60 @@ public class ClientBash {
                 break;
             case "LOGIN":
                 if (checkTotalArgs(nargs, 3)){
-                    
+                    client.makeDatagramLogin(args[1], null);
                 }
                 else {
                     System.out.println("Número de argumentos inválido!");
                 }
                 break;
             case "LOGOUT":
-                //call func
-                break;
+                if (checkTotalArgs(nargs, 1)){
+                    client.makeDatagramLogout();
+                }
+                else {
+                    System.out.println("Número de argumentos inválido!");
+                }
+                break;              
             case "LIST_CHALLENGES":
-                //call func
+                if (checkTotalArgs(nargs, 1)){
+                    client.makeDatagramList_Challenges();
+                }
+                else {
+                    System.out.println("Número de argumentos inválido!");
+                }
                 break;
+                
+            //é preciso fazer o parsing da data    
             case "MAKE_CHALLENGE":
                 if (checkTotalArgs(nargs, 4)){
-                    //call func
+                    //client.makeDatagramMake_Challenge(args[1], args[2], args[3]);
                 }   
                 else {
                     System.out.println("Número de argumentos inválido!");
                 }
                 break;
             case "ACCEPT_CHALLENGE":
-                if (checkTotalArgs(nargs, 3)){
-                    //call func
+                if (checkTotalArgs(nargs, 2)){
+                    client.makeDatagramAccept_Challenge(args[1]);
                 }
                 else {
                     System.out.println("Número de argumentos inválido!");
                 }
                 break;
             case "DELETE_CHALLENGE":
-                if (checkTotalArgs(nargs, 3)){
-                    //call func
+                if (checkTotalArgs(nargs, 2)){
+                    client.makeDatagramDelete_Challenge(args[1]);
                 }
                 else {
                     System.out.println("Número de argumentos inválido!");
                 }
                 break;
-            case "ANSWER":
+                
+            //estes dois nao é o utilizar que envia, mas sim a aplicação que efetua consoante necessário    
+            /*case "ANSWER":
                 if (checkTotalArgs(nargs, 4)){
                     if(testNumeric(args[1]) && testNumeric(args[3])){
-                        //callfunc
+                        client.makeDatagramAnswer(args[1], args[2], args[3]);
                     }
                 }
                 else {
@@ -124,7 +140,7 @@ public class ClientBash {
             case "RETRANSMIT":
                 if (checkTotalArgs(nargs, 4)){
                     if(testNumeric(args[2]) && testNumeric(args[3])){
-                        //callfunc
+                        client.makeDatagramRetransmit();
                     }
                     else {
                         System.out.println("Formato de argumentos inválido!");
@@ -133,31 +149,41 @@ public class ClientBash {
                 else {
                     System.out.println("Número de argumentos inválido!");
                 }
-                break;
+                break;*/
             case "LIST_RANKING":
-                //call func
+                if (checkTotalArgs(nargs, 1)){
+                    client.makeDatagramList_Ranking();
+                }
+                else {
+                    System.out.println("Número de argumentos inválido!");
+                }
+                break;
             default:
                 System.out.println("Comando não reconhecido!");
                 break;
         }
     }
     
-    /*
     public static void main(String[] args) {
         
+        ClientBash c_bash = new ClientBash();
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String command;
-        
+                
         try {
             while(!(command=in.readLine()).toUpperCase().equals("END")){
                 execute(command.toUpperCase());
+                
+                //codigo de recepçao e processamento do datagrama
             }
             System.out.println("Obrigado e Até à Próxima!");
         } catch (IOException ex) {
-            Logger.getLogger(ClientBash.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Erro ao ler do stdin na Bash");
         }
         
-    }*/
+    }
+    
+    
     
     
 }
