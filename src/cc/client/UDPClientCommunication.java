@@ -51,34 +51,26 @@ public class UDPClientCommunication {
         }
     }
     
-    /*public void connection_receive(){
-        byte[] dadosEnviar = new byte[1024];
-       
-        DatagramPacket send_packet = new DatagramPacket(send_pdu.toByte(), send_pdu.getSizeBytes(), dest, port);
-
-        try {   
-            this.getC_socket().send(send_packet);
-        } catch (IOException ex) {
-            System.out.println("Erro ao enviar o datagrama para o servidor");
-        }
-    }*/
-    
-    
-    public PDU readDatagram(byte[] pData){
-        PDU msg_received = new PDU();
-        int i, j;
-                
-        byte[] headerBuffer = new byte[8];
-        byte[] bodyBuffer = new byte[1024];
-        
-        for(i=0;i<8;i++) headerBuffer[i] = pData[i];
-        for(j=0;i<pData.length;i++,j++) bodyBuffer[j] = pData[i];
-        
-        msg_received.initHeaderFromBytes(headerBuffer);
-        msg_received.initParametersFromBytes(bodyBuffer);
-        
-        return msg_received;
+    public DatagramSocket getC_socket(){
+        return c_socket;
     }
+    
+
+    public byte[] connection_receive(){
+        DatagramPacket receive_packet = null;
+        byte[] dadosReceber = new byte[1024];
+    
+        receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
+        try {
+            this.getC_socket().receive(receive_packet);
+        } catch (IOException ex) {
+            System.out.println("Erro ao receber o pacote no UDPClientCommunication.");
+        }
+        
+        return dadosReceber;       
+    }  
+    
+    
     
     
 }

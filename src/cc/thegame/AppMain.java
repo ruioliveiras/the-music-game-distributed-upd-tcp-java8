@@ -26,17 +26,24 @@ public class AppMain extends Application {
 		try {
                     FXMLLoader loader;                        
                     loader = new FXMLLoader(getClass().getResource("AppInterface.fxml"));
-                    AnchorPane page = (AnchorPane) loader.load();
+                    AnchorPane page;
+                    page = (AnchorPane) loader.load();
                     Scene scene = new Scene(page);
                     primaryStage.setScene(scene);
                     primaryStage.show();
+                } catch (IOException ex) {
+                    Logger.getLogger(AppMain.class.getName()).log(Level.SEVERE, null, ex);
+                }
+
                         
-            } catch (IOException ex) {
-                System.out.println("Problema ao carregar a interface.");
-            }
+
 	}
 	
         public static void main(String[] args) {
 		launch(args);
 	}
 }
+
+/*            } catch (IOException ex) {
+                System.out.println("Problema ao carregar a interface.");
+            }*/

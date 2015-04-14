@@ -2,6 +2,7 @@ package cc.client;
 
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
+import java.io.IOException;
 import java.net.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -132,27 +133,33 @@ public class UDPClient {
         udp_com.connection_send(dest_ip, dest_port, send);
     }
     
+    public void closeC_Socket(){
+        udp_com.getC_socket().close();
+    }
+   
     
+    public void receive_packet(){
+        byte[] datagram_packet = udp_com.connection_receive();
+        
+        PDU pdu_packet = readDatagram(datagram_packet);
+        
+    }
     
-    /*public static void main(String args[])
-    {
-        int server_port = 12345;
-        InetAddress dest_ip = null; 
-        try {
-            dest_ip = InetAddress.getByName("localhost");
-        } catch (UnknownHostException ex) {
-            Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
-        }
+    public PDU readDatagram(byte[] pData){
+        PDU msg_received = new PDU();
+        int i, j;
+                
+        byte[] headerBuffer = new byte[8];
+        byte[] bodyBuffer = new byte[1024];
         
-        UDPClient c1 = new UDPClient();
-           
-        try {
-            c1.unicastConnection(dest_ip, server_port);
-            //c1.multicastConnection("228.1.1.1", server_port);
-        } catch (IOException ex) {
-            Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        for(i=0;i<8;i++) headerBuffer[i] = pData[i];
+        for(j=0;i<pData.length;i++,j++) bodyBuffer[j] = pData[i];
         
-        c1.getC_socket().close();
-    } */
+        msg_received.initHeaderFromBytes(headerBuffer);
+        msg_received.initParametersFromBytes(bodyBuffer);
+        
+        return msg_received;
+    }
+ 
+    
 }

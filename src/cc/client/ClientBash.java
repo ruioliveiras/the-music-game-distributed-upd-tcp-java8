@@ -18,6 +18,12 @@ public class ClientBash {
         client = new UDPClient("localhost", 12345);
     }
     
+    public UDPClient getUDPClient(){
+        return client;
+    }
+    
+    
+    
     /**
      * @param nArgs número de argumentos mandados em input pelo utilizador
      * @param validNArgs número de argumentos necessarios para a funcao correr
@@ -174,13 +180,14 @@ public class ClientBash {
             while(!(command=in.readLine()).toUpperCase().equals("END")){
                 execute(command.toUpperCase());
                 
-                //codigo de recepçao e processamento do datagrama
+                c_bash.getUDPClient().receive_packet();
             }
             System.out.println("Obrigado e Até à Próxima!");
         } catch (IOException ex) {
             System.out.println("Erro ao ler do stdin na Bash");
         }
         
+        c_bash.getUDPClient().closeC_Socket();
     }
     
     

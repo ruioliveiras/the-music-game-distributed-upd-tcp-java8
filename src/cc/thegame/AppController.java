@@ -17,6 +17,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
+import static javafx.scene.media.MediaPlayer.Status.PLAYING;
 import javax.imageio.ImageIO;
 
 /**
@@ -42,6 +44,9 @@ public class AppController {
     
     private static int time_elapsed = 0;
     
+    //MediaPlayer music_player;
+    
+    
     public ImageView toImage(byte[] iArray) throws IOException{
         //byte[] bytearray = Base64.decode(base64String);
  
@@ -65,6 +70,24 @@ public class AppController {
         }        
     }  
     
+    /*public void actualizeQuestion(Question quest){
+        createQuestion(quest);
+        setTimer(1F);
+        playMusic();
+        
+    }
+    
+    public void cleanInterface(){
+        r1_button.setText("");
+        r2_button.setText("");
+        r3_button.setText("");
+        question_text.setText("");
+        //question_image = null;
+        //if(music_player.getStatus()==PLAYING) music_player.stop();
+        
+    }*/
+    
+    
     /*Não esta a funcionar*/
     private void setBarStyleClass(ProgressBar bar,double t) {
         bar.getStyleClass().removeAll();
@@ -85,21 +108,16 @@ public class AppController {
                             
         /*File songfile = new File("./etc/musica/000001.mp3");
         Media media = new Media(songfile.toURI().toString());
-        MediaPlayer mp = new MediaPlayer(media);
+        MediaPlayer music_player = new MediaPlayer(media);
         mp.play();
         */
     }
     
     
-    
-    /**
-     * Initializes the controller class.
-     */
-    public void initialize() {
-        
+    public void setTimer(double inicial_value){
         final Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
-            double i = 1F;
+            double i = inicial_value;
             @Override
             public void run() {
                 i-=0.01F;
@@ -109,7 +127,17 @@ public class AppController {
                     timer.cancel();
             }
         }, 0, 1000);
-   
+        
+    }
+    
+    
+    
+    
+    /**
+     * Initializes the controller class.
+     */
+    public void initialize() {
+        
         r1_button.setOnAction((event) -> {
             r1_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
         });
@@ -121,5 +149,8 @@ public class AppController {
         r3_button.setOnAction((event) -> {
             r3_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
         });
+        
+        //r1_button.setText("Cenas");
+        //cleanInterface();
     }    
 }
