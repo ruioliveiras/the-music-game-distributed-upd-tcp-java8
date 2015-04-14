@@ -162,7 +162,8 @@ public class PDU {
     }
 
     public boolean hasParameter(PDUType p) {
-        return parameters.containsKey(p);
+        return parameters.containsKey(p)
+                && parameters.get(p).size() > 0;
     }
     
     // is fragmeted 

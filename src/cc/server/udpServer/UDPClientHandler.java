@@ -19,11 +19,11 @@ import java.util.Arrays;
  *
  * @author paulo
  */
-public class UDPServerHandler {
+public class UDPClientHandler {
     
     ServerState state;
     
-    public UDPServerHandler(ServerState srvstate){
+    public UDPClientHandler(ServerState srvstate){
         state=srvstate;
     }
     
@@ -182,6 +182,36 @@ public class UDPServerHandler {
         answer.addParameter(PDUType.REPLY_DATE, date);
         answer.addParameter(PDUType.REPLY_HOUR, time);
         
+        //@todo: criar thread que irá acordar quando for date,time
+        //       esta thread irá verificar se existe pessoas suficientes, 
+        //       caso exista envia a primeira questao.
+        //              Após enviar a primeira questao aguarda tempo X por resposta do User
+        //              caso  user nao responda resposta errada será assumida
+        //              Envia proxima Questao, caso não seja a ultima.
+        //       caso não exista dá erro. 
+        
+        // criar thread aqui que confirma a existencia de pessoas
+        // criar função sendQuestion(int numero da questao)
+        //      caso seja a ultima questao:
+        //           responder com o rating
+        //      caso não seja a ultima questao:
+        //          envia questao, espera X tempo, quem respondeu respondeu, quem nao respondeu marca errada
+        //          /!\ sistema de lock para nao deixar responder a answer fora do tempo
+        //          chama proxima questao
+        
+        // do lado do servidor
+        // Quando se envia uma questão terá que se enviar 1 pdu com cenas normais (ver pagina 5 do enunciado)
+        // e também tera que se enviar a musica criar função sendFramentedMusic:
+        // que irá criar os framentos e enviar somehow...
+        
+        
+        // do lado do cliente:
+        // quando se fica a espera de uma questão, a seguir irá-se esperar a musica.
+        // a seguir a ter estas duas coisas irá por na interface,
+        // depois espera-se por a proxima questao, entretanto posse-se enviar a resposta.
+        
+        
+        
         return answer;
     }
     
@@ -248,5 +278,6 @@ public class UDPServerHandler {
         
         return answer;
     }
+    
     
 }

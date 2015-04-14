@@ -21,9 +21,9 @@ public class PDUToUser {
     void processLogin(PDU receive) {
         String name = null; int score = 0;
         
-        while(receive.hasParameter(PDUType.INFO_NAME)){
-            name = (String)receive.popParameter(PDUType.INFO_NAME);
-            score = (int) receive.popParameter(PDUType.INFO_SCORE);
+        while(receive.hasParameter(PDUType.REPLY_NAME)){
+            name = (String)receive.popParameter(PDUType.REPLY_NAME);
+            score = (Short) receive.popParameter(PDUType.REPLY_SCORE);
             
             System.out.println("Servidor: \nNome: "+name+"\nScore: "+score);
         }
@@ -32,8 +32,8 @@ public class PDUToUser {
     void processEnd(PDU receive) {
         int score = 0;
         
-        if(receive.hasParameter(PDUType.INFO_SCORE))
-            score = (int)receive.popParameter(PDUType.INFO_SCORE);
+        if(receive.hasParameter(PDUType.REPLY_SCORE))
+            score = (Short) receive.popParameter(PDUType.REPLY_SCORE);
         
         System.out.println("Servidor: \nScore: "+score);
     }
@@ -41,10 +41,10 @@ public class PDUToUser {
     void processChallenges(PDU receive) {
         String desafio = null; LocalDate ld= null; LocalTime lt = null; 
         
-        while(receive.hasParameter(PDUType.INFO_CHALLE)){
-            desafio = (String)receive.popParameter(PDUType.INFO_CHALLE);
-            ld = (LocalDate)receive.popParameter(PDUType.INFO_DATE);
-            lt = (LocalTime)receive.popParameter(PDUType.INFO_HOUR);
+        while(receive.hasParameter(PDUType.REPLY_CHALLE)){
+            desafio = (String)receive.popParameter(PDUType.REPLY_CHALLE);
+            ld = (LocalDate)receive.popParameter(PDUType.REPLY_DATE);
+            lt = (LocalTime)receive.popParameter(PDUType.REPLY_HOUR);
             System.out.println("Servidor: \nDesafio: "+desafio+"\nData: "+ld.toString()+"\nHora: "+lt.toString());   
         }
     }
@@ -57,10 +57,10 @@ public class PDUToUser {
     void processRankings(PDU receive) {
         String name = null; String nick = null; int score = 0; 
         
-        while(receive.hasParameter(PDUType.INFO_NAME)){
-            name = (String)receive.popParameter(PDUType.INFO_NAME);
-            nick = (String)receive.popParameter(PDUType.INFO_NICK);
-            score = (int)receive.popParameter(PDUType.INFO_SCORE);
+        while(receive.hasParameter(PDUType.REPLY_NAME)){
+            name = (String)receive.popParameter(PDUType.REPLY_NAME);
+            nick = (String)receive.popParameter(PDUType.REPLY_NICK);
+            score = (int)receive.popParameter(PDUType.REPLY_SCORE);
             System.out.println("Servidor: \nNome: "+name+"\nAlcunha: "+nick+"\nPontuação: "+score);   
         }
     }

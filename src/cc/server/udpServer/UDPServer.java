@@ -21,7 +21,7 @@ public class UDPServer {
     private DatagramSocket s_socket;
     private int port; 
     private UDPServerCommunication com;
-    private UDPServerHandler handler;
+    private UDPClientHandler handler;
     private ServerState state;
     
     //porta predefinida
@@ -32,7 +32,7 @@ public class UDPServer {
             s_socket = new DatagramSocket(port);
             com = new UDPServerCommunication();
             this.state = state;
-            handler = new UDPServerHandler(state);
+            handler = new UDPClientHandler(state);
             
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Servidor.");
@@ -48,7 +48,7 @@ public class UDPServer {
             s_socket = new DatagramSocket(port, adress);
             com = new UDPServerCommunication();
             this.state = state;
-            handler = new UDPServerHandler(state);
+            handler = new UDPClientHandler(state);
             
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Servidor.");

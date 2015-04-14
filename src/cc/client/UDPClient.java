@@ -180,6 +180,8 @@ public class UDPClient {
             ptu.processOk();
             current_label++;
         } 
+        
+        //@todo: ficar a espera de resposta do servidor com proxima questao ou erro
     }
 
     public void makeDatagramDeleteChallenge(String desafio) {
