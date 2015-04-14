@@ -4,6 +4,7 @@ import cc.model.Question;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import static java.lang.Thread.sleep;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -44,7 +45,7 @@ public class AppController {
     
     private static int time_elapsed = 0;
     
-    //MediaPlayer music_player;
+    MediaPlayer music_player;
     
     
     public ImageView toImage(byte[] iArray) throws IOException{
@@ -70,11 +71,10 @@ public class AppController {
         } */       
     }  
     
-    /*public void actualizeQuestion(Question quest){
+    public void actualizeQuestion(Question quest){
         createQuestion(quest);
         setTimer(1F);
-        playMusic();
-        
+        //playMusic();    
     }
     
     public void cleanInterface(){
@@ -83,9 +83,8 @@ public class AppController {
         r3_button.setText("");
         question_text.setText("");
         //question_image = null;
-        //if(music_player.getStatus()==PLAYING) music_player.stop();
-        
-    }*/
+        //if(music_player.getStatus()==PLAYING) music_player.stop();   
+    }
     
     
     /*Não esta a funcionar*/
@@ -138,29 +137,39 @@ public class AppController {
      */
     public void initialize() {
         
-        r1_button.setOnAction((event) -> {
-            r1_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
-        });
-        
-        r2_button.setOnAction((event) -> {
-            r2_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
-        });
-                
-        r3_button.setOnAction((event) -> {
-            r3_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
-        });
-        
-        String[] answers = {"Orlando","Paulo","Rui"};
-        
-        Question q1 = new Question("Quem é o maior?", answers, 1, null, null);
-        
-        createQuestion(q1);
-       
-        r1_button.setText("Cenas");
-        //cleanInterface();
-        
-        
-        question_text.setDisable(true);
-        question_text.setWrapText(true);
+        try {
+            r1_button.setOnAction((event) -> {
+                r1_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
+            });
+            
+            r2_button.setOnAction((event) -> {
+                r2_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
+            });
+            
+            r3_button.setOnAction((event) -> {
+                r3_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
+            });
+            
+            String[] answers = {"Orlando","Paulo","Rui"};
+            
+            Question q1 = new Question("Quem é o maior?", answers, 1, null, null);
+            Question q2 = new Question("Sou eu, o Zé Carlos", answers, 1, null, null);
+            
+            
+            createQuestion(q1);
+            
+            sleep(1000);
+            
+            actualizeQuestion(q2);
+            
+            
+            //cleanInterface();
+            
+            
+            question_text.setDisable(true);
+            question_text.setWrapText(true);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(AppController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }    
 }
