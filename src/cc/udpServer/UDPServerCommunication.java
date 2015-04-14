@@ -13,15 +13,6 @@ import cc.pdu.PDU;
  */
 public class UDPServerCommunication {
  
-    
-    
-    
-    
-    
-    
-    
-    
-    
     public PDU readDatagram(byte[] pData){
         PDU msg_received = new PDU();
         int i, j;

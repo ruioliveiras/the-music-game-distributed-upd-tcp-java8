@@ -27,6 +27,11 @@ public class ServerState {
     private final Map<String, ServerToServerFacade> neighbors;
 
     /**
+     * Map to save the local users, goes from IP to User.
+     */
+    private final Map<String, User> sessions;
+    
+    /**
      * Map to save the local users, goes from NickName to User.
      */
     private final Map<String, User> localUsers;
@@ -64,6 +69,7 @@ public class ServerState {
         challengeOwner = new ConcurrentHashMap<>();
         globalUsers = new ConcurrentHashMap<>();
         questions = new ConcurrentHashMap<>();
+        sessions = new ConcurrentHashMap<>();
     }
 
     /**
@@ -110,6 +116,32 @@ public class ServerState {
     }
 
     
+        /**
+     * Get a User from his ip
+     * @param ip
+     * @return 
+     */
+    public User getSession(String ip) {
+        return localUsers.get(ip);
+    }
+    
+    /**
+     * Add a new User.
+     * @param ip
+     * @param u
+     */
+    public void addSession(String ip, User u) {
+        localUsers.put(ip, u);
+    }
+    
+    /**
+     * Remove a session.
+     * @param ip
+     */
+    public void removeSession(String ip) {
+        localUsers.remove(ip);
+    }
+
     /**
      *  Check if this User exist
      * @param who
@@ -127,7 +159,7 @@ public class ServerState {
     public void addLocalUser(String who, User u) {
         localUsers.put(who, u);
     }
-
+    
     /**
      * Get a User from is nick
      * @param who

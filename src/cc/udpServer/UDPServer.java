@@ -2,6 +2,7 @@ package cc.udpServer;
 
 import cc.client.UDPClientCommunication;
 import cc.pdu.PDU;
+import cc.server.ServerState;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -19,7 +20,9 @@ import java.util.logging.Logger;
 public class UDPServer {
     private DatagramSocket s_socket;
     private int port; 
-    private UDPClientCommunication com;
+    private UDPServerCommunication com;
+    private UDPServerHandler handler;
+    private ServerState state;
     
     //porta predefinida
     public UDPServer(int port){
@@ -27,7 +30,10 @@ public class UDPServer {
             //Constructs a datagram socket and binds it to the specified port on the local host machine.
             //É possivel definir outro endereço ip
             s_socket = new DatagramSocket(port);
-            com = new UDPClientCommunication();
+            com = new UDPServerCommunication();
+            state = new ServerState();
+            handler = new UDPServerHandler(state);
+            
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Servidor.");
         }   
@@ -44,25 +50,21 @@ public class UDPServer {
         DatagramPacket send_packet = null, receive_packet = null;
         InetAddress dest_ip;
         int dest_port;
-        PDU msg_received = null;
+        PDU pdu_received = null;
         
         
         while(true){
             receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
             this.getS_socket().receive(receive_packet); //fica à espera de receber o pacote
             
-            msg_received = com.readDatagram(receive_packet.getData());
-                        
-            client_msg = new String(dadosReceber, "UTF-8"); //descodifica a mensagem que ficou no array de bytes
+            pdu_received = com.readDatagram(receive_packet.getData());
+              
             
             
-            System.out.println("Cliente: "+ client_msg); 
             dest_ip = receive_packet.getAddress();  // obtem o endereço ip e porta do cliente que enviou o datagrama para enviar resposta
             dest_port = receive_packet.getPort();
             
-            resposta = "Pacote entregue com sucesso do cliente com a porta " + dest_port;
-
-            dadosEnviar = resposta.getBytes();
+            dadosEnviar = pdu_received.toByte();
             send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest_ip, dest_port);
             this.getS_socket().send(send_packet);   
         }   
