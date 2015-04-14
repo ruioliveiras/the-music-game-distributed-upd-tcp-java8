@@ -17,11 +17,11 @@ import java.time.LocalTime;
  *
  * @author ruioliveiras
  */
-public class ServerToServerLocal implements ServerToServerFacade {
+public class TcpLocal implements ServerToServerFacade {
 
     private final ServerState state;
 
-    public ServerToServerLocal(ServerState s) {
+    public TcpLocal(ServerState s) {
         this.state = s;
     }
 

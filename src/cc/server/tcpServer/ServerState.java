@@ -9,7 +9,7 @@ import cc.model.Challenge;
 import cc.model.Question;
 import cc.model.User;
 import cc.server.ServerToServerFacade;
-import cc.server.tcpServer.facade.ServerToServerClient;
+import cc.server.tcpServer.facade.TcpClient;
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Map;
@@ -88,7 +88,7 @@ public class ServerState {
      * @param port 
      */
     public void addNeighbors(InetAddress ip, int port) {
-        neighbors.put(ip.toString(), new ServerToServerClient(ip, port));
+        neighbors.put(ip.toString(), new TcpClient(ip, port));
     }
    
     /**

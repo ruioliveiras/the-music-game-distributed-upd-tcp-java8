@@ -19,11 +19,11 @@ import java.time.LocalTime;
  *
  * @author ruioliveiras
  */
-public class ServerToServerClient implements ServerToServerFacade {
+public class TcpClient implements ServerToServerFacade {
 
     ServerCommunication comm;
 
-    public ServerToServerClient(InetAddress ip, int port) {
+    public TcpClient(InetAddress ip, int port) {
         try {
             comm = new ServerCommunication(new Socket(ip, port));
         } catch (IOException ex) {

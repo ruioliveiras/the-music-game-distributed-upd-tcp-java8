@@ -7,9 +7,9 @@ package cc.server;
 
 import cc.server.tcpServer.ServerState;
 import cc.model.Question;
-import cc.server.tcpServer.facade.ServerToServerLocal;
+import cc.server.tcpServer.facade.TcpLocal;
 import cc.server.tcpServer.communication.ServerHandler;
-import cc.server.tcpServer.facade.ServerToServerHub;
+import cc.server.tcpServer.facade.TcpHub;
 import cc.server.udpServer.UDPServer;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -33,8 +33,8 @@ public class ServerMain {
     private final static int DEFAULT_UDP_PORT = 5050;
     private final ServerState state;
     private final ServerSocket ss;
-    private final ServerToServerLocal facadeMem;
-    private final ServerToServerHub facadeHub;
+    private final TcpLocal facadeMem;
+    private final TcpHub facadeHub;
     private final UDPServer UDPServer;
     private final String name;
 
@@ -43,8 +43,8 @@ public class ServerMain {
     public ServerMain(int udpPort, int tcpListingPort, InetAddress address) throws IOException {
         this.ss = new ServerSocket(tcpListingPort, 0, address);
         this.state = new ServerState();
-        this.facadeMem = new ServerToServerLocal(state);
-        this.facadeHub = new ServerToServerHub(state);
+        this.facadeMem = new TcpLocal(state);
+        this.facadeHub = new TcpHub(state);
         UDPServer = new UDPServer(udpPort, address, state);
         name = "" + tcpListingPort;
     }

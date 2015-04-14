@@ -15,11 +15,11 @@ import java.time.LocalTime;
  *
  * @author ruioliveiras
  */
-public class ServerToServerHub implements ServerToServerFacade {
+public class TcpHub implements ServerToServerFacade {
 
     private final ServerState state;
 
-    public ServerToServerHub(ServerState s) {
+    public TcpHub(ServerState s) {
         this.state = s;
     }
 
