@@ -21,13 +21,14 @@ public enum PDUDataType {
     string {
                 public Object read(byte[] b, int offset, int sizeByte) {
                     try {
-                        int i;
-                        for (i = 0; i < b.length && b[offset + i] != 0; i++) {
-                        }
-                        if (sizeByte != i) {
+// no need to calculate string size anymore  
+//                      int i;
+                        //for (i = 0; i < b.length && b[offset + i] != 0; i++) {
+                        //}
+                        //if (sizeByte != i) {
                             //erro
-                        }
-                        String str = new String(b, offset, i, "UTF-8");
+//                        }
+                        String str = new String(b, offset, sizeByte, "UTF-8");
 
                         return str;
                     } catch (UnsupportedEncodingException ex) {
@@ -37,7 +38,7 @@ public enum PDUDataType {
                 }
 
                 public int getSize(Object o) {
-                    return ((String) o).getBytes().length;
+                    return ((String) o).length();
                 }
 
                 public byte[] toByte(Object o) {
@@ -206,7 +207,7 @@ public enum PDUDataType {
                 }
 
                 public int getSize(Object o) {
-                    return 2;
+                    return ((byte[]) o).length;
                 }
 
                 public byte[] toByte(Object o) {

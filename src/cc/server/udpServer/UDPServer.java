@@ -39,12 +39,13 @@ public class UDPServer {
         }   
     }
 
-    public UDPServer(int udpPort, InetAddress updAdress, ServerState state) {
+    public UDPServer(int port, InetAddress adress, ServerState state) {
         
         try {
             //Constructs a datagram socket and binds it to the specified port on the local host machine.
             //É possivel definir outro endereço ip
-            s_socket = new DatagramSocket(port,updAdress);
+            this.port = port;
+            s_socket = new DatagramSocket(port, adress);
             com = new UDPServerCommunication();
             this.state = state;
             handler = new UDPServerHandler(state);

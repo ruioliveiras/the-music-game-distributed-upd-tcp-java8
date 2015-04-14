@@ -29,6 +29,16 @@ public class UDPClientCommunication {
     private PDU lastPDU;
     private int current_label;
     
+    public UDPClientCommunication(int sourcePort, InetAddress sourceIp){
+        try {
+            c_socket = new DatagramSocket(sourcePort, sourceIp);
+            current_label = 0;
+            lastPDU = null;
+        } catch (SocketException ex) {
+            System.out.println("Não foi possível criar Cliente.");
+        }
+    }
+    
     public UDPClientCommunication(){
         try {
             c_socket = new DatagramSocket();

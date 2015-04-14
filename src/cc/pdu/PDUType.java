@@ -30,7 +30,7 @@ public enum PDUType {
         REGISTER_PASS(REGISTER,3,PDUDataType.byteBlock), // should not be string?
     LOGIN(3, 2),
         LOGIN_NICK(LOGIN,2,PDUDataType.string),
-        LOGIN_PASS(LOGIN,3,PDUDataType.string),
+        LOGIN_PASS(LOGIN,3,PDUDataType.byteBlock),
     LOGOUT(4, 0),
     QUIT(5, 0),
     END(6, 0),
@@ -168,7 +168,8 @@ public enum PDUType {
      */
     public static PDUType getById(int id) {
         for (PDUType value : values()) {
-            if (value.getId() == id) {
+            if (value.getParent() == null 
+                    && value.getId() == id) {
                 return value;
             }
         }

@@ -128,8 +128,13 @@ public class PDU {
         return b.array();
     }
 
-    public int getSizeBytes() {
+    public int getParameterSizeBytes() {
         return sizeBytes;
+    }
+
+    public int getSizeBytes() {
+        // plus header
+        return sizeBytes + 8;
     }
 
     public int getFieldCount() {

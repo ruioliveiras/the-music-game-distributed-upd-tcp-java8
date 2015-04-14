@@ -38,13 +38,13 @@ public class ServerState {
     private final Map<String, User> localUsers;
 
     /**
-     * Map to save the All users for global rating.
+     * Map to save the All users for global rating. (goes from nick to User)
      */
     private final Map<String, User> globalUsers;
     
     /**
      * Map to store all the current challenges in the System.
-     *
+     * (Goes from challenge name to challenge)
      * @see challangeOwner#challengeOwner
      */
     private final Map<String, Challenge> challenges;
@@ -123,7 +123,7 @@ public class ServerState {
      * @return 
      */
     public User getSession(String ip) {
-        return localUsers.get(ip);
+        return sessions.get(ip);
     }
     
     /**
@@ -132,7 +132,7 @@ public class ServerState {
      * @param u
      */
     public void addSession(String ip, User u) {
-        localUsers.put(ip, u);
+        sessions.put(ip, u);
     }
     
     /**
@@ -140,7 +140,7 @@ public class ServerState {
      * @param ip
      */
     public void removeSession(String ip) {
-        localUsers.remove(ip);
+        sessions.remove(ip);
     }
 
     /**

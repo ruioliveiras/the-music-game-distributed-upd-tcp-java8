@@ -50,7 +50,7 @@ public class ServerCommunication {
 
         if (is.read(headerBuffer, 0, 8) == 8) {
             pdu.initHeaderFromBytes(headerBuffer);
-            if (pdu.getSizeBytes() > bodyBuffer.length) {
+            if (pdu.getParameterSizeBytes() > bodyBuffer.length) {
                 //error
             }
 //          if has label then is fragmented
@@ -58,7 +58,7 @@ public class ServerCommunication {
 //                
 //          }
 
-            if (is.read(bodyBuffer, 0, pdu.getSizeBytes()) != pdu.getSizeBytes()) {
+            if (is.read(bodyBuffer, 0, pdu.getParameterSizeBytes()) != pdu.getParameterSizeBytes()) {
                 //error
             }
             pdu.initParametersFromBytes(bodyBuffer);

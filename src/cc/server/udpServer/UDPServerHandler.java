@@ -13,6 +13,7 @@ import cc.server.tcpServer.ServerState;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Arrays;
 
 /**
  *
@@ -64,11 +65,11 @@ public class UDPServerHandler {
                 answer = makeChallenge(ip, challengeName, date, time);
                 break;
             case ACCEPT_CHALLENGE:
-                challengeName = (String) pdu.popParameter(PDUType.MAKE_CHALLENGE_CHALLENGE);
+                challengeName = (String) pdu.popParameter(PDUType.ACCEPT_CHALLENGE_CHALLENGE);
                 answer = acceptChallenge(ip, challengeName);
                 break;
             case DELETE_CHALLENGE:
-                challengeName = (String) pdu.popParameter(PDUType.MAKE_CHALLENGE_CHALLENGE);
+                challengeName = (String) pdu.popParameter(PDUType.DELETE_CHALLENGE_CHALLENGE);
                 answer = deleteChallenge(challengeName);
                 break;
             case ANSWER:
@@ -96,7 +97,7 @@ public class UDPServerHandler {
         
         User user = new User(name, secInfo, nick);
         if (!state.hasLocalUser(nick)) {
-            state.addLocalUser(name, user);                
+            state.addLocalUser(nick, user);                
             answer.addParameter(PDUType.REPLY_OK, 0);
         }
         else {
@@ -111,7 +112,7 @@ public class UDPServerHandler {
         PDU answer=new PDU(PDUType.REPLY);
         
         if (state.hasLocalUser(nick)) {
-            boolean check = state.getLocalUser(nick).getPass().equals(secInfo);
+            boolean check = Arrays.equals(state.getLocalUser(nick).getPass(),secInfo);
             if (check) {
                 user = state.getLocalUser(nick);
                 state.addSession(ip, user);
@@ -119,7 +120,7 @@ public class UDPServerHandler {
                 //ver se é isto que é para enviar no reply
                 int score = state.getLocalUser(nick).getRating();
                 answer.addParameter(PDUType.REPLY_NAME, name);
-                answer.addParameter(PDUType.REPLY_SCORE, score);
+                answer.addParameter(PDUType.REPLY_SCORE,(short) score);
             }
             else {
                 answer.addParameter(PDUType.REPLY_ERRO, "Palavra-passe errada");
@@ -172,9 +173,11 @@ public class UDPServerHandler {
     private PDU makeChallenge(String ip, String name, LocalDate date, LocalTime time){
         PDU answer = new PDU(PDUType.REPLY);
         Challenge challenge = new Challenge(name, date, time);
-        String owner = state.getSession(ip).getNick();
+        
+        challenge.addSubscribers(state.getSession(ip));
                 
-        state.addChallenge(owner, challenge);
+        state.addChallenge(name, challenge);
+        state.addOwner(name, "localhost");
         answer.addParameter(PDUType.REPLY_CHALLE, name);
         answer.addParameter(PDUType.REPLY_DATE, date);
         answer.addParameter(PDUType.REPLY_HOUR, time);
