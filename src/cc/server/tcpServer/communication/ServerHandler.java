@@ -8,9 +8,9 @@ package cc.server.tcpServer.communication;
 import cc.server.tcpServer.ServerState;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
-import cc.server.tcpServer.facade.ServerToServerLocal;
-import cc.server.tcpServer.facade.ServerToServerClient;
-import cc.server.tcpServer.facade.ServerToServerHub;
+import cc.server.tcpServer.facade.TcpLocal;
+import cc.server.tcpServer.facade.TcpClient;
+import cc.server.tcpServer.facade.TcpHub;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -29,8 +29,8 @@ public class ServerHandler implements Runnable {
 
     private final ServerCommunication comm;
     private final ServerState state;
-    private final ServerToServerLocal facadeMem;
-    private final ServerToServerHub facadeHub;
+    private final TcpLocal facadeMem;
+    private final TcpHub facadeHub;
     private final String name;
 
     /**
@@ -44,7 +44,7 @@ public class ServerHandler implements Runnable {
      * @throws IOException 
      */
     public ServerHandler(String name, ServerState state, Socket socket,
-            ServerToServerLocal facadeMem, ServerToServerHub facadeHub
+            TcpLocal facadeMem, TcpHub facadeHub
     ) throws IOException {
         this.name = name;
         this.state = state;
@@ -119,8 +119,8 @@ public class ServerHandler implements Runnable {
                 facadeMem.registerServer(ip, port);
                 // register all server in the newServer
                 state.getNeighbors().stream()
-                        .filter((server) -> (server instanceof ServerToServerClient))
-                        .map(server -> (ServerToServerClient) server)
+                        .filter((server) -> (server instanceof TcpClient))
+                        .map(server -> (TcpClient) server)
                         // Because the new server are my neighbor, test it.
                         .filter((server) -> (!server.getServerIp().equals(ip.toString())))
                         .forEach((server) -> {
