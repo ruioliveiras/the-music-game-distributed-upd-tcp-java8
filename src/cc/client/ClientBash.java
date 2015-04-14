@@ -99,7 +99,7 @@ public class ClientBash {
                 break;              
             case "LIST_CHALLENGES":
                 if (checkTotalArgs(nargs, 1)){
-                    client.makeDatagramList_Challenges();
+                    client.makeDatagramListChallenges();
                 }
                 else {
                     System.out.println("Número de argumentos inválido!");
@@ -180,14 +180,14 @@ public class ClientBash {
             while(!(command=in.readLine()).toUpperCase().equals("END")){
                 execute(command.toUpperCase());
                 
-                c_bash.getUDPClient().receive_packet();
+
             }
             System.out.println("Obrigado e Até à Próxima!");
         } catch (IOException ex) {
             System.out.println("Erro ao ler do stdin na Bash");
         }
         
-        c_bash.getUDPClient().closeC_Socket();
+        c_bash.getUDPClient().closeCSocket();
     }
     
     

@@ -21,19 +21,17 @@ import java.util.logging.Logger;
  * } 
  * msg_received.initParametersFromBytes(bodyBuffer);
  * 
+ * o readDatagram esta na classe UDPClient
+ * 
  * @author paulo
  */
 public class UDPClientCommunication {
 
     private DatagramSocket c_socket;
-    private PDU lastPDU;
-    private int current_label;
     
     public UDPClientCommunication(){
         try {
             c_socket = new DatagramSocket();
-            current_label = 0;
-            lastPDU = null;
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Cliente.");
         }
@@ -56,7 +54,7 @@ public class UDPClientCommunication {
     }
     
 
-    public byte[] connection_receive(){
+    public byte[] connectionReceive(){
         DatagramPacket receive_packet = null;
         byte[] dadosReceber = new byte[1024];
     
