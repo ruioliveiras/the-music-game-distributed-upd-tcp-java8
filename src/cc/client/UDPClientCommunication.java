@@ -1,9 +1,13 @@
 package cc.client;
 
 import cc.pdu.PDU;
-import cc.pdu.PDUType;
-import java.time.LocalDate;
-import java.time.LocalTime;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * 
@@ -21,127 +25,51 @@ import java.time.LocalTime;
  */
 public class UDPClientCommunication {
 
-    //receber PDU -> ler -> construir objeto
-    //construir PDU -> enviar
+    private DatagramSocket c_socket;
+    private PDU lastPDU;
+    private int current_label;
     
-    public PDU readDatagram(byte[] pData){
-        PDU msg_received = new PDU();
-        int i, j;
-                
-        byte[] headerBuffer = new byte[8];
-        byte[] bodyBuffer = new byte[1024];
-        
-        for(i=0;i<8;i++) headerBuffer[i] = pData[i];
-        for(j=0;i<pData.length;i++,j++) bodyBuffer[j] = pData[i];
-        
-        msg_received.initHeaderFromBytes(headerBuffer);
-        msg_received.initParametersFromBytes(bodyBuffer);
-        
-        return msg_received;
-    }
-    
-    
-    public PDU makeDatagramHello(){
-        PDU send = new PDU(PDUType.HELLO); 
-        
-        return send;
+    public UDPClientCommunication(){
+        try {
+            c_socket = new DatagramSocket();
+            current_label = 0;
+            lastPDU = null;
+        } catch (SocketException ex) {
+            System.out.println("Não foi possível criar Cliente.");
+        }
     }
         
-    public PDU makeDatagramRegister(String name, String alcunha, byte[] sec_info){
-        PDU send = new PDU(PDUType.REGISTER);
+    public void connection_send(InetAddress dest, int port, PDU send_pdu){
+        byte[] dadosEnviar = new byte[1024];
+       
+        DatagramPacket send_packet = new DatagramPacket(send_pdu.toByte(), send_pdu.getSizeBytes(), dest, port);
+
+        try {   
+            this.getC_socket().send(send_packet);
+        } catch (IOException ex) {
+            System.out.println("Erro ao enviar o datagrama para o servidor");
+        }
+    }
+    
+    public DatagramSocket getC_socket(){
+        return c_socket;
+    }
+    
+
+    public byte[] connection_receive(){
+        DatagramPacket receive_packet = null;
+        byte[] dadosReceber = new byte[1024];
+    
+        receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
+        try {
+            this.getC_socket().receive(receive_packet);
+        } catch (IOException ex) {
+            System.out.println("Erro ao receber o pacote no UDPClientCommunication.");
+        }
         
-        send.addParameter(PDUType.REGISTER_NAME, name);
-        send.addParameter(PDUType.REGISTER_NICK, alcunha);
-        send.addParameter(PDUType.REGISTER_PASS, sec_info);
+        return dadosReceber;       
+    }  
     
-        return send;
-    }
-    
-    public PDU makeDatagramLogin(String alcunha, byte[] sec_info){
-        PDU send = new PDU(PDUType.LOGIN);
-        
-        send.addParameter(PDUType.LOGIN_NICK, alcunha);
-        send.addParameter(PDUType.LOGIN_PASS, sec_info);
-    
-        return send;
-    }
-    
-    public PDU makeDatagramLogout(){
-        PDU send = new PDU(PDUType.LOGOUT);
-    
-        return send;
-    }
-    
-    public PDU makeDatagramQuit(){
-        PDU send = new PDU(PDUType.QUIT);
-    
-        return send;
-    }
-    
-    public PDU makeDatagramEnd(){
-        PDU send = new PDU(PDUType.END);
-        
-        return send;
-    }
-    
-    public PDU makeDatagramList_Challenges(){
-        PDU send = new PDU(PDUType.LIST_CHALLENGES);
-        
-        return send;
-    }
-    
-    public PDU makeDatagramMake_Challenge(String desafio, LocalDate data, LocalTime hora){
-        PDU send = new PDU(PDUType.MAKE_CHALLENGE);
-        
-        send.addParameter(PDUType.MAKE_CHALLENGE_CHALLENGE, desafio);
-        send.addParameter(PDUType.MAKE_CHALLENGE_DATE, data);
-        send.addParameter(PDUType.MAKE_CHALLENGE_HOUR, hora);
-    
-        return send;
-    }
-    
-    public PDU makeDatagramAccept_Challenge(String desafio){
-        PDU send = new PDU(PDUType.ACCEPT_CHALLENGE);
-    
-        send.addParameter(PDUType.ACCEPT_CHALLENGE_CHALLENGE, send);
-        
-        return send;
-    }
-    
-    public PDU makeDatagramDelete_Challenge(String desafio){
-        PDU send = new PDU(PDUType.DELETE_CHALLENGE);
-        
-        send.addParameter(PDUType.DELETE_CHALLENGE_CHALLENGE, desafio);
-    
-        return send;
-    }
-    
-    public PDU makeDatagramAnswer(Byte escolha, String desafio, Byte questao){
-        PDU send = new PDU(PDUType.ANSWER);
-        
-        send.addParameter(PDUType.ANSWER_CHOOSE, escolha);
-        send.addParameter(PDUType.ANSWER_CHALLENGE, desafio);
-        send.addParameter(PDUType.ANSWER_NQUESTION, questao);
-    
-        return send;
-    }
-    
-    public PDU makeDatagramRetransmit(String desafio, Byte questao, Byte bloco){
-        PDU send = new PDU(PDUType.RETRANSMIT);
-        
-        send.addParameter(PDUType.RETRANSMIT_CHALLENGE, desafio);
-        send.addParameter(PDUType.RETRANSMIT_NQUESTION, questao);
-        send.addParameter(PDUType.RETRANSMIT_NBLOCK, bloco);
-        
-        return send;
-    }
-    
-    public PDU makeDatagramList_Ranking(){
-        PDU send = new PDU(PDUType.LIST_RANKING);
-    
-        return send;
-    }
-   
     
     
     
