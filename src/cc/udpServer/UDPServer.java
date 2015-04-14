@@ -50,7 +50,7 @@ public class UDPServer {
         DatagramPacket send_packet = null, receive_packet = null;
         InetAddress dest_ip;
         int dest_port;
-        PDU pdu_received = null;
+        PDU pdu_received = null, pdu_response;
         
         
         while(true){
@@ -58,13 +58,13 @@ public class UDPServer {
             this.getS_socket().receive(receive_packet); //fica à espera de receber o pacote
             
             pdu_received = com.readDatagram(receive_packet.getData());
-              
-            
-            
+                        
             dest_ip = receive_packet.getAddress();  // obtem o endereço ip e porta do cliente que enviou o datagrama para enviar resposta
             dest_port = receive_packet.getPort();
             
-            dadosEnviar = pdu_received.toByte();
+            pdu_response = handler.decodePacket(pdu_received, dest_ip.toString());
+            
+            dadosEnviar = pdu_response.toByte();
             send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest_ip, dest_port);
             this.getS_socket().send(send_packet);   
         }   
