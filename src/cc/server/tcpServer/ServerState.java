@@ -3,12 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package cc.server;
+package cc.server.tcpServer;
 
 import cc.model.Challenge;
 import cc.model.Question;
 import cc.model.User;
-import cc.server.facade.ServerToServerClient;
+import cc.server.ServerToServerFacade;
+import cc.server.tcpServer.facade.ServerToServerClient;
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.Map;

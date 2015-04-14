@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package cc.server.facade;
+package cc.server.tcpServer.facade;
 
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.ServerToServerFacade;
-import cc.server.communication.ServerCommunication;
+import cc.server.tcpServer.communication.ServerCommunication;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
