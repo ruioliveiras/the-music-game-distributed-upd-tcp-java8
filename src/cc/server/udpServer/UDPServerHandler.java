@@ -3,13 +3,13 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package cc.udpServer;
+package cc.server.udpServer;
 
 import cc.model.Challenge;
 import cc.model.User;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
-import cc.server.ServerState;
+import cc.server.tcpServer.ServerState;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;

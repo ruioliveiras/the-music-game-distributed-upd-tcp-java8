@@ -3,11 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package cc.server.facade;
+package cc.server.tcpServer.facade;
 
-import cc.model.Challenge;
-import cc.model.User;
-import cc.server.ServerState;
+import cc.server.tcpServer.ServerState;
 import cc.server.ServerToServerFacade;
 import java.net.InetAddress;
 import java.time.LocalDate;
@@ -17,40 +15,40 @@ import java.time.LocalTime;
  *
  * @author ruioliveiras
  */
-public class ServerToServerLocal implements ServerToServerFacade {
+public class ServerToServerHub implements ServerToServerFacade {
 
     private final ServerState state;
 
-    public ServerToServerLocal(ServerState s) {
+    public ServerToServerHub(ServerState s) {
         this.state = s;
     }
 
     @Override
     public void registerServer(InetAddress ip, int port) {
-        state.addNeighbors(ip, port);
+        for (ServerToServerFacade sts : state.getNeighbors()) {
+            sts.registerServer(ip, port);
+        }
     }
 
     @Override
     public void registerChallenge(String challeName, LocalDate d, LocalTime time, String user, String nick) {
-        state.addChallenge(challeName, new Challenge(challeName, d, time));
+        for (ServerToServerFacade sts : state.getNeighbors()) {
+            sts.registerChallenge(challeName, d, time, user, nick);
+        }
     }
 
     @Override
     public void registerAcceptChallenge(String challeName, String nick) {
-        String ip = state.getOwnerIp(challeName);
-        if (ip.equals("localhost")) {
-            state.getChallenge(challeName)
-                    .addSubscribers(new User(nick, nick));
-        } else {
-            state.getNeighbor(ip).registerAcceptChallenge(challeName, nick);
+        for (ServerToServerFacade sts : state.getNeighbors()) {
+            sts.registerAcceptChallenge(challeName, nick);
         }
     }
 
     @Override
     public void registerScore(String nick, int score) {
-
+        for (ServerToServerFacade sts : state.getNeighbors()) {
+            sts.registerScore(nick, score);
+        }
     }
 
-    // this guy will has a copy of the serverState
-    // for each action recieve the currect arguments, this don't know that is a PDUServer
 }

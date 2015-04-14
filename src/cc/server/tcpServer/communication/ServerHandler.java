@@ -3,14 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package cc.server.communication;
+package cc.server.tcpServer.communication;
 
-import cc.server.ServerState;
+import cc.server.tcpServer.ServerState;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
-import cc.server.facade.ServerToServerLocal;
-import cc.server.facade.ServerToServerClient;
-import cc.server.facade.ServerToServerHub;
+import cc.server.tcpServer.facade.ServerToServerLocal;
+import cc.server.tcpServer.facade.ServerToServerClient;
+import cc.server.tcpServer.facade.ServerToServerHub;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
