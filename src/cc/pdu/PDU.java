@@ -152,6 +152,10 @@ public class PDU {
     public boolean isSecure() {
         return secure;
     }
+    
+    public int getLabel(){
+        return label;
+    }
 
     public Object popParameter(PDUType p) {
         return parameters.get(p).remove(0);

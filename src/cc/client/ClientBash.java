@@ -99,7 +99,7 @@ public class ClientBash {
                 break;
             case "LIST_CHALLENGES":
                 if (checkTotalArgs(nargs, 1)) {
-                    client.makeDatagramList_Challenges();
+                    client.makeDatagramListChallenges();
                 } else {
                     System.out.println("Número de argumentos inválido!");
                 }
@@ -111,21 +111,21 @@ public class ClientBash {
                     LocalDate d = LocalDate.parse(args[2], DateTimeFormatter.ISO_DATE);
                     LocalTime t = LocalTime.parse(args[3], DateTimeFormatter.ISO_TIME);
 
-                    client.makeDatagramMake_Challenge(args[1], d, t);
+                    client.makeDatagramMakeChallenge(args[1], d, t);
                 } else {
                     System.out.println("Número de argumentos inválido!");
                 }
                 break;
             case "ACCEPT_CHALLENGE":
                 if (checkTotalArgs(nargs, 2)) {
-                    client.makeDatagramAccept_Challenge(args[1]);
+                    client.makeDatagramAcceptChallenge(args[1]);
                 } else {
                     System.out.println("Número de argumentos inválido!");
                 }
                 break;
             case "DELETE_CHALLENGE":
                 if (checkTotalArgs(nargs, 2)) {
-                    client.makeDatagramDelete_Challenge(args[1]);
+                    client.makeDatagramDeleteChallenge(args[1]);
                 } else {
                     System.out.println("Número de argumentos inválido!");
                 }
@@ -177,15 +177,13 @@ public class ClientBash {
         try {
             while (!(command = in.readLine()).toUpperCase().equals("END")) {
                 c_bash.execute(command.toUpperCase());
-
-                c_bash.getUDPClient().receive_packet();
             }
             System.out.println("Obrigado e Até à Próxima!");
         } catch (IOException ex) {
             System.out.println("Erro ao ler do stdin na Bash");
         }
 
-        c_bash.getUDPClient().closeC_Socket();
+        c_bash.getUDPClient().closeCSocket();
     }
 
 }
