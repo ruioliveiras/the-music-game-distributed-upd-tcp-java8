@@ -150,7 +150,7 @@ public class AppController {
             r3_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
         });
         
-        //r1_button.setText("Cenas");
+        r1_button.setText("Cenas");
         //cleanInterface();
     }    
 }
