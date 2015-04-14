@@ -59,8 +59,8 @@ public class UDPServerHandler {
                 break;
             case MAKE_CHALLENGE:
                 String challengeName = (String) pdu.popParameter(PDUType.MAKE_CHALLENGE_CHALLENGE);
-                LocalDate date = LocalDate.now();
-                LocalTime time = LocalTime.now().plusMinutes(5);
+                LocalDate date = (LocalDate) pdu.popParameter(PDUType.MAKE_CHALLENGE_DATE);
+                LocalTime time = (LocalTime) pdu.popParameter(PDUType.MAKE_CHALLENGE_HOUR);
                 answer = makeChallenge(ip, challengeName, date, time);
                 break;
             case ACCEPT_CHALLENGE:
@@ -76,6 +76,12 @@ public class UDPServerHandler {
                 challengeName = (String) pdu.popParameter(PDUType.ANSWER_CHALLENGE);
                 int questionId = (Integer) pdu.popParameter(PDUType.ANSWER_NQUESTION);
                 answer=answer(ip, challengeName, choice, questionId);
+                break;
+            case RETRANSMIT:
+                challengeName = (String) pdu.popParameter(PDUType.RETRANSMIT_CHALLENGE); 
+                questionId =  (Integer) pdu.popParameter(PDUType.RETRANSMIT_NQUESTION);
+                int nblock = (Integer) pdu.popParameter(PDUType.RETRANSMIT_NBLOCK);
+                answer = retransmit(challengeName, questionId, nblock);
                 break;
             case LIST_RANKING:
                 answer=listRanking();
@@ -94,7 +100,7 @@ public class UDPServerHandler {
             answer.addParameter(PDUType.REPLY_OK, 0);
         }
         else {
-            answer.addParameter(PDUType.REPLY_ERRO, "Uitlizador já existe");
+            answer.addParameter(PDUType.REPLY_ERRO, "Utilizador já existe");
         }
         return answer;
     }
@@ -202,9 +208,21 @@ public class UDPServerHandler {
     
     private PDU answer(String ip, String challengeName, int choice, int questionId){
         PDU answer = new PDU(PDUType.REPLY);
+        String nickname = state.getSession(ip).getNick();
+        
+        
+        answer.addParameter(PDUType.REPLY_CHALLE, challengeName);
+        answer.addParameter(PDUType.REPLY_NUM_QUESTION, questionId);
         
         if (state.getQuestion(questionId).getCorrect()==choice) {
             answer.addParameter(PDUType.REPLY_CORRECT, 1);
+            answer.addParameter(PDUType.REPLY_POINTS, 2);
+            state.getChallenge(challengeName).answer(nickname, true);
+        }
+        else {
+            answer.addParameter(PDUType.REPLY_CORRECT, 0);
+            answer.addParameter(PDUType.REPLY_POINTS, -1);
+            state.getChallenge(challengeName).answer(nickname, false);
         }
         
         return answer;
@@ -218,6 +236,12 @@ public class UDPServerHandler {
             answer.addParameter(PDUType.REPLY_NICK, user.getNick());
             answer.addParameter(PDUType.REPLY_SCORE, user.getRating());
         }
+        
+        return answer;
+    }
+    
+    private PDU retransmit(String challengeName, int questionId, int nblock) {
+        PDU answer = new PDU(PDUType.REPLY);
         
         return answer;
     }
