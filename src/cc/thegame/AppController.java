@@ -62,12 +62,12 @@ public class AppController {
         r2_button.setText(answers[1]);
         r3_button.setText(answers[2]);
         
-        question_text.setText(quest.getQuestion());
+        /*question_text.setText(quest.getQuestion());
         try {
             question_image = toImage(quest.getImageArray());
         } catch (IOException ex) {
             System.out.println("Não foi possível converter a imagem.");
-        }        
+        } */       
     }  
     
     /*public void actualizeQuestion(Question quest){
@@ -150,7 +150,17 @@ public class AppController {
             r3_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
         });
         
+        String[] answers = {"Orlando","Paulo","Rui"};
+        
+        Question q1 = new Question("Quem é o maior?", answers, 1, null, null);
+        
+        createQuestion(q1);
+       
         r1_button.setText("Cenas");
         //cleanInterface();
+        
+        
+        question_text.setDisable(true);
+        question_text.setWrapText(true);
     }    
 }
