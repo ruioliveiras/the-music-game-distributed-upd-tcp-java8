@@ -23,8 +23,8 @@ public class UDPServerCommunication {
         for(i=0;i<8;i++) headerBuffer[i] = pData[i];
         for(j=0;i<pData.length;i++,j++) bodyBuffer[j] = pData[i];
         
-        msg_received.initHeaderFromBytes(headerBuffer);
-        msg_received.initParametersFromBytes(bodyBuffer);
+        msg_received.initHeaderFromBytes(headerBuffer, 0);
+        msg_received.initParametersFromBytes(bodyBuffer, 0);
     
         return msg_received;
     }

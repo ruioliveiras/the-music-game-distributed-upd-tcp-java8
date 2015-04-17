@@ -5,6 +5,7 @@
  */
 package cc.pdu;
 
+import com.sun.javafx.fxml.expression.BinaryExpression;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,13 +54,14 @@ public class PDU {
      * initialize the parameters
      *
      * @param b
+     * @param offset
      * @return boolean with success
      */
-    public boolean initHeaderFromBytes(byte[] b) {
+    public boolean initHeaderFromBytes(byte[] b, int offset) {
         if (b.length < 8) {
             //throw new Exec
         }
-        ByteBuffer bb = ByteBuffer.wrap(b);
+        ByteBuffer bb = ByteBuffer.wrap(b, offset, b.length - offset);
         version = bb.get();
         secure = bb.get() != 0;
         label = bb.getShort();
@@ -70,14 +72,19 @@ public class PDU {
         return true;
     }
 
-    public void initParametersFromBytes(byte[] b) {
+    /**
+     *
+     * @param b
+     * @param offset1
+     */
+    public void initParametersFromBytes(byte[] b, int offset1) {
         int offset = 0, i = 0;
 
-        while (offset < b.length && offset < sizeBytes && i < nField) {
+        while (offset1 + offset < b.length && offset < sizeBytes && i < nField) {
             // the first byte are the identifier of the Parameter Type.
-            PDUType parameter = pduType.getParameterById(b[offset++]);
-            int byteSize = b[offset++];
-            Object obj = parameter.getDataType().read(b, offset, byteSize);
+            PDUType parameter = pduType.getParameterById(b[offset1 + offset++]);
+            int byteSize = b[offset1 + offset++];
+            Object obj = parameter.getDataType().read(b, offset + offset1, byteSize);
 
             offset += parameter.getDataType().getSize(obj);
 
@@ -114,18 +121,33 @@ public class PDU {
         b.put((byte) parameters.size());
         b.putShort((short) sizeBytes);
         //params:
-        parameters.entrySet().stream().forEach((entrySet) -> {
-            PDUType key = entrySet.getKey();
-            entrySet.getValue()
-                    .stream()
-                    .forEach((value) -> {
-                        b.put((byte) key.getId());
-                        b.put((byte) key.getDataType().getSize(value));
-                        b.put(key.getDataType().toByte(value));
-                    });
-        });
-
-        return b.array();
+        boolean done; int hasResponse = 0;
+        do {
+            done = true;
+            for (Map.Entry<PDUType, List<Object>> entrySet : parameters.entrySet()) {
+                PDUType key = entrySet.getKey();
+                hasResponse = (hasResponse != 2)? 1: 2;
+                if (entrySet.getValue().size() > 0) {
+                    Object value = entrySet.getValue().remove(0);
+                    b.put((byte) key.getId());
+                    b.put((byte) key.getDataType().getSize(value));
+                    b.put(key.getDataType().toByte(value));
+                    done = false;
+                    hasResponse = 2;
+                }
+            }
+        } while (!this.hasParameter(PDUType.CONTINUE) && !done);
+//                    .stream()
+//                    .forEach((value) -> {
+//                        b.put((byte) key.getId());
+//                        b.put((byte) key.getDataType().getSize(value));
+//                        b.put(key.getDataType().toByte(value));
+//                    });
+        if (hasResponse == 0 || hasResponse == 2) {
+            return b.array();
+        } else {
+            return null;
+        }
     }
 
     public int getParameterSizeBytes() {
@@ -152,8 +174,8 @@ public class PDU {
     public boolean isSecure() {
         return secure;
     }
-    
-    public int getLabel(){
+
+    public int getLabel() {
         return label;
     }
 
@@ -165,7 +187,7 @@ public class PDU {
         return parameters.containsKey(p)
                 && parameters.get(p).size() > 0;
     }
-    
+
     // is fragmeted 
     public void addParameter(PDUType pduType, Object obj) {
         List<Object> l;

@@ -58,7 +58,7 @@ public class ServerHandler implements Runnable {
         try {
             PDU pdu;
 
-            while ((pdu = comm.readNext()) != null) {
+            while ((pdu = comm.nextPDU()) != null) {
                 if (pdu.getVersion() != 0) {
                     // somefucking unsoported error
                 }

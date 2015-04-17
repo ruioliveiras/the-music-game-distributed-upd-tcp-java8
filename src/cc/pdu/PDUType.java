@@ -55,7 +55,7 @@ public enum PDUType {
     REPLY(0, 18),
         REPLY_OK(REPLY, 0 ,PDUDataType.nothing),
         REPLY_ERRO(REPLY, 255 ,PDUDataType.string),
-        REPLY_CONTINUE(REPLY, 254 ,PDUDataType.nothing),
+        CONTINUE(REPLY, 254 ,PDUDataType.nothing),
         REPLY_NAME(REPLY, 1 ,PDUDataType.string),
         REPLY_NICK(REPLY, 2 ,PDUDataType.string),
         REPLY_DATE(REPLY, 4 ,PDUDataType.date),

@@ -2,6 +2,14 @@ package cc.model;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 /**
@@ -52,14 +60,14 @@ public class Question {
      * @param imageArray
      * @param musicArray
      */
-    public Question(String question, String[] anwser, int correct, String imagePath, String musicPath, byte[] imageArray, byte[] musicArray) {
+    public Question(String question, String[] anwser, int correct, String imagePath, String musicPath) {
         this.question = question;
         this.answer = anwser;
         this.correct = correct;
         this.imagePath = imagePath;
         this.musicPath = musicPath;
-        this.imageArray = imageArray;
-        this.musicArray = musicArray;
+//        this.imageArray = imageArray;
+//        this.musicArray = musicArray;
     }
 
     public Question(String question, String[] anwser, int correct, byte[] imageArray, byte[] musicArray) {
@@ -71,7 +79,19 @@ public class Question {
         this.imageArray = imageArray;
         this.musicArray = musicArray;
     }
-
+    
+    public void loadMusic() {
+        if (musicArray != null){
+            return;
+        }
+        try {
+            Path path = Paths.get(musicPath);
+            musicArray = Files.readAllBytes(path);            
+        } catch (IOException ex) {
+            throw  new RuntimeException("reading music");
+        }
+    }
+    
     public String getQuestion() {
         return question;
     }
@@ -110,4 +130,5 @@ public class Question {
                 .append(correct).append("\n");
         return sb.toString();
     }
+
 }

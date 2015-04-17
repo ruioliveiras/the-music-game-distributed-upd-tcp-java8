@@ -152,8 +152,8 @@ public class AppController {
             
             String[] answers = {"Orlando","Paulo","Rui"};
             
-            Question q1 = new Question("Quem é o maior?", answers, 1, null, null);
-            Question q2 = new Question("Sou eu, o Zé Carlos", answers, 1, null, null);
+            Question q1 = new Question("Quem é o maior?", answers, 1, new byte[1], null);
+            Question q2 = new Question("Sou eu, o Zé Carlos", answers, 1, new byte[1], null);
             
             
             createQuestion(q1);

@@ -43,13 +43,13 @@ public class ServerCommunication {
      * @return
      * @throws IOException
      */
-    public PDU readNext() throws IOException {
+    public PDU nextPDU() throws IOException {
         PDU pdu = new PDU();
         byte[] headerBuffer = new byte[8];
         byte[] bodyBuffer = new byte[1024];
 
         if (is.read(headerBuffer, 0, 8) == 8) {
-            pdu.initHeaderFromBytes(headerBuffer);
+            pdu.initHeaderFromBytes(headerBuffer, 0);
             if (pdu.getParameterSizeBytes() > bodyBuffer.length) {
                 //error
             }
@@ -61,7 +61,7 @@ public class ServerCommunication {
             if (is.read(bodyBuffer, 0, pdu.getParameterSizeBytes()) != pdu.getParameterSizeBytes()) {
                 //error
             }
-            pdu.initParametersFromBytes(bodyBuffer);
+            pdu.initParametersFromBytes(bodyBuffer, 0);
         } else {
             //error
         }

@@ -48,10 +48,11 @@ public class ServerMain {
         this.facadeHub = new TcpHub(state);
         UDPServer = new UDPServer(udpPort, address, state);
         name = "" + tcpListingPort;
+        this.parseChallengeFile("desafio-000001.txt");
+     
     }
 
     public void init(String initIp, String initPort) throws UnknownHostException {
-        this.parseChallengeFile("desafio-000001.txt");
         facadeMem.registerServer(InetAddress.getByName(initIp), Integer.parseInt(initPort));
         state.getNeighbor(InetAddress.getByName(initIp).toString())
                 .registerServer(this.ss.getInetAddress(), this.ss.getLocalPort());
@@ -229,8 +230,8 @@ public class ServerMain {
                     aux[5] = aux[5].trim();
                     answers[2] = aux[5].substring(1, aux[5].length() - 1);
                     correctAnsIndex = Integer.parseInt(aux[6]);
-                    // question = new Question(questionText, answers.clone(), correctAnsIndex,assetsFolder +"/" + imgPath,assetsFolder + "/" + musicPath);
-                    // state.addQuestion(question);
+                    question = new Question(questionText, answers.clone(), correctAnsIndex,assetsFolder +"/" + imgPath,assetsFolder + "/" + musicPath);
+                    state.addQuestion(question);
                 }
             }
 
