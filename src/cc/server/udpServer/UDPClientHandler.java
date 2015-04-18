@@ -17,6 +17,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Executors;
@@ -122,6 +123,7 @@ public class UDPClientHandler {
             boolean check = Arrays.equals(state.getLocalUser(nick).getPass(), secInfo);
             if (check) {
                 user = state.getLocalUser(nick);
+                user.setIP(ip);
                 state.addSession(ip, user);
                 name = state.getLocalUser(nick).getName();
                 //ver se é isto que é para enviar no reply
@@ -141,6 +143,7 @@ public class UDPClientHandler {
     private PDU logout(String ip) {
         PDU answer = new PDU(PDUType.REPLY);
 
+        state.getSession(ip).setIP("");
         state.removeSession(ip);
         answer.addParameter(PDUType.REPLY_OK, 0);
 
@@ -189,7 +192,13 @@ public class UDPClientHandler {
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1024);
         executor.schedule(()->{
-            //put code here
+            if (challenge.getSubscribers().size() > 1) {
+                startChallenge(name);
+            }
+            else {
+                answer.addParameter(PDUType.REPLY_ERRO, "Numero insuficiente de jogadores para iniciar desafio");
+            }       
+            
         }, LocalDate.now().until(date.atTime(time),ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
        
         //@todo: criar thread que irá acordar quando for date,time
@@ -312,6 +321,42 @@ public class UDPClientHandler {
         pduAux.addParameter(PDUType.CONTINUE, (byte) 0);
 
         return pduAux;
+    }
+    
+    private void startChallenge(String challengeName){
+        PDU ans = new PDU(PDUType.REPLY);
+        int i, nQuestion;
+        int sizeQ = state.getQuestions().size();
+        Random r = new Random();
+                
+        for (i=1; i<=10; i++){
+            //@todo nesta parte de escolher perguntas, não podem haver repetidas
+            nQuestion = r.nextInt(sizeQ-1)+1;
+            ans.addParameter(PDUType.REPLY_CHALLE, challengeName);
+            ans.addParameter(PDUType.REPLY_NUM_QUESTION, i);
+            //@todo fazer merge do ans com o pdu do makeQuestion(nQuestion)
+        }
+                
+    }
+    
+    private PDU makeQuestion(int nQuestion){
+        PDU question = new PDU(PDUType.REPLY);
+        Question q = state.getQuestion(nQuestion);
+        String questionText = q.getQuestion();
+        String[] answers = q.getAnwser();
+        int correct = q.getCorrect(), i;
+        byte[] img = q.getImageArray();
+        
+        question.addParameter(PDUType.REPLY_QUESTION, questionText);
+        for(i=0; i<3; i++){
+            question.addParameter(PDUType.REPLY_NUM_ANSWER, i+1);
+            question.addParameter(PDUType.REPLY_ANSWER, answers[i]);
+        }
+        //@todo fazer o loadImage na classe Question
+        question.addParameter(PDUType.REPLY_IMG, img);
+        
+        return question;
+        
     }
 
 }

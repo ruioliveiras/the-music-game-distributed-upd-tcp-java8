@@ -1,5 +1,6 @@
 package cc.client;
 
+import cc.model.Question;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import java.io.IOException;
@@ -204,7 +205,7 @@ public class UDPClient {
         PDU receive = udp_com.nextPDU();
         ptu.processRankings(receive);
     }
-
+    
     public void closeCSocket() {
         udp_com.getC_socket().close();
     }

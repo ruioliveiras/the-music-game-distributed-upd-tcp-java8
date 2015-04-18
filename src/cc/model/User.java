@@ -28,6 +28,8 @@ public class User {
      */
     private int rating;
     
+    private String currentIP;
+    
     public User() {
         rating = 0;
     }
@@ -71,9 +73,17 @@ public class User {
     public int getRating() {
         return rating;
     }
+    
+    public String getIP() {
+        return currentIP;
+    }
 
     public void setRating(int rating) {
         this.rating = rating;
+    }
+    
+    public void setIP(String ip) {
+        this.currentIP = ip;
     }
     
 }
