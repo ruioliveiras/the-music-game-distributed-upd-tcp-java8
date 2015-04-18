@@ -11,6 +11,9 @@ import cc.model.User;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.tcpServer.ServerState;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -23,6 +26,8 @@ import java.util.TimerTask;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -30,10 +35,12 @@ import java.util.concurrent.TimeUnit;
  */
 public class UDPClientHandler {
 
-    ServerState state;
+    private final ServerState state;
+    private final DatagramSocket socket;
 
-    public UDPClientHandler(ServerState srvstate) {
-        state = srvstate;
+    public UDPClientHandler(ServerState serverState, DatagramSocket socket) {
+        this.state = serverState;
+        this.socket = socket;
     }
 
     public PDU decodePacket(PDU pdu, String ip) {
@@ -178,7 +185,7 @@ public class UDPClientHandler {
         return answer;
     }
 
-        private PDU makeChallenge(String ip, String name, LocalDate date, LocalTime time) {
+    private PDU makeChallenge(String ip, String name, LocalDate date, LocalTime time) {
         PDU answer = new PDU(PDUType.REPLY);
         Challenge challenge = new Challenge(name, date, time);
 
@@ -191,16 +198,15 @@ public class UDPClientHandler {
         answer.addParameter(PDUType.REPLY_HOUR, time);
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1024);
-        executor.schedule(()->{
+        executor.schedule(() -> {
             if (challenge.getSubscribers().size() > 1) {
-                startChallenge(name);
-            }
-            else {
+                startChallenge(challenge);
+            } else {
                 answer.addParameter(PDUType.REPLY_ERRO, "Numero insuficiente de jogadores para iniciar desafio");
-            }       
-            
-        }, LocalDate.now().until(date.atTime(time),ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
-       
+            }
+
+        }, LocalDate.now().until(date.atTime(time), ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
+
         //@todo: criar thread que irá acordar quando for date,time
         //       esta thread irá verificar se existe pessoas suficientes, 
         //       caso exista envia a primeira questao.
@@ -322,41 +328,65 @@ public class UDPClientHandler {
 
         return pduAux;
     }
-    
-    private void startChallenge(String challengeName){
-        PDU ans = new PDU(PDUType.REPLY);
+
+    private void startChallenge(Challenge challenge) {
+
         int i, nQuestion;
         int sizeQ = state.getQuestions().size();
         Random r = new Random();
-                
-        for (i=1; i<=10; i++){
-            //@todo nesta parte de escolher perguntas, não podem haver repetidas
-            nQuestion = r.nextInt(sizeQ-1)+1;
-            ans.addParameter(PDUType.REPLY_CHALLE, challengeName);
+
+        /**
+         * generate all the questions for this challenge
+         */
+        for (i = 1; i <= 10; i++) {
+            Question q;
+            do {
+                q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
+                // avoid repetead questions
+            } while (challenge.hasQuestion(q));
+            challenge.addQuestion(q);
+        }
+
+        for (i = 1; i <= 10; i++) {
+            PDU ans = new PDU(PDUType.REPLY);
+//@todo nesta parte de escolher perguntas, não podem haver repetidas
+            nQuestion = r.nextInt(sizeQ - 1) + 1;
+            ans.addParameter(PDUType.REPLY_CHALLE, challenge.getName());
             ans.addParameter(PDUType.REPLY_NUM_QUESTION, i);
             //@todo fazer merge do ans com o pdu do makeQuestion(nQuestion)
+
+//            SOLUCÇÂO? TALVEZ SIM TALVEZ NAO....
+//            byte[] dadosEnviar = ans.toByte();
+//            while (dadosEnviar != null) {
+//                DatagramPacket send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest_ip, dest_port);
+//                try {
+//                    socket.send(send_packet);
+//                } catch (IOException ex) {
+//                    Logger.getLogger(UDPClientHandler.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//            }
         }
-                
+
     }
-    
-    private PDU makeQuestion(int nQuestion){
+
+    private PDU makeQuestion(int nQuestion) {
         PDU question = new PDU(PDUType.REPLY);
         Question q = state.getQuestion(nQuestion);
         String questionText = q.getQuestion();
         String[] answers = q.getAnwser();
         int correct = q.getCorrect(), i;
         byte[] img = q.getImageArray();
-        
+
         question.addParameter(PDUType.REPLY_QUESTION, questionText);
-        for(i=0; i<3; i++){
-            question.addParameter(PDUType.REPLY_NUM_ANSWER, i+1);
+        for (i = 0; i < 3; i++) {
+            question.addParameter(PDUType.REPLY_NUM_ANSWER, i + 1);
             question.addParameter(PDUType.REPLY_ANSWER, answers[i]);
         }
         //@todo fazer o loadImage na classe Question
         question.addParameter(PDUType.REPLY_IMG, img);
-        
+
         return question;
-        
+
     }
 
 }

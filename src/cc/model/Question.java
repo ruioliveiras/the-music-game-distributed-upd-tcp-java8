@@ -57,8 +57,6 @@ public class Question {
      * @param correct
      * @param imagePath
      * @param musicPath
-     * @param imageArray
-     * @param musicArray
      */
     public Question(String question, String[] anwser, int correct, String imagePath, String musicPath) {
         this.question = question;

@@ -33,7 +33,7 @@ public class UDPServer {
             s_socket = new DatagramSocket(port);
             com = new UDPServerCommunication();
             this.state = state;
-            handler = new UDPClientHandler(state);
+            handler = new UDPClientHandler(state, s_socket);
 
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Servidor.");
@@ -49,7 +49,7 @@ public class UDPServer {
             s_socket = new DatagramSocket(port, adress);
             com = new UDPServerCommunication();
             this.state = state;
-            handler = new UDPClientHandler(state);
+            handler = new UDPClientHandler(state, s_socket);
 
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Servidor.");
@@ -74,7 +74,7 @@ public class UDPServer {
             this.getS_socket().receive(receive_packet); //fica à espera de receber o pacote
 
             pdu_received = com.readDatagram(receive_packet.getData());
-            System.out.println("UDP pdu:"+pdu_received);
+            System.out.println("UDP pdu:" + pdu_received);
             dest_ip = receive_packet.getAddress();  // obtem o endereço ip e porta do cliente que enviou o datagrama para enviar resposta
             dest_port = receive_packet.getPort();
 
@@ -83,9 +83,10 @@ public class UDPServer {
             dadosEnviar = pdu_response.toByte();
             while (dadosEnviar != null) {
                 send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest_ip, dest_port);
+                this.getS_socket().send(send_packet);
                 dadosEnviar = pdu_response.toByte();
             }
-            this.getS_socket().send(send_packet);
+            //this.getS_socket().send(send_packet);
         }
     }
 

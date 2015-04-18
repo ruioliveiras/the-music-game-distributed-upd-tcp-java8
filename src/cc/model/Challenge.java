@@ -7,8 +7,10 @@ package cc.model;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,15 +35,21 @@ public class Challenge {
     /**
      * The current users that subscribe this challenge.
      */
-    private Set<User> subscribers;
+    private final Set<User> subscribers;
     /**
      * Map from user.nick to his score.
      */
-    private Map<String,Integer> scores;
+    private final Map<String,Integer> scores;
+    
+    /**
+     * Set of the questions generated for the challenge
+     */
+    private final List<Question> questions;
 
     public Challenge() {
         subscribers = new HashSet<>();
         scores = new HashMap<>();
+        questions = new ArrayList<>();
     }
 
     /**
@@ -80,7 +88,6 @@ public class Challenge {
         scores.put(u.getNick(),0);
     }
 
-    
     public int getScore(String userNick) {
         return scores.get(userNick);
     }    
@@ -91,5 +98,17 @@ public class Challenge {
         } else {
             scores.put(userNick, scores.get(userNick) - 1);            
         }
+    }
+    
+    public boolean hasQuestion(Question q){
+        return questions.contains(q);
+    }
+    
+    public void addQuestion(Question q){
+        questions.add(q);
+    }
+    
+    public Question getQuestion(int index){
+        return questions.get(index);
     }
 }
