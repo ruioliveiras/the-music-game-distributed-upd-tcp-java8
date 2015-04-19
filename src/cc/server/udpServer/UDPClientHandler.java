@@ -348,11 +348,9 @@ public class UDPClientHandler {
         }
 
         for (i = 1; i <= 10; i++) {
-            PDU ans = new PDU(PDUType.REPLY);
+            PDU ans = makeQuestion(challenge.getName(), i);
 //@todo nesta parte de escolher perguntas, não podem haver repetidas
-            nQuestion = r.nextInt(sizeQ - 1) + 1;
-            ans.addParameter(PDUType.REPLY_CHALLE, challenge.getName());
-            ans.addParameter(PDUType.REPLY_NUM_QUESTION, i);
+            
             //@todo fazer merge do ans com o pdu do makeQuestion(nQuestion)
 
 //            SOLUCÇÂO? TALVEZ SIM TALVEZ NAO....
@@ -369,14 +367,16 @@ public class UDPClientHandler {
 
     }
 
-    private PDU makeQuestion(int nQuestion) {
+    private PDU makeQuestion(String challengeName, int number) {
         PDU question = new PDU(PDUType.REPLY);
-        Question q = state.getQuestion(nQuestion);
+        Question q = state.getChallenge(challengeName).getQuestion(number-1);
         String questionText = q.getQuestion();
         String[] answers = q.getAnwser();
         int correct = q.getCorrect(), i;
         byte[] img = q.getImageArray();
 
+        question.addParameter(PDUType.REPLY_CHALLE, challengeName);
+        question.addParameter(PDUType.REPLY_NUM_QUESTION, number);
         question.addParameter(PDUType.REPLY_QUESTION, questionText);
         for (i = 0; i < 3; i++) {
             question.addParameter(PDUType.REPLY_NUM_ANSWER, i + 1);
