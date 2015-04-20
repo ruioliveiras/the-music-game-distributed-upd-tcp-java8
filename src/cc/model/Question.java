@@ -77,19 +77,31 @@ public class Question {
         this.imageArray = imageArray;
         this.musicArray = musicArray;
     }
-    
+
+    public void loadImage () {
+        if (imageArray != null) {
+            return;
+        }
+        try {
+            Path path = Paths.get(imagePath);
+            imageArray = Files.readAllBytes(path);
+        } catch (IOException ex) {
+            throw new RuntimeException("reading Image");
+        }
+    }
+
     public void loadMusic() {
-        if (musicArray != null){
+        if (musicArray != null) {
             return;
         }
         try {
             Path path = Paths.get(musicPath);
-            musicArray = Files.readAllBytes(path);            
+            musicArray = Files.readAllBytes(path);
         } catch (IOException ex) {
-            throw  new RuntimeException("reading music");
+            throw new RuntimeException("reading music");
         }
     }
-    
+
     public String getQuestion() {
         return question;
     }
@@ -129,4 +141,18 @@ public class Question {
         return sb.toString();
     }
 
+    @Override
+    public int hashCode() {
+        return getQuestion().hashCode(); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Question){
+            return ((Question)obj).getQuestion().equals(getQuestion());
+        }
+        return false;
+    }
+
+    
 }

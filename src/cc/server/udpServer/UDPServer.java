@@ -78,14 +78,13 @@ public class UDPServer {
             dest_ip = receive_packet.getAddress();  // obtem o endereço ip e porta do cliente que enviou o datagrama para enviar resposta
             dest_port = receive_packet.getPort();
 
-            pdu_response = handler.decodePacket(pdu_received, dest_ip.toString());
+            pdu_response = handler.decodePacket(pdu_received, dest_ip, dest_port);
 
-            dadosEnviar = pdu_response.toByte();
-            while (dadosEnviar != null) {
+            do {
+                dadosEnviar = pdu_response.toByte();
                 send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest_ip, dest_port);
                 this.getS_socket().send(send_packet);
-                dadosEnviar = pdu_response.toByte();
-            }
+            } while (pdu_response.nextFragment());
             //this.getS_socket().send(send_packet);
         }
     }

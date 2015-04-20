@@ -38,7 +38,7 @@ public enum PDUDataType {
                 }
 
                 public int getSize(Object o) {
-                    return ((String) o).length();
+                    return ((String) o).getBytes().length;
                 }
 
                 public byte[] toByte(Object o) {

@@ -20,6 +20,9 @@ import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -119,6 +122,7 @@ public class ServerMain {
         testClient01();
         testClient02();
         testClient03();
+        testClient04();
     }
     
     public static void testClient01() throws IOException {
@@ -140,9 +144,11 @@ public class ServerMain {
     public static void testClient02() throws IOException {
         ClientBash c1 = new ClientBash("127.0.0.66","127.0.0.1",5050);
         ClientBash c2 = new ClientBash("127.0.0.67","127.0.0.1",5050);
+        LocalDate d = LocalDate.now();
+        LocalTime t = LocalTime.now().plus(1,ChronoUnit.MINUTES);
         
         c2.execute("LOGIN prc 123");
-        c2.execute("MAKE_CHALLENGE Circo 2015-05-02 15:15");
+        c2.execute("MAKE_CHALLENGE Circo 2015-05-02 15:00");
         c2.execute("LOGOUT");
         
         
@@ -166,6 +172,16 @@ public class ServerMain {
         c1.execute("LOGIN orlando 123");
         c1.execute("ACCEPT_CHALLENGE Circo");
         c1.execute("LOGOUT");
+    }
+    
+    public static void testClient04() throws IOException {
+        ClientBash c1 = new ClientBash("127.0.0.70","127.0.0.1",5050);
+        ClientBash c2 = new ClientBash("127.0.0.71","127.0.0.1",5050);
+        ClientBash c3 = new ClientBash("127.0.0.72","127.0.0.1",5050);
+        
+        c3.execute("LOGIN prc 123");
+        c2.execute("LOGIN ruioliveiras 123");
+        c1.execute("LOGIN orlando 123");
     }
 
     

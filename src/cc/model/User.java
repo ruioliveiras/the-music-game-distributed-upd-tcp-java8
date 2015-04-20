@@ -5,6 +5,8 @@
  */
 package cc.model;
 
+import java.net.InetAddress;
+
 /**
  *
  * @author ruioliveiras
@@ -28,7 +30,8 @@ public class User {
      */
     private int rating;
     
-    private String currentIP;
+    private InetAddress currentIP;
+    private int currentPort;
     
     public User() {
         rating = 0;
@@ -74,16 +77,24 @@ public class User {
         return rating;
     }
     
-    public String getIP() {
+    public InetAddress getIP() {
         return currentIP;
+    }
+    
+    public int getPort() {
+        return currentPort;
     }
 
     public void setRating(int rating) {
         this.rating = rating;
     }
     
-    public void setIP(String ip) {
+    public void setIP(InetAddress ip) {
         this.currentIP = ip;
+    }
+    
+    public void setPort(int port) {
+        this.currentPort = port;
     }
     
 }

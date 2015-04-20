@@ -14,6 +14,7 @@ import cc.server.tcpServer.ServerState;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -37,16 +38,17 @@ public class UDPClientHandler {
 
     private final ServerState state;
     private final DatagramSocket socket;
+    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1024);
 
     public UDPClientHandler(ServerState serverState, DatagramSocket socket) {
         this.state = serverState;
         this.socket = socket;
     }
 
-    public PDU decodePacket(PDU pdu, String ip) {
+    public PDU decodePacket(PDU pdu, InetAddress innetAddress, int port) {
 
         PDU answer = new PDU(PDUType.REPLY);
-
+        String ip = innetAddress.toString();
         switch (pdu.getType()) {
             case HELLO:
                 answer.addParameter(PDUType.REPLY_OK, 0);
@@ -60,7 +62,7 @@ public class UDPClientHandler {
             case LOGIN:
                 nick = (String) pdu.popParameter(PDUType.LOGIN_NICK);
                 secInfo = (byte[]) pdu.popParameter(PDUType.LOGIN_PASS);
-                answer = login(ip, nick, secInfo);
+                answer = login(innetAddress, port, nick, secInfo);
                 break;
             case LOGOUT:
                 answer = logout(ip);
@@ -121,7 +123,7 @@ public class UDPClientHandler {
         return answer;
     }
 
-    private PDU login(String ip, String nick, byte[] secInfo) {
+    private PDU login(InetAddress ip, int port, String nick, byte[] secInfo) {
         User user;
         String name;
         PDU answer = new PDU(PDUType.REPLY);
@@ -131,7 +133,8 @@ public class UDPClientHandler {
             if (check) {
                 user = state.getLocalUser(nick);
                 user.setIP(ip);
-                state.addSession(ip, user);
+                user.setPort(port);
+                state.addSession(ip.toString(), user);
                 name = state.getLocalUser(nick).getName();
                 //ver se é isto que é para enviar no reply
                 int score = state.getLocalUser(nick).getRating();
@@ -150,7 +153,7 @@ public class UDPClientHandler {
     private PDU logout(String ip) {
         PDU answer = new PDU(PDUType.REPLY);
 
-        state.getSession(ip).setIP("");
+        state.getSession(ip).setIP(null);
         state.removeSession(ip);
         answer.addParameter(PDUType.REPLY_OK, 0);
 
@@ -197,7 +200,6 @@ public class UDPClientHandler {
         answer.addParameter(PDUType.REPLY_DATE, date);
         answer.addParameter(PDUType.REPLY_HOUR, time);
 
-        ScheduledExecutorService executor = Executors.newScheduledThreadPool(1024);
         executor.schedule(() -> {
             if (challenge.getSubscribers().size() > 1) {
                 startChallenge(challenge);
@@ -205,7 +207,8 @@ public class UDPClientHandler {
                 answer.addParameter(PDUType.REPLY_ERRO, "Numero insuficiente de jogadores para iniciar desafio");
             }
 
-        }, LocalDate.now().until(date.atTime(time), ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
+            //  }, LocalDate.now().until(date.atTime(time), ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
+        }, 5000, TimeUnit.MILLISECONDS);
 
         //@todo: criar thread que irá acordar quando for date,time
         //       esta thread irá verificar se existe pessoas suficientes, 
@@ -289,101 +292,108 @@ public class UDPClientHandler {
         return answer;
     }
 
-    private PDU musicPDU(Question q) {
-        PDU aux = new PDU(PDUType.REPLY), p;
-        q.loadMusic();
-        int i = 0;
-
-        do {
-            p = aux;
-            aux = musicBlockAux(p, q, i++);
-        } while (aux != null);
-
-        return p;
-    }
-
     public PDU retransmit(String challengeName, int questionId, int nblock) {
         Question q = state.getQuestion(questionId);
         q.loadMusic();
         if (q == null) {
             //erro;
         }
-        return musicBlockAux(new PDU(PDUType.REPLY), q, nblock);
+        PDU p = new PDU(PDUType.REPLY);
+        musicBlockAux(p, q, nblock);
+        return p;
     }
 
-    private PDU musicBlockAux(PDU pduAux, Question q, int index) {
+    private boolean musicBlockAux(PDU pduAux, Question q, int index) {
         int sizeofBlock = 48 * 1024;
         int size = sizeofBlock;
         if ((sizeofBlock * index + sizeofBlock) > q.getMusicArray().length) {
             size = q.getMusicArray().length - (sizeofBlock * index + sizeofBlock);
         }
         if (size < 0) {
-            return null;
+            return false;
         }
         byte[] res = ByteBuffer.allocate(size).put(q.getMusicArray(), index * sizeofBlock, size).array();
 
         pduAux.addParameter(PDUType.REPLY_NUM_BLOCK, (byte) index);
         pduAux.addParameter(PDUType.REPLY_BLOCK, res);
-        pduAux.addParameter(PDUType.CONTINUE, (byte) 0);
+        //pduAux.addParameter(PDUType.CONTINUE, (byte) 0);
 
-        return pduAux;
+        return true;
     }
 
     private void startChallenge(Challenge challenge) {
+        try {
 
-        int i, nQuestion;
-        int sizeQ = state.getQuestions().size();
-        Random r = new Random();
+            int i, nQuestion;
+            int sizeQ = state.getQuestions().size();
+            Random r = new Random();
 
-        /**
-         * generate all the questions for this challenge
-         */
-        for (i = 1; i <= 10; i++) {
-            Question q;
-            do {
-                q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
-                // avoid repetead questions
-            } while (challenge.hasQuestion(q));
-            challenge.addQuestion(q);
-        }
+            /**
+             * generate all the questions for this challenge
+             */
+            for (i = 1; i <= 5; i++) {
+                Question q;
+                do {
+                    q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
+                    // avoid repetead questions
+                } while (challenge.hasQuestion(q));
+                challenge.addQuestion(q);
+            }
 
-        for (i = 1; i <= 10; i++) {
-            PDU ans = makeQuestion(challenge.getName(), i);
+            for (i = 1; i <= 5; i++) {
+                PDU ans = makeQuestion(challenge.getName(), i);
 //@todo nesta parte de escolher perguntas, não podem haver repetidas
-            
-            //@todo fazer merge do ans com o pdu do makeQuestion(nQuestion)
 
+                //@todo fazer merge do ans com o pdu do makeQuestion(nQuestion)
 //            SOLUCÇÂO? TALVEZ SIM TALVEZ NAO....
-//            byte[] dadosEnviar = ans.toByte();
-//            while (dadosEnviar != null) {
-//                DatagramPacket send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest_ip, dest_port);
-//                try {
-//                    socket.send(send_packet);
-//                } catch (IOException ex) {
-//                    Logger.getLogger(UDPClientHandler.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//            }
+                do {
+                    final byte[] dadosEnviar = ans.toByte();
+
+                    challenge.getSubscribers().stream()
+                            .filter(user -> user.getIP() != null)
+                            .map((user) -> new DatagramPacket(dadosEnviar, dadosEnviar.length, user.getIP(), user.getPort()))
+                            .forEach((datagram) -> {
+                                try {
+                                    socket.send(datagram);
+                                } catch (IOException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            });
+                } while (ans.nextFragment());
+            }
+        } catch (Exception ex) {
+              ex.printStackTrace();
         }
 
     }
 
     private PDU makeQuestion(String challengeName, int number) {
         PDU question = new PDU(PDUType.REPLY);
-        Question q = state.getChallenge(challengeName).getQuestion(number-1);
+        Question q = state.getChallenge(challengeName).getQuestion(number - 1);
         String questionText = q.getQuestion();
         String[] answers = q.getAnwser();
         int correct = q.getCorrect(), i;
-        byte[] img = q.getImageArray();
 
         question.addParameter(PDUType.REPLY_CHALLE, challengeName);
-        question.addParameter(PDUType.REPLY_NUM_QUESTION, number);
+        question.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) number);
         question.addParameter(PDUType.REPLY_QUESTION, questionText);
         for (i = 0; i < 3; i++) {
-            question.addParameter(PDUType.REPLY_NUM_ANSWER, i + 1);
+            question.addParameter(PDUType.REPLY_NUM_ANSWER, (byte) (i + 1));
             question.addParameter(PDUType.REPLY_ANSWER, answers[i]);
         }
-        //@todo fazer o loadImage na classe Question
-        question.addParameter(PDUType.REPLY_IMG, img);
+        //image:
+        q.loadImage();
+        question.addParameter(PDUType.REPLY_IMG, q.getImageArray());
+        //music: 
+        q.loadMusic();
+
+        i = 0;
+        question.initNextFragment();
+        while (musicBlockAux(question, q, i++)) {
+            question.initNextFragment();
+        };
+        // this is to remove the last initNextFragment that are not in use;
+        question.nextFragment();
 
         return question;
 

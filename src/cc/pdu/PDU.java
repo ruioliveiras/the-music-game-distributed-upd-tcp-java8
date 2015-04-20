@@ -29,9 +29,11 @@ public class PDU {
     private int sizeBytes; //1 byte
     // Other Parameters
     private Map<PDUType, List<Object>> parameters;
+    private List<Map<PDUType, List<Object>>> fragments;
 
     public PDU() {
         parameters = new HashMap<>();
+        this.fragments = new ArrayList<>();
     }
 
     public PDU(PDUType type) {
@@ -46,6 +48,7 @@ public class PDU {
         this.pduType = pduType;
         this.nField = nField;
         this.parameters = new HashMap<>();
+        this.fragments = new ArrayList<>();
     }
 
     /**
@@ -83,7 +86,8 @@ public class PDU {
         while (offset1 + offset < b.length && offset < sizeBytes && i < nField) {
             // the first byte are the identifier of the Parameter Type.
             PDUType parameter = pduType.getParameterById(b[offset1 + offset++]);
-            int byteSize = b[offset1 + offset++];
+            int byteSize = b[offset1 + offset] << 8| b[offset1 + offset+1]  ;
+            offset+=2;
             Object obj = parameter.getDataType().read(b, offset + offset1, byteSize);
 
             offset += parameter.getDataType().getSize(obj);
@@ -107,7 +111,7 @@ public class PDU {
             PDUType key = entrySet.getKey();
             sizeBytes += entrySet.getValue().stream()
                     .reduce(0,
-                            (sum, b) -> sum + 2 + key.getDataType().getSize(b),
+                            (sum, b) -> sum + 3 + key.getDataType().getSize(b),
                             Integer::sum
                     ).intValue();
         });
@@ -121,33 +125,31 @@ public class PDU {
         b.put((byte) parameters.size());
         b.putShort((short) sizeBytes);
         //params:
-        boolean done; int hasResponse = 0;
-        do {
-            done = true;
-            for (Map.Entry<PDUType, List<Object>> entrySet : parameters.entrySet()) {
-                PDUType key = entrySet.getKey();
-                hasResponse = (hasResponse != 2)? 1: 2;
-                if (entrySet.getValue().size() > 0) {
-                    Object value = entrySet.getValue().remove(0);
-                    b.put((byte) key.getId());
-                    b.put((byte) key.getDataType().getSize(value));
-                    b.put(key.getDataType().toByte(value));
-                    done = false;
-                    hasResponse = 2;
-                }
-            }
-        } while (!this.hasParameter(PDUType.CONTINUE) && !done);
-//                    .stream()
-//                    .forEach((value) -> {
-//                        b.put((byte) key.getId());
-//                        b.put((byte) key.getDataType().getSize(value));
-//                        b.put(key.getDataType().toByte(value));
-//                    });
-        if (hasResponse == 0 || hasResponse == 2) {
-            return b.array();
-        } else {
-            return null;
-        }
+//        boolean done;
+//        do {
+//            done = true;
+//            for (Map.Entry<PDUType, List<Object>> entrySet : parameters.entrySet()) {
+//                PDUType key = entrySet.getKey();
+//                if (entrySet.getValue().size() > 0) {
+//                    Object value = entrySet.getValue().remove(0);
+//                    b.put((byte) key.getId());
+//                    b.put((byte) key.getDataType().getSize(value));
+//                    b.put(key.getDataType().toByte(value));
+//                    done = false;
+//                }
+//            }
+//        } while (!done);
+        parameters.entrySet().stream()
+                .forEach((entrySet) -> {
+                    final PDUType key = entrySet.getKey();
+                    entrySet.getValue().stream()
+                    .forEach((value) -> {
+                        b.put((byte) key.getId());
+                        b.putShort((short) key.getDataType().getSize(value));
+                        b.put(key.getDataType().toByte(value));
+                    });
+                });
+        return b.array();
     }
 
     public int getParameterSizeBytes() {
@@ -183,9 +185,24 @@ public class PDU {
         return parameters.get(p).remove(0);
     }
 
+    public boolean nextFragment() {
+        if (fragments.size() > 0) {
+            parameters = fragments.remove(0);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     public boolean hasParameter(PDUType p) {
         return parameters.containsKey(p)
                 && parameters.get(p).size() > 0;
+    }
+
+    public void initNextFragment() {
+        this.addParameter(PDUType.CONTINUE, (byte) 0);
+        fragments.add(parameters);
+        parameters = new HashMap<>();
     }
 
     // is fragmeted 
@@ -211,4 +228,5 @@ public class PDU {
     public String toString() {
         return "PDU,parameters:" + parameters.toString();
     }
+
 }
