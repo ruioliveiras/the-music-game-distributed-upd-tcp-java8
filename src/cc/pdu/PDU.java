@@ -197,6 +197,11 @@ public class PDU {
         return label;
     }
 
+    public void setLabel(int label) {
+        this.label = label;
+    }
+    
+    
     public Object popParameter(PDUType p) {
         return parameters.get(p).remove(0);
     }

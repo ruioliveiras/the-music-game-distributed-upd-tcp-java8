@@ -49,8 +49,7 @@ public class ServerMain {
     /* UDP */
     private final UDPComunication updServer;
     private final UDPClientHandler udpHandler;
-    private final UDPServer depecratedUDPServer;
-
+    
     
     //vai estar declarado static aqui um server state, e um server facade.
     //vai ter um metodo para começar o server handler 
@@ -63,8 +62,8 @@ public class ServerMain {
         this.tcpLocal = new TcpLocal(state);
         this.tcpHub = new TcpHub(state);
         
-        depecratedUDPServer = new UDPServer(udpPort, address, state);
         updServer = new UDPComunication(udpPort, address, 0, null);
+        updServer.setLabelMode(false);
         udpHandler = new UDPClientHandler(state, null);
     }
 
@@ -83,15 +82,11 @@ public class ServerMain {
         }
     }
 
-    public void startUdp2() throws IOException {
-        this.depecratedUDPServer.unicastConnection();
-    }
-
     public void startUdp() throws IOException {
         while (true) {
             PDU pdu = updServer.nextPDU();
             //create thread? no
-            udpHandler.decodePacket(pdu, updServer.getDestIp(), updServer.getDestPort());
+            pdu = udpHandler.decodePacket(pdu, updServer.getDestIp(), updServer.getDestPort());
             updServer.sendPDU(pdu);
         }
     }

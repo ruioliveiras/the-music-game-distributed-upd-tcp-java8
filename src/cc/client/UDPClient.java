@@ -4,7 +4,6 @@ import cc.model.Question;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.udpServer.UDPComunication;
-import java.io.IOException;
 import java.net.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -25,7 +24,7 @@ public class UDPClient {
         try {
             dest_ip = InetAddress.getByName(dest);
             dest_port = port;
-            udp_com = new UDPComunication(sourcePort, InetAddress.getByName(sourceIp));
+            udp_com = new UDPComunication(sourcePort, InetAddress.getByName(sourceIp), port, InetAddress.getByName(dest));
             ptu = new PDUToUser();
 
         } catch (UnknownHostException ex) {
@@ -37,7 +36,7 @@ public class UDPClient {
         try {
             dest_ip = InetAddress.getByName(dest);
             dest_port = port;
-            udp_com = new UDPComunication();
+            udp_com = new UDPComunication(0, null, port, InetAddress.getByName(dest));
             ptu = new PDUToUser();
         } catch (UnknownHostException ex) {
             System.out.println("Não foi possível criar Cliente.");
@@ -54,7 +53,7 @@ public class UDPClient {
 
     public void makeDatagramHello() {
         PDU send = new PDU(PDUType.HELLO);
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processOk();
@@ -71,7 +70,7 @@ public class UDPClient {
         send.addParameter(PDUType.REGISTER_NICK, alcunha);
         send.addParameter(PDUType.REGISTER_PASS, sec_info);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processOk();
@@ -87,7 +86,7 @@ public class UDPClient {
         send.addParameter(PDUType.LOGIN_NICK, alcunha);
         send.addParameter(PDUType.LOGIN_PASS, sec_info);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processLogin(receive);
@@ -96,7 +95,7 @@ public class UDPClient {
     public void makeDatagramLogout() {
         PDU send = new PDU(PDUType.LOGOUT);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processOk();
@@ -106,7 +105,7 @@ public class UDPClient {
     public void makeDatagramQuit() {
         PDU send = new PDU(PDUType.QUIT);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processOk();
@@ -115,7 +114,7 @@ public class UDPClient {
     public void makeDatagramEnd() {
         PDU send = new PDU(PDUType.END);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processEnd(receive);
@@ -124,7 +123,7 @@ public class UDPClient {
     public void makeDatagramListChallenges() {
         PDU send = new PDU(PDUType.LIST_CHALLENGES);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processChallenges(receive);
@@ -137,7 +136,7 @@ public class UDPClient {
         send.addParameter(PDUType.MAKE_CHALLENGE_DATE, data);
         send.addParameter(PDUType.MAKE_CHALLENGE_HOUR, hora);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processChallenges(receive);
@@ -148,7 +147,7 @@ public class UDPClient {
 
         send.addParameter(PDUType.ACCEPT_CHALLENGE_CHALLENGE, desafio);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processOk();
@@ -161,9 +160,7 @@ public class UDPClient {
 
         send.addParameter(PDUType.DELETE_CHALLENGE_CHALLENGE, desafio);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
-
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processChallenges(receive);
@@ -181,7 +178,7 @@ public class UDPClient {
         send.addParameter(PDUType.ANSWER_CHALLENGE, desafio);
         send.addParameter(PDUType.ANSWER_NQUESTION, questao);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         //ptu.processAnswer(receive);
@@ -195,27 +192,29 @@ public class UDPClient {
         send.addParameter(PDUType.RETRANSMIT_NQUESTION, questao);
         send.addParameter(PDUType.RETRANSMIT_NBLOCK, bloco);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
     }
 
     public void makeDatagramList_Ranking() {
         PDU send = new PDU(PDUType.LIST_RANKING);
 
-        udp_com.sendPDU(dest_ip, dest_port, send);
+        udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
         ptu.processRankings(receive);
     }
-    
+
     public void closeCSocket() {
-        udp_com.getC_socket().close();
+        udp_com.close();
     }
-    
-    public Question getNextQuestion(){
+
+    public Question getNextQuestion() {
         Question question;
-        PDU receive = udp_com.nextPDU(0);
-        
+        udp_com.setLabelMode(false);
+        PDU receive = udp_com.nextPDU();
+        udp_com.setLabelMode(true);
+
         String questionText = (String) receive.popParameter(PDUType.REPLY_QUESTION);
         String[] answers = (String[]) receive.popParameter(PDUType.REPLY_ANSWER);
         int correct = (int) receive.popParameter(PDUType.REPLY_CORRECT);
@@ -224,7 +223,7 @@ public class UDPClient {
         byte[] music = (byte[]) receive.popParameter(PDUType.REPLY_BLOCK);
         //@todo receber os blocos da musica
         question = new Question(questionText, answers, correct, img, music);
-        
+
         return question;
     }
 

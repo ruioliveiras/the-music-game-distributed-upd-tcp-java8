@@ -27,7 +27,11 @@ public class UDPComunication {
 
     public UDPComunication(int sourcePort, InetAddress sourceIp, int destPort, InetAddress destIp) {
         try {
-            socket = new DatagramSocket(sourcePort, sourceIp);
+            if (sourcePort == 0 || sourceIp == null){
+                socket = new DatagramSocket();
+            }else{
+                socket = new DatagramSocket(sourcePort, sourceIp);                
+            }
             this.destPort = destPort;
             this.destIp = destIp;
             labelMode = true;
@@ -49,6 +53,7 @@ public class UDPComunication {
     }
 
     public void sendPDU(PDU send_pdu) {
+        send_pdu.setLabel(currentLabel);
         DatagramPacket send_packet = new DatagramPacket(send_pdu.toByte(), send_pdu.getSizeBytes(), this.destIp, this.destPort);
 
         try {
@@ -92,10 +97,9 @@ public class UDPComunication {
     }
 
     private byte[] connectionReceiveBytes() {
-        DatagramPacket receive_packet = null;
         byte[] dadosReceber = new byte[1024 * 128];
+        DatagramPacket receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
 
-        receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
         try {
             this.socket.receive(receive_packet);
             destPort = receive_packet.getPort();
@@ -126,5 +130,9 @@ public class UDPComunication {
 
     public int getDestPort() {
         return destPort;
+    }
+
+    public void close() {
+        socket.close();
     }
 }
