@@ -8,9 +8,12 @@ package cc.server;
 import cc.client.ClientBash;
 import cc.server.tcpServer.ServerState;
 import cc.model.Question;
+import cc.pdu.PDU;
 import cc.server.tcpServer.facade.TcpLocal;
 import cc.server.tcpServer.communication.ServerHandler;
 import cc.server.tcpServer.facade.TcpHub;
+import cc.server.udpServer.UDPClientHandler;
+import cc.server.udpServer.UDPComunication;
 import cc.server.udpServer.UDPServer;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -35,43 +38,62 @@ public class ServerMain {
 
     private final static int DEFAULT_TCP_PORT = 8080;
     private final static int DEFAULT_UDP_PORT = 5050;
-    private final ServerState state;
-    private final ServerSocket ss;
-    private final TcpLocal facadeMem;
-    private final TcpHub facadeHub;
-    private final UDPServer UDPServer;
+    
     private final String name;
+    private final ServerState state;
+    /* TCP */
+    private final ServerSocket tcpSS;
+    private final TcpLocal tcpLocal;
+    private final TcpHub tcpHub;
+    
+    /* UDP */
+    private final UDPComunication updServer;
+    private final UDPClientHandler udpHandler;
+    private final UDPServer depecratedUDPServer;
 
+    
     //vai estar declarado static aqui um server state, e um server facade.
     //vai ter um metodo para começar o server handler 
     public ServerMain(int udpPort, int tcpListingPort, InetAddress address) throws IOException {
-        this.ss = new ServerSocket(tcpListingPort, 0, address);
         this.state = new ServerState();
-        this.facadeMem = new TcpLocal(state);
-        this.facadeHub = new TcpHub(state);
-        UDPServer = new UDPServer(udpPort, address, state);
-        name = "" + tcpListingPort;
+        this.name = "" + tcpListingPort;
         this.parseChallengeFile("desafio-000001.txt");
-     
+
+        this.tcpSS = new ServerSocket(tcpListingPort, 0, address);
+        this.tcpLocal = new TcpLocal(state);
+        this.tcpHub = new TcpHub(state);
+        
+        depecratedUDPServer = new UDPServer(udpPort, address, state);
+        updServer = new UDPComunication(udpPort, address, 0, null);
+        udpHandler = new UDPClientHandler(state, null);
     }
 
     public void init(String initIp, String initPort) throws UnknownHostException {
-        facadeMem.registerServer(InetAddress.getByName(initIp), Integer.parseInt(initPort));
+        tcpLocal.registerServer(InetAddress.getByName(initIp), Integer.parseInt(initPort));
         state.getNeighbor(InetAddress.getByName(initIp).toString())
-                .registerServer(this.ss.getInetAddress(), this.ss.getLocalPort());
+                .registerServer(this.tcpSS.getInetAddress(), this.tcpSS.getLocalPort());
     }
 
     public void startTCP() throws IOException {
         while (true) {
-            Socket cn = ss.accept();
-            ServerHandler handler = new ServerHandler(name, state, cn, facadeMem, facadeHub);
+            Socket cn = tcpSS.accept();
+            ServerHandler handler = new ServerHandler(name, state, cn, tcpLocal, tcpHub);
             Thread t = new Thread(handler, name + "|handle:" + cn.getRemoteSocketAddress().toString());
             t.start();
         }
     }
 
+    public void startUdp2() throws IOException {
+        this.depecratedUDPServer.unicastConnection();
+    }
+
     public void startUdp() throws IOException {
-        this.UDPServer.unicastConnection();
+        while (true) {
+            PDU pdu = updServer.nextPDU();
+            //create thread? no
+            udpHandler.decodePacket(pdu, updServer.getDestIp(), updServer.getDestPort());
+            updServer.sendPDU(pdu);
+        }
     }
 
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -84,7 +106,7 @@ public class ServerMain {
             portUdp = DEFAULT_UDP_PORT;
         }
         ServerMain main = new ServerMain(portUdp, portTcp, InetAddress.getByName("127.0.0.1"));
-        startInOtherThread(main,"MainServer1");
+        startInOtherThread(main, "MainServer1");
         testServers();
         testClient();
 
@@ -124,14 +146,14 @@ public class ServerMain {
         testClient03();
         testClient04();
     }
-    
+
     public static void testClient01() throws IOException {
-        ClientBash c1 = new ClientBash("127.0.0.65","127.0.0.1",5050);
+        ClientBash c1 = new ClientBash("127.0.0.65", "127.0.0.1", 5050);
         //cb.execute("REGISTAR nome nick pass");
         c1.execute("REGISTER rui ruioliveiras 123");
         c1.execute("LOGIN ruioliveiras 123");
         c1.execute("LOGOUT");
-        
+
         c1.execute("REGISTER paulo prc 123");
         c1.execute("LOGIN prc 123");
         c1.execute("LOGOUT");
@@ -140,18 +162,17 @@ public class ServerMain {
         c1.execute("LOGIN orlando 123");
         c1.execute("LOGOUT");
     }
-    
+
     public static void testClient02() throws IOException {
-        ClientBash c1 = new ClientBash("127.0.0.66","127.0.0.1",5050);
-        ClientBash c2 = new ClientBash("127.0.0.67","127.0.0.1",5050);
+        ClientBash c1 = new ClientBash("127.0.0.66", "127.0.0.1", 5050);
+        ClientBash c2 = new ClientBash("127.0.0.67", "127.0.0.1", 5050);
         LocalDate d = LocalDate.now();
-        LocalTime t = LocalTime.now().plus(1,ChronoUnit.MINUTES);
-        
+        LocalTime t = LocalTime.now().plus(1, ChronoUnit.MINUTES);
+
         c2.execute("LOGIN prc 123");
         c2.execute("MAKE_CHALLENGE Circo 2015-05-02 15:00");
         c2.execute("LOGOUT");
-        
-        
+
         //cb.execute("REGISTAR nome nick pass");
         c1.execute("LOGIN ruioliveiras 123");
         c1.execute("MAKE_CHALLENGE oliveirasChallenge 2015-05-02 15:00");
@@ -160,31 +181,40 @@ public class ServerMain {
     }
 
     public static void testClient03() throws IOException {
-        ClientBash c1 = new ClientBash("127.0.0.68","127.0.0.1",5050);
-        ClientBash c2 = new ClientBash("127.0.0.69","127.0.0.1",5050);
-        
+        ClientBash c1 = new ClientBash("127.0.0.68", "127.0.0.1", 5050);
+        ClientBash c2 = new ClientBash("127.0.0.69", "127.0.0.1", 5050);
+
         c2.execute("LOGIN ruioliveiras 123");
         c2.execute("ACCEPT_CHALLENGE Circo");
         c2.execute("LOGOUT");
-        
-        
+
         //cb.execute("REGISTAR nome nick pass");
         c1.execute("LOGIN orlando 123");
         c1.execute("ACCEPT_CHALLENGE Circo");
         c1.execute("LOGOUT");
     }
-    
+
     public static void testClient04() throws IOException {
-        ClientBash c1 = new ClientBash("127.0.0.70","127.0.0.1",5050);
-        ClientBash c2 = new ClientBash("127.0.0.71","127.0.0.1",5050);
-        ClientBash c3 = new ClientBash("127.0.0.72","127.0.0.1",5050);
-        
-        c3.execute("LOGIN prc 123");
+        final ClientBash c1 = new ClientBash("127.0.0.70", "127.0.0.1", 5050);
+        final ClientBash c2 = new ClientBash("127.0.0.71", "127.0.0.1", 5050);
+        final ClientBash c3 = new ClientBash("127.0.0.72", "127.0.0.1", 5050);
+
+        c1.execute("LOGIN prc 123");
         c2.execute("LOGIN ruioliveiras 123");
-        c1.execute("LOGIN orlando 123");
+        c3.execute("LOGIN orlando 123");
+
+        new Thread(() -> {
+            c1.getUDPClient().getNextQuestion();
+        }).start();
+        new Thread(() -> {
+            c2.getUDPClient().getNextQuestion();
+        }).start();
+        new Thread(() -> {
+            c3.getUDPClient().getNextQuestion();
+        }).start();
+
     }
 
-    
     public static void startInOtherThread(final ServerMain main, String name) {
         Thread t1 = new Thread(() -> {
             try {
@@ -205,7 +235,7 @@ public class ServerMain {
         t2.start();
     }
 
-    public void parseChallengeFile(String filepath) {
+    private void parseChallengeFile(String filepath) {
         String assetsFolder = "assets";
         String imgPath, imgDir, musicPath, musicDir, questionText, line;
         String[] answers, aux;
@@ -217,7 +247,7 @@ public class ServerMain {
         imgDir = musicDir = null;
 
         try {
-            reader = new BufferedReader(new FileReader("assets/"+filepath));
+            reader = new BufferedReader(new FileReader("assets/" + filepath));
             while ((line = reader.readLine()) != null) {
                 if (line.contains("music_DIR=")) {
                     musicDir = line.split("=")[1];
@@ -246,7 +276,7 @@ public class ServerMain {
                     aux[5] = aux[5].trim();
                     answers[2] = aux[5].substring(1, aux[5].length() - 1);
                     correctAnsIndex = Integer.parseInt(aux[6]);
-                    question = new Question(questionText, answers.clone(), correctAnsIndex,assetsFolder +"/" + imgPath,assetsFolder + "/" + musicPath);
+                    question = new Question(questionText, answers.clone(), correctAnsIndex, assetsFolder + "/" + imgPath, assetsFolder + "/" + musicPath);
                     state.addQuestion(question);
                 }
             }

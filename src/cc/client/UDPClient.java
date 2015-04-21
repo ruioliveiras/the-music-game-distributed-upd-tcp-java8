@@ -3,6 +3,7 @@ package cc.client;
 import cc.model.Question;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
+import cc.server.udpServer.UDPComunication;
 import java.io.IOException;
 import java.net.*;
 import java.time.LocalDate;
@@ -16,14 +17,15 @@ public class UDPClient {
 
     private InetAddress dest_ip;
     private int dest_port;
-    private UDPClientCommunication udp_com;
+    //private UDPClientCommunication udp_com;
+    private UDPComunication udp_com;
     private PDUToUser ptu;
 
     public UDPClient(String sourceIp, int sourcePort, String dest, int port) {
         try {
             dest_ip = InetAddress.getByName(dest);
             dest_port = port;
-            udp_com = new UDPClientCommunication(sourcePort, InetAddress.getByName(sourceIp));
+            udp_com = new UDPComunication(sourcePort, InetAddress.getByName(sourceIp));
             ptu = new PDUToUser();
 
         } catch (UnknownHostException ex) {
@@ -35,14 +37,14 @@ public class UDPClient {
         try {
             dest_ip = InetAddress.getByName(dest);
             dest_port = port;
-            udp_com = new UDPClientCommunication();
+            udp_com = new UDPComunication();
             ptu = new PDUToUser();
         } catch (UnknownHostException ex) {
             System.out.println("Não foi possível criar Cliente.");
         }
     }
 
-    public UDPClientCommunication getUDPClientCom() {
+    public UDPComunication getUDPClientCom() {
         return udp_com;
     }
 
@@ -212,7 +214,7 @@ public class UDPClient {
     
     public Question getNextQuestion(){
         Question question;
-        PDU receive = udp_com.nextPDU();
+        PDU receive = udp_com.nextPDU(0);
         
         String questionText = (String) receive.popParameter(PDUType.REPLY_QUESTION);
         String[] answers = (String[]) receive.popParameter(PDUType.REPLY_ANSWER);

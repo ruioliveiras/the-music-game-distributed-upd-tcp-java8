@@ -18,7 +18,7 @@ import java.net.Socket;
  *
  * @author ruioliveiras
  */
-public class ServerCommunication {
+public class TCPCommunication {
 
     private final Socket socket;
     private InputStream is;
@@ -27,7 +27,7 @@ public class ServerCommunication {
     /** Creates a new ServerCommunication using a pre-initialized socket.
      * @param socket
      */
-    public ServerCommunication(Socket socket) {
+    public TCPCommunication(Socket socket) {
         try {
             this.socket = socket;
             is = socket.getInputStream();

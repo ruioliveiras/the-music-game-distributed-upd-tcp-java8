@@ -8,7 +8,7 @@ package cc.server.tcpServer.facade;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.ServerToServerFacade;
-import cc.server.tcpServer.communication.ServerCommunication;
+import cc.server.tcpServer.communication.TCPCommunication;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
@@ -21,11 +21,11 @@ import java.time.LocalTime;
  */
 public class TcpClient implements ServerToServerFacade {
 
-    ServerCommunication comm;
+    TCPCommunication comm;
 
     public TcpClient(InetAddress ip, int port) {
         try {
-            comm = new ServerCommunication(new Socket(ip, port));
+            comm = new TCPCommunication(new Socket(ip, port));
         } catch (IOException ex) {
             throw new RuntimeException();
         }

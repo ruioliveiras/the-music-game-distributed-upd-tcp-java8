@@ -27,7 +27,7 @@ import java.util.logging.Logger;
  */
 public class ServerHandler implements Runnable {
 
-    private final ServerCommunication comm;
+    private final TCPCommunication comm;
     private final ServerState state;
     private final TcpLocal facadeMem;
     private final TcpHub facadeHub;
@@ -50,7 +50,7 @@ public class ServerHandler implements Runnable {
         this.state = state;
         this.facadeMem = facadeMem;
         this.facadeHub = facadeHub;
-        comm = new ServerCommunication(socket);
+        comm = new TCPCommunication(socket);
     }
 
     @Override

@@ -57,6 +57,10 @@ public class UDPClientCommunication {
     }
 
     public PDU nextPDU() {
+        return nextPDU(current_label++);
+    }
+    
+    public PDU nextPDU(int current_label) {
         PDU pdu;
         byte[] pData;
         boolean hasNext = true;
@@ -67,19 +71,18 @@ public class UDPClientCommunication {
             pData = connectionReceiveBytes();
             //reading the pdu just to see the label
             pdu.initHeaderFromBytes(pData, 0);
-            
+            hasNext = false;
             // if is the currect response
             if (pdu.getLabel() == current_label) {
                 lastPDU.initHeaderFromBytes(pData, 0);
                 lastPDU.initParametersFromBytes(pData, 8);
+                hasNext = lastPDU.hasParameter(PDUType.CONTINUE);
             } else {
+                
             // do some work
             }
-            hasNext = pdu.hasParameter(PDUType.CONTINUE);
-
         } while (pdu.getLabel() == current_label && hasNext);
 
-        current_label++;
         
         return lastPDU;
     }
@@ -90,7 +93,7 @@ public class UDPClientCommunication {
 
     private byte[] connectionReceiveBytes() {
         DatagramPacket receive_packet = null;
-        byte[] dadosReceber = new byte[1024];
+        byte[] dadosReceber = new byte[1024*128];
 
         receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
         try {

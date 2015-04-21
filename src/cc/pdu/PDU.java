@@ -32,8 +32,9 @@ public class PDU {
     private List<Map<PDUType, List<Object>>> fragments;
 
     public PDU() {
-        parameters = new HashMap<>();
+        this.parameters = new HashMap<>();
         this.fragments = new ArrayList<>();
+        this.fragments.add(parameters);
     }
 
     public PDU(PDUType type) {
@@ -85,9 +86,19 @@ public class PDU {
 
         while (offset1 + offset < b.length && offset < sizeBytes && i < nField) {
             // the first byte are the identifier of the Parameter Type.
-            PDUType parameter = pduType.getParameterById(b[offset1 + offset++]);
-            int byteSize = b[offset1 + offset] << 8| b[offset1 + offset+1]  ;
-            offset+=2;
+            int test= (int)( b[offset1 + offset++] & 0xFF);
+            if (test<0){
+                return;
+            }
+            PDUType parameter = pduType.getParameterById(test);
+            if (parameter == null){
+                return;
+            }
+            int byteSize = (b[offset1 + offset] << 8 | b[offset1 + offset + 1]) & 0xFFFF;
+            if (byteSize<0){
+                return;
+            }
+            offset += 2;
             Object obj = parameter.getDataType().read(b, offset + offset1, byteSize);
 
             offset += parameter.getDataType().getSize(obj);
@@ -107,13 +118,18 @@ public class PDU {
     public byte[] toByte() {
         //calc the number of bytes need to the buffer
         sizeBytes = 0;
+        nField = 0;
         parameters.entrySet().stream().forEach((entrySet) -> {
             PDUType key = entrySet.getKey();
-            sizeBytes += entrySet.getValue().stream()
-                    .reduce(0,
-                            (sum, b) -> sum + 3 + key.getDataType().getSize(b),
-                            Integer::sum
-                    ).intValue();
+            for (Object value : entrySet.getValue()) {
+                sizeBytes += 3 + key.getDataType().getSize(value);
+                nField++;
+            }
+//            sizeBytes += entrySet.getValue().stream()
+//                    .reduce(0,
+//                            (sum, b) -> sum + ,
+//                            Integer::sum
+//                    ).intValue();
         });
         //plus 8 because of header  
         final ByteBuffer b = ByteBuffer.allocate(sizeBytes + 8);
@@ -122,7 +138,7 @@ public class PDU {
         b.put((byte) ((secure) ? 1 : 0));
         b.putShort((short) label);
         b.put((byte) pduType.getId());
-        b.put((byte) parameters.size());
+        b.put((byte) nField);
         b.putShort((short) sizeBytes);
         //params:
 //        boolean done;
@@ -201,8 +217,8 @@ public class PDU {
 
     public void initNextFragment() {
         this.addParameter(PDUType.CONTINUE, (byte) 0);
-        fragments.add(parameters);
         parameters = new HashMap<>();
+        fragments.add(parameters);
     }
 
     // is fragmeted 

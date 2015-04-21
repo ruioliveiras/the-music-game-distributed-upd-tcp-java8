@@ -74,7 +74,7 @@ public class UDPServer {
             this.getS_socket().receive(receive_packet); //fica à espera de receber o pacote
 
             pdu_received = com.readDatagram(receive_packet.getData());
-            System.out.println("UDP pdu:" + pdu_received);
+            System.out.println("UDPServer pdu:" + pdu_received);
             dest_ip = receive_packet.getAddress();  // obtem o endereço ip e porta do cliente que enviou o datagrama para enviar resposta
             dest_port = receive_packet.getPort();
 
