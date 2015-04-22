@@ -37,10 +37,10 @@ import java.util.logging.Logger;
 public class UDPClientHandler {
 
     private final ServerState state;
-    private final DatagramSocket socket;
+    private final UDPComunication socket;
     private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1024);
 
-    public UDPClientHandler(ServerState serverState, DatagramSocket socket) {
+    public UDPClientHandler(ServerState serverState, UDPComunication socket) {
         this.state = serverState;
         this.socket = socket;
     }
@@ -313,7 +313,7 @@ public class UDPClientHandler {
             return false;
         }
         byte[] res = ByteBuffer.allocate(size).put(q.getMusicArray(), index * sizeofBlock, size).array();
-
+        pduAux.initNextFragment();
         pduAux.addParameter(PDUType.REPLY_NUM_BLOCK, (byte) index);
         pduAux.addParameter(PDUType.REPLY_BLOCK, res);
         //pduAux.addParameter(PDUType.CONTINUE, (byte) 0);
@@ -344,58 +344,63 @@ public class UDPClientHandler {
                 PDU ans = makeQuestion(challenge.getName(), i);
 //@todo nesta parte de escolher perguntas, não podem haver repetidas
 
+                challenge.getSubscribers().stream()
+                        .filter(user -> user.getIP() != null)
+                        .forEach((user) -> {
+                            socket.sendPDU(ans,user.getIP(), user.getPort());
+                        });
+                
+
                 //@todo fazer merge do ans com o pdu do makeQuestion(nQuestion)
 //            SOLUCÇÂO? TALVEZ SIM TALVEZ NAO....
-                do {
-                    final byte[] dadosEnviar = ans.toByte();
-
-                    challenge.getSubscribers().stream()
-                            .filter(user -> user.getIP() != null)
-                            .map((user) -> new DatagramPacket(dadosEnviar, dadosEnviar.length, user.getIP(), user.getPort()))
-                            .forEach((datagram) -> {
-                                try {
-                                    socket.send(datagram);
-                                } catch (IOException ex) {
-                                    throw new RuntimeException(ex);
-                                }
-                            });
-                } while (ans.nextFragment());
+//                do {
+//                    final byte[] dadosEnviar = ans.toByte();
+//
+//                    challenge.getSubscribers().stream()
+//                            .filter(user -> user.getIP() != null)
+//                            .map((user) -> new DatagramPacket(dadosEnviar, dadosEnviar.length, user.getIP(), user.getPort()))
+//                            .forEach((datagram) -> {
+//                                try {
+//                                    socket.send(datagram);
+//                                } catch (IOException ex) {
+//                                    throw new RuntimeException(ex);
+//                                }
+//                            });
+//                } while (ans.nextFragment());
             }
         } catch (Exception ex) {
-              ex.printStackTrace();
+            ex.printStackTrace();
         }
 
     }
 
-    private PDU makeQuestion(String challengeName, int number) {
-        PDU question = new PDU(PDUType.REPLY);
+    public PDU makeQuestion(String challengeName, int number) {
+        PDU questionPDU = new PDU(PDUType.REPLY);
         Question q = state.getChallenge(challengeName).getQuestion(number - 1);
         String questionText = q.getQuestion();
         String[] answers = q.getAnwser();
         int correct = q.getCorrect(), i;
 
-        question.addParameter(PDUType.REPLY_CHALLE, challengeName);
-        question.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) number);
-        question.addParameter(PDUType.REPLY_QUESTION, questionText);
+        questionPDU.addParameter(PDUType.REPLY_CHALLE, challengeName);
+        questionPDU.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) number);
+        questionPDU.addParameter(PDUType.REPLY_QUESTION, questionText);
         for (i = 0; i < 3; i++) {
-            question.addParameter(PDUType.REPLY_NUM_ANSWER, (byte) (i + 1));
-            question.addParameter(PDUType.REPLY_ANSWER, answers[i]);
+            questionPDU.addParameter(PDUType.REPLY_NUM_ANSWER, (byte) (i + 1));
+            questionPDU.addParameter(PDUType.REPLY_ANSWER, answers[i]);
         }
         //image:
         q.loadImage();
-        question.addParameter(PDUType.REPLY_IMG, q.getImageArray());
+        questionPDU.addParameter(PDUType.REPLY_IMG, q.getImageArray());
         //music: 
         q.loadMusic();
 
         i = 0;
-        question.initNextFragment();
-        while (musicBlockAux(question, q, i++)) {
-            question.initNextFragment();
+        //questionPDU.initNextFragment();
+        while (musicBlockAux(questionPDU, q, i)) {
+            i++;
         };
-        // this is to remove the last initNextFragment that are not in use;
-        question.nextFragment();
-
-        return question;
+       
+        return questionPDU;
 
     }
 

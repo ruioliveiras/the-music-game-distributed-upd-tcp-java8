@@ -30,6 +30,8 @@ public class PDU {
     // Other Parameters
     private Map<PDUType, List<Object>> parameters;
     private List<Map<PDUType, List<Object>>> fragments;
+    private int fragmentIndex = 0;
+    private boolean pduContinue;
 
     public PDU() {
         this.parameters = new HashMap<>();
@@ -71,7 +73,8 @@ public class PDU {
         label = bb.getShort();
         pduType = PDUType.getById(bb.get());
         nField = bb.get();
-        sizeBytes = bb.getShort();
+        short a = bb.getShort();
+        sizeBytes = a & 0xFFFF;
 
         return true;
     }
@@ -84,24 +87,31 @@ public class PDU {
     public void initParametersFromBytes(byte[] b, int offset1) {
         int offset = 0, i = 0;
 
+        pduContinue = false;
+
         while (offset1 + offset < b.length && offset < sizeBytes && i < nField) {
             // the first byte are the identifier of the Parameter Type.
-            int test= (int)( b[offset1 + offset++] & 0xFF);
-            if (test<0){
+            int test = (int) (b[offset1 + offset++] & 0xFF);
+            if (test < 0) {
                 return;
             }
             PDUType parameter = pduType.getParameterById(test);
-            if (parameter == null){
-                return;
-            }
-            int byteSize = (b[offset1 + offset] << 8 | b[offset1 + offset + 1]) & 0xFFFF;
-            if (byteSize<0){
-                return;
-            }
+
+            short s = ByteBuffer.wrap(b, offset1 + offset, 2).getShort();
+            int byteSize = s & 0xFFFF;
+            // b[i]00101111 b[i+1] 10000001   0010111110000001  0 1111 1111 1000 0001
+
             offset += 2;
             Object obj = parameter.getDataType().read(b, offset + offset1, byteSize);
 
             offset += parameter.getDataType().getSize(obj);
+
+            if (parameter.equals(PDUType.REPLY_BLOCK)) {
+                System.out.println("ola");
+            }
+            if (parameter.equals(PDUType.CONTINUE)) {
+                pduContinue = true;
+            }
 
             this.addParameter(parameter, obj);
 //            Object oldObj = parameters.put(parameter, obj);
@@ -112,6 +122,9 @@ public class PDU {
 //            }
 
             i++;
+        }
+        if (i != nField) {
+            return;
         }
     }
 
@@ -162,6 +175,12 @@ public class PDU {
                     .forEach((value) -> {
                         b.put((byte) key.getId());
                         b.putShort((short) key.getDataType().getSize(value));
+                        if (key.getDataType().getSize(value) > 1000) {
+                            short a = (short) key.getDataType().getSize(value);
+                            byte[] bbbb = ByteBuffer.allocate(10).putShort(a).array();
+                            int asd = bbbb.length;
+                            //return;
+                        }
                         b.put(key.getDataType().toByte(value));
                     });
                 });
@@ -200,24 +219,35 @@ public class PDU {
     public void setLabel(int label) {
         this.label = label;
     }
-    
-    
+
     public Object popParameter(PDUType p) {
         return parameters.get(p).remove(0);
     }
 
+    public List<Object> getAllParameter(PDUType p) {
+        return parameters.get(p);
+    }
+
+    public boolean hasParameter(PDUType p) {
+        return parameters.containsKey(p)
+                && parameters.get(p).size() > 0;
+    }
+
+    public void startFragment() {
+        fragmentIndex = 0;
+    }
+
     public boolean nextFragment() {
-        if (fragments.size() > 0) {
-            parameters = fragments.remove(0);
+        if (fragmentIndex < fragments.size()) {
+            parameters = fragments.get(fragmentIndex++);
             return true;
         } else {
             return false;
         }
     }
 
-    public boolean hasParameter(PDUType p) {
-        return parameters.containsKey(p)
-                && parameters.get(p).size() > 0;
+    public boolean hasContinue() {
+        return this.pduContinue;
     }
 
     public void initNextFragment() {

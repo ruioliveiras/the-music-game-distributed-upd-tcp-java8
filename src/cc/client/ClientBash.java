@@ -13,7 +13,7 @@ import java.time.format.DateTimeFormatter;
  */
 public class ClientBash {
 
-    private static UDPClient client;
+    private final UDPClient client;
 
     public ClientBash(String sourceIp, String destIp, int destPort) {
         client = new UDPClient(sourceIp, 2020, destIp, destPort);

@@ -216,10 +216,11 @@ public class UDPClient {
         udp_com.setLabelMode(true);
 
         String questionText = (String) receive.popParameter(PDUType.REPLY_QUESTION);
-        String[] answers = (String[]) receive.popParameter(PDUType.REPLY_ANSWER);
         int correct = (int) receive.popParameter(PDUType.REPLY_CORRECT);
         byte[] img = (byte[]) receive.popParameter(PDUType.REPLY_IMG);
         receive = udp_com.nextPDU();
+        
+        String[] answers = (String[]) receive.popParameter(PDUType.REPLY_ANSWER);
         byte[] music = (byte[]) receive.popParameter(PDUType.REPLY_BLOCK);
         //@todo receber os blocos da musica
         question = new Question(questionText, answers, correct, img, music);

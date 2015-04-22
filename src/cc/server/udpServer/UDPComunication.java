@@ -12,6 +12,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -27,10 +29,12 @@ public class UDPComunication {
 
     public UDPComunication(int sourcePort, InetAddress sourceIp, int destPort, InetAddress destIp) {
         try {
-            if (sourcePort == 0 || sourceIp == null){
+            if (sourcePort == 0 || sourceIp == null) {
                 socket = new DatagramSocket();
-            }else{
-                socket = new DatagramSocket(sourcePort, sourceIp);                
+            } else {
+                socket = new DatagramSocket(sourcePort, sourceIp);
+                socket.setReceiveBufferSize(1024* 1024* 50);
+                System.out.print("HOW MAY KBBYTES: "+ socket.getReceiveBufferSize() / 1024);
             }
             this.destPort = destPort;
             this.destIp = destIp;
@@ -52,28 +56,42 @@ public class UDPComunication {
         }
     }
 
-    public void sendPDU(PDU send_pdu) {
-        send_pdu.setLabel(currentLabel);
-        DatagramPacket send_packet = new DatagramPacket(send_pdu.toByte(), send_pdu.getSizeBytes(), this.destIp, this.destPort);
-
+    public void sendPDU(PDU pdu, InetAddress destIp, int destPort) {
+        byte b[];
+        pdu.setLabel(currentLabel);
+        int i =0;
+            
         try {
-            this.socket.send(send_packet);
+            pdu.startFragment();
+            while (pdu.nextFragment()) {
+                b = pdu.toByte();
+                DatagramPacket send_packet = new DatagramPacket(b, pdu.getSizeBytes(), destIp, destPort);
+                System.out.println("sendPDU fragment: "+ Thread.currentThread().getName() + "|" + i++);
+               // if (i>1) Thread.sleep(1000);
+                this.socket.send(send_packet);
+            }
         } catch (IOException exception) {
             System.out.println("Erro ao enviar o datagrama para o servidor");
         }
+    }
+
+    public void sendPDU(PDU send_pdu) {
+        sendPDU(send_pdu, destIp, destPort);
     }
 
     public PDU nextPDU() {
         byte[] pData;
         boolean hasNext = true;
         PDU lastPDU = new PDU(), pduAux;
-
+        int i =0;
         do {
             hasNext = false;
             pduAux = new PDU();
             pData = connectionReceiveBytes();
             //reading the pdu just to see the label
             pduAux.initHeaderFromBytes(pData, 0);
+             System.out.println("read fragment: "+ Thread.currentThread().getName() + "|" + i++);
+
             // if is the currect response
             if (!labelMode) {
                 currentLabel = pduAux.getLabel();
@@ -82,7 +100,7 @@ public class UDPComunication {
             if (pduAux.getLabel() == currentLabel) {
                 lastPDU.initHeaderFromBytes(pData, 0);
                 lastPDU.initParametersFromBytes(pData, 8);
-                hasNext = lastPDU.hasParameter(PDUType.CONTINUE);
+                hasNext = lastPDU.hasContinue();
             } else {
                 //try again until has the currect label
                 hasNext = true;

@@ -9,6 +9,7 @@ import cc.client.ClientBash;
 import cc.server.tcpServer.ServerState;
 import cc.model.Question;
 import cc.pdu.PDU;
+import cc.pdu.PDUType;
 import cc.server.tcpServer.facade.TcpLocal;
 import cc.server.tcpServer.communication.ServerHandler;
 import cc.server.tcpServer.facade.TcpHub;
@@ -38,6 +39,7 @@ public class ServerMain {
 
     private final static int DEFAULT_TCP_PORT = 8080;
     private final static int DEFAULT_UDP_PORT = 5050;
+    private static ServerMain mainMain;
     
     private final String name;
     private final ServerState state;
@@ -45,12 +47,11 @@ public class ServerMain {
     private final ServerSocket tcpSS;
     private final TcpLocal tcpLocal;
     private final TcpHub tcpHub;
-    
+
     /* UDP */
-    private final UDPComunication updServer;
+    private final UDPComunication udpServer;
     private final UDPClientHandler udpHandler;
-    
-    
+
     //vai estar declarado static aqui um server state, e um server facade.
     //vai ter um metodo para começar o server handler 
     public ServerMain(int udpPort, int tcpListingPort, InetAddress address) throws IOException {
@@ -61,10 +62,10 @@ public class ServerMain {
         this.tcpSS = new ServerSocket(tcpListingPort, 0, address);
         this.tcpLocal = new TcpLocal(state);
         this.tcpHub = new TcpHub(state);
-        
-        updServer = new UDPComunication(udpPort, address, 0, null);
-        updServer.setLabelMode(false);
-        udpHandler = new UDPClientHandler(state, null);
+
+        udpServer = new UDPComunication(udpPort, address, 0, null);
+        udpServer.setLabelMode(false);
+        udpHandler = new UDPClientHandler(state, udpServer);
     }
 
     public void init(String initIp, String initPort) throws UnknownHostException {
@@ -84,10 +85,10 @@ public class ServerMain {
 
     public void startUdp() throws IOException {
         while (true) {
-            PDU pdu = updServer.nextPDU();
+            PDU pdu = udpServer.nextPDU();
             //create thread? no
-            pdu = udpHandler.decodePacket(pdu, updServer.getDestIp(), updServer.getDestPort());
-            updServer.sendPDU(pdu);
+            pdu = udpHandler.decodePacket(pdu, udpServer.getDestIp(), udpServer.getDestPort());
+            udpServer.sendPDU(pdu);
         }
     }
 
@@ -101,9 +102,11 @@ public class ServerMain {
             portUdp = DEFAULT_UDP_PORT;
         }
         ServerMain main = new ServerMain(portUdp, portTcp, InetAddress.getByName("127.0.0.1"));
+        mainMain = main;
         startInOtherThread(main, "MainServer1");
         testServers();
         testClient();
+        mainMain.testFragmentation();
 
         //main2.facadeHub.registerChallenge(, LocalDate.MIN, LocalTime.MIN, null, null);
     }
@@ -140,6 +143,17 @@ public class ServerMain {
         testClient02();
         testClient03();
         testClient04();
+    }
+
+    public void testFragmentation() {
+        PDU a = udpHandler.makeQuestion("Circo", 1);
+        PDU b = new PDU();
+       do {
+            byte[] arr = a.toByte();
+            b.initHeaderFromBytes(arr, 0);
+            b.initParametersFromBytes(arr, 8);
+        } while(b.hasParameter(PDUType.CONTINUE));
+        //System.out.print("PDU test: " + b);
     }
 
     public static void testClient01() throws IOException {
@@ -190,19 +204,19 @@ public class ServerMain {
     }
 
     public static void testClient04() throws IOException {
-        final ClientBash c1 = new ClientBash("127.0.0.70", "127.0.0.1", 5050);
+//        final ClientBash c1 = new ClientBash("127.0.0.70", "127.0.0.1", 5050);
         final ClientBash c2 = new ClientBash("127.0.0.71", "127.0.0.1", 5050);
         final ClientBash c3 = new ClientBash("127.0.0.72", "127.0.0.1", 5050);
-
-        c1.execute("LOGIN prc 123");
+        
+    //    c1.execute("LOGIN prc 123");
         c2.execute("LOGIN ruioliveiras 123");
         c3.execute("LOGIN orlando 123");
 
         new Thread(() -> {
-            c1.getUDPClient().getNextQuestion();
+  //          c1.getUDPClient().getNextQuestion();
         }).start();
         new Thread(() -> {
-            c2.getUDPClient().getNextQuestion();
+           c2.getUDPClient().getNextQuestion();
         }).start();
         new Thread(() -> {
             c3.getUDPClient().getNextQuestion();
