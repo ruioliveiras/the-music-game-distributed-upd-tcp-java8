@@ -5,8 +5,15 @@ import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.udpServer.UDPComunication;
 import java.net.*;
+import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.IntStream;
+import javafx.util.Pair;
 
 /**
  *
@@ -185,7 +192,7 @@ public class UDPClient {
     }
 
     //
-    public void makeDatagramRetransmit(String desafio, Byte questao, Byte bloco) {
+    public byte[] makeDatagramRetransmit(String desafio, byte questao, byte bloco) {
         PDU send = new PDU(PDUType.RETRANSMIT);
 
         send.addParameter(PDUType.RETRANSMIT_CHALLENGE, desafio);
@@ -193,15 +200,22 @@ public class UDPClient {
         send.addParameter(PDUType.RETRANSMIT_NBLOCK, bloco);
 
         udp_com.sendPDU(send);
+        PDU response = udp_com.nextPDU();
 
+        if (response.hasParameter(PDUType.REPLY_BLOCK)) {
+            return (byte[]) response.popParameter(PDUType.REPLY_BLOCK);
+        } else {
+            return null;
+        }
     }
 
-    public void makeDatagramList_Ranking() {
+    public void makeDatagramList_Ranking(){
         PDU send = new PDU(PDUType.LIST_RANKING);
 
         udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
+        
         ptu.processRankings(receive);
     }
 
@@ -211,19 +225,52 @@ public class UDPClient {
 
     public Question getNextQuestion() {
         Question question;
+        int numberBlocks = 0;
+
         udp_com.setLabelMode(false);
         PDU receive = udp_com.nextPDU();
         udp_com.setLabelMode(true);
 
         String questionText = (String) receive.popParameter(PDUType.REPLY_QUESTION);
-        int correct = (int) receive.popParameter(PDUType.REPLY_CORRECT);
+        String challengeName = (String) receive.popParameter(PDUType.REPLY_CHALLE);
+        int questionId = (byte) receive.popParameter(PDUType.REPLY_NUM_QUESTION);
+        int correct = (byte) receive.popParameter(PDUType.REPLY_CORRECT);
         byte[] img = (byte[]) receive.popParameter(PDUType.REPLY_IMG);
-        receive = udp_com.nextPDU();
-        
-        String[] answers = (String[]) receive.popParameter(PDUType.REPLY_ANSWER);
-        byte[] music = (byte[]) receive.popParameter(PDUType.REPLY_BLOCK);
-        //@todo receber os blocos da musica
-        question = new Question(questionText, answers, correct, img, music);
+        String[] answers = (String[]) receive.getAllParameter(PDUType.REPLY_ANSWER)
+                .toArray(new String[receive.getAllParameter(PDUType.REPLY_ANSWER).size()]);
+
+        // MUSIC WOWOW
+        TreeMap<Integer, byte[]> musicBytes = new TreeMap<>();
+
+        while (receive.hasParameter(PDUType.REPLY_BLOCK)) {
+            if (!receive.hasParameter(PDUType.REPLY_NUM_BLOCK)) {
+                //error
+            }
+            int blockNumber = (byte) receive.popParameter(PDUType.REPLY_NUM_BLOCK);
+            byte[] blockMusic = (byte[]) receive.popParameter(PDUType.REPLY_BLOCK);
+            if (numberBlocks < blockNumber) {
+                numberBlocks = blockNumber;
+            }
+
+            musicBytes.put(blockNumber, blockMusic);
+        }
+
+        IntStream.rangeClosed(0, numberBlocks)
+                // not in the list
+                .filter((a) -> !musicBytes.containsKey(a))
+                // prepare the id and get de bytes
+                .mapToObj((a) -> new Pair<>(a, makeDatagramRetransmit(challengeName, (byte) questionId, (byte) a)))
+                .filter((pair) -> pair.getValue() != null)
+                // add
+                .forEach((t) -> musicBytes.put(t.getKey(), t.getValue()));
+
+        ByteBuffer buffer = ByteBuffer.allocate((numberBlocks + 1) * musicBytes.firstEntry().getValue().length);
+        musicBytes.entrySet().stream().sequential()
+                .forEach((a) -> buffer.put(a.getValue()));
+
+// percorrer todos e se for maior que o anterior entao faz pede retrasmit do bloco
+//@todo receber os blocos da musica
+        question = new Question(questionText, answers, correct, img, buffer.array());
 
         return question;
     }

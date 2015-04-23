@@ -91,15 +91,15 @@ public class UDPClientHandler {
                 answer = deleteChallenge(challengeName);
                 break;
             case ANSWER:
-                int choice = (Integer) pdu.popParameter(PDUType.ANSWER_NQUESTION);
+                int choice = (byte) pdu.popParameter(PDUType.ANSWER_NQUESTION);
                 challengeName = (String) pdu.popParameter(PDUType.ANSWER_CHALLENGE);
-                int questionId = (Integer) pdu.popParameter(PDUType.ANSWER_NQUESTION);
+                int questionId = (byte) pdu.popParameter(PDUType.ANSWER_NQUESTION);
                 answer = answer(ip, challengeName, choice, questionId);
                 break;
             case RETRANSMIT:
                 challengeName = (String) pdu.popParameter(PDUType.RETRANSMIT_CHALLENGE);
-                questionId = (Integer) pdu.popParameter(PDUType.RETRANSMIT_NQUESTION);
-                int nblock = (Integer) pdu.popParameter(PDUType.RETRANSMIT_NBLOCK);
+                questionId = (byte) pdu.popParameter(PDUType.RETRANSMIT_NQUESTION);
+                int nblock = (byte) pdu.popParameter(PDUType.RETRANSMIT_NBLOCK);
                 answer = retransmit(challengeName, questionId, nblock);
                 break;
             case LIST_RANKING:
@@ -384,6 +384,7 @@ public class UDPClientHandler {
         questionPDU.addParameter(PDUType.REPLY_CHALLE, challengeName);
         questionPDU.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) number);
         questionPDU.addParameter(PDUType.REPLY_QUESTION, questionText);
+        questionPDU.addParameter(PDUType.REPLY_CORRECT,(byte) q.getCorrect());
         for (i = 0; i < 3; i++) {
             questionPDU.addParameter(PDUType.REPLY_NUM_ANSWER, (byte) (i + 1));
             questionPDU.addParameter(PDUType.REPLY_ANSWER, answers[i]);
