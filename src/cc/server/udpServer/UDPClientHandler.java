@@ -38,17 +38,20 @@ public class UDPClientHandler {
 
     private final ServerState state;
     private final UDPComunication socket;
-    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1024);
+    private final UDPChallengeProvider udpCP;
 
     public UDPClientHandler(ServerState serverState, UDPComunication socket) {
         this.state = serverState;
         this.socket = socket;
+        this.udpCP = new UDPChallengeProvider();
     }
 
     public PDU decodePacket(PDU pdu, InetAddress innetAddress, int port) {
 
         PDU answer = new PDU(PDUType.REPLY);
         String ip = innetAddress.toString();
+        String challengeName;
+
         switch (pdu.getType()) {
             case HELLO:
                 answer.addParameter(PDUType.REPLY_OK, 0);
@@ -77,10 +80,12 @@ public class UDPClientHandler {
                 answer = listChallenges();
                 break;
             case MAKE_CHALLENGE:
-                String challengeName = (String) pdu.popParameter(PDUType.MAKE_CHALLENGE_CHALLENGE);
-                LocalDate date = (LocalDate) pdu.popParameter(PDUType.MAKE_CHALLENGE_DATE);
+                //String challengeName = (String) pdu.popParameter(PDUType.MAKE_CHALLENGE_CHALLENGE);             
+                answer = udpCP.makeChallenge(ip, state, pdu);
+
+                /*LocalDate date = (LocalDate) pdu.popParameter(PDUType.MAKE_CHALLENGE_DATE);
                 LocalTime time = (LocalTime) pdu.popParameter(PDUType.MAKE_CHALLENGE_HOUR);
-                answer = makeChallenge(ip, challengeName, date, time);
+                answer = makeChallenge(ip, challengeName, date, time);*/
                 break;
             case ACCEPT_CHALLENGE:
                 challengeName = (String) pdu.popParameter(PDUType.ACCEPT_CHALLENGE_CHALLENGE);
@@ -88,18 +93,20 @@ public class UDPClientHandler {
                 break;
             case DELETE_CHALLENGE:
                 challengeName = (String) pdu.popParameter(PDUType.DELETE_CHALLENGE_CHALLENGE);
-                answer = deleteChallenge(challengeName);
+                answer = deleteChallenge(challengeName);             
                 break;
             case ANSWER:
-                int choice = (byte) pdu.popParameter(PDUType.ANSWER_NQUESTION);
-                challengeName = (String) pdu.popParameter(PDUType.ANSWER_CHALLENGE);
-                int questionId = (byte) pdu.popParameter(PDUType.ANSWER_NQUESTION);
-                answer = answer(ip, challengeName, choice, questionId);
+                //int choice = (Integer) pdu.popParameter(PDUType.ANSWER_NQUESTION);
+                //challengeName = (String) pdu.popParameter(PDUType.ANSWER_CHALLENGE);
+                //int questionId = (Integer) pdu.popParameter(PDUType.ANSWER_NQUESTION);
+                //answer = answer(ip, challengeName, choice, questionId);
+                answer = udpCP.answer(ip, state, pdu);
+                
                 break;
             case RETRANSMIT:
                 challengeName = (String) pdu.popParameter(PDUType.RETRANSMIT_CHALLENGE);
-                questionId = (byte) pdu.popParameter(PDUType.RETRANSMIT_NQUESTION);
-                int nblock = (byte) pdu.popParameter(PDUType.RETRANSMIT_NBLOCK);
+                int questionId = (Integer) pdu.popParameter(PDUType.RETRANSMIT_NQUESTION);
+                int nblock = (Integer) pdu.popParameter(PDUType.RETRANSMIT_NBLOCK);
                 answer = retransmit(challengeName, questionId, nblock);
                 break;
             case LIST_RANKING:
@@ -187,7 +194,7 @@ public class UDPClientHandler {
 
         return answer;
     }
-
+/*
     private PDU makeChallenge(String ip, String name, LocalDate date, LocalTime time) {
         PDU answer = new PDU(PDUType.REPLY);
         Challenge challenge = new Challenge(name, date, time);
@@ -234,7 +241,7 @@ public class UDPClientHandler {
         // a seguir a ter estas duas coisas irá por na interface,
         // depois espera-se por a proxima questao, entretanto posse-se enviar a resposta.
         return answer;
-    }
+    }*/
 
     private PDU acceptChallenge(String ip, String challengeName) {
         PDU answer = new PDU(PDUType.REPLY);
@@ -260,7 +267,7 @@ public class UDPClientHandler {
         return answer;
     }
 
-    private PDU answer(String ip, String challengeName, int choice, int questionId) {
+    /*private PDU answer(String ip, String challengeName, int choice, int questionId) {
         PDU answer = new PDU(PDUType.REPLY);
         String nickname = state.getSession(ip).getNick();
 
@@ -278,7 +285,7 @@ public class UDPClientHandler {
         }
 
         return answer;
-    }
+    }*/
 
     private PDU listRanking() {
         PDU answer = new PDU(PDUType.REPLY);
@@ -321,27 +328,28 @@ public class UDPClientHandler {
         return true;
     }
 
-    private void startChallenge(Challenge challenge) {
-        try {
 
-            int i, nQuestion;
-            int sizeQ = state.getQuestions().size();
-            Random r = new Random();
+    /*private void startChallenge(Challenge challenge) {
 
-            /**
-             * generate all the questions for this challenge
-             */
-            for (i = 1; i <= 5; i++) {
-                Question q;
-                do {
-                    q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
-                    // avoid repetead questions
-                } while (challenge.hasQuestion(q));
-                challenge.addQuestion(q);
-            }
+        int i, nQuestion;
+        int sizeQ = state.getQuestions().size();
+        Random r = new Random();
+*/
+        /**
+         * generate all the questions for this challenge
+         */
+        /*for (i = 1; i <= 10; i++) {
+            Question q;
+            do {
+                q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
+                // avoid repetead questions
+            } while (challenge.hasQuestion(q));
+            challenge.addQuestion(q);
+        }
 
-            for (i = 1; i <= 5; i++) {
-                PDU ans = makeQuestion(challenge.getName(), i);
+        for (i = 1; i <= 10; i++) {
+            PDU ans = makeQuestion(challenge.getName(), i);
+>>>>>>> d9655d8b23d4bedcab8fb2c349f2b3f4a88b0172
 //@todo nesta parte de escolher perguntas, não podem haver repetidas
 
                 challenge.getSubscribers().stream()
@@ -403,6 +411,6 @@ public class UDPClientHandler {
        
         return questionPDU;
 
-    }
+    }*/
 
 }

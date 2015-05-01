@@ -15,6 +15,7 @@ import cc.server.tcpServer.communication.ServerHandler;
 import cc.server.tcpServer.facade.TcpHub;
 import cc.server.udpServer.UDPClientHandler;
 import cc.server.udpServer.UDPComunication;
+import cc.server.udpServer.UDPChallengeProvider;
 import cc.server.udpServer.UDPServer;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -146,13 +147,13 @@ public class ServerMain {
     }
 
     public void testFragmentation() {
-        PDU a = udpHandler.makeQuestion("Circo", 1);
-        PDU b = new PDU();
-       do {
-            byte[] arr = a.toByte();
-            b.initHeaderFromBytes(arr, 0);
-            b.initParametersFromBytes(arr, 8);
-        } while(b.hasParameter(PDUType.CONTINUE));
+//        PDU a = udpHandler.makeQuestion("Circo", 1);
+//        PDU b = new PDU();
+//       do {
+//            byte[] arr = a.toByte();
+//            b.initHeaderFromBytes(arr, 0);
+//            b.initParametersFromBytes(arr, 8);
+//        } while(b.hasParameter(PDUType.CONTINUE));
         //System.out.print("PDU test: " + b);
     }
 
