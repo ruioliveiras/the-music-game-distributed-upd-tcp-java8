@@ -11,6 +11,7 @@ import cc.model.Question;
 import cc.server.tcpServer.facade.TcpLocal;
 import cc.server.tcpServer.communication.ServerHandler;
 import cc.server.tcpServer.facade.TcpHub;
+import cc.server.udpServer.UDPChallengeProvider;
 import cc.server.udpServer.UDPServer;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
