@@ -6,7 +6,9 @@
 package cc.model;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.Temporal;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +21,7 @@ import java.util.Set;
  * @author ruioliveiras
  */
 public class Challenge {
+
     /**
      * The Challenge name
      */
@@ -31,7 +34,7 @@ public class Challenge {
      * The time (in hours) to start the Challenge.
      */
     private LocalTime time;
-    
+
     /**
      * The current users that subscribe this challenge.
      */
@@ -39,8 +42,8 @@ public class Challenge {
     /**
      * Map from user.nick to his score.
      */
-    private final Map<String,Integer> scores;
-    
+    private final Map<String, Integer> scores;
+
     /**
      * Set of the questions generated for the challenge
      */
@@ -54,10 +57,10 @@ public class Challenge {
 
     /**
      * Main constructor
-     * 
+     *
      * @param name
      * @param date
-     * @param time 
+     * @param time
      */
     public Challenge(String name, LocalDate date, LocalTime time) {
         this();
@@ -66,7 +69,6 @@ public class Challenge {
         this.time = time;
     }
 
-    
     public String getName() {
         return name;
     }
@@ -79,36 +81,40 @@ public class Challenge {
         return time;
     }
 
+    public LocalDateTime getDateTime() {
+        return date.atTime(time);
+    }
+
     public Set<User> getSubscribers() {
         return subscribers;
     }
 
     public void addSubscribers(User u) {
         subscribers.add(u);
-        scores.put(u.getNick(),0);
+        scores.put(u.getNick(), 0);
     }
 
     public int getScore(String userNick) {
         return scores.get(userNick);
-    }    
-    
-    public void answer(String userNick, boolean isCorrect){
-        if (isCorrect){
+    }
+
+    public void answer(String userNick, boolean isCorrect) {
+        if (isCorrect) {
             scores.put(userNick, scores.get(userNick) + 2);
         } else {
-            scores.put(userNick, scores.get(userNick) - 1);            
+            scores.put(userNick, scores.get(userNick) - 1);
         }
     }
-    
-    public boolean hasQuestion(Question q){
+
+    public boolean hasQuestion(Question q) {
         return questions.contains(q);
     }
-    
-    public void addQuestion(Question q){
+
+    public void addQuestion(Question q) {
         questions.add(q);
     }
-    
-    public Question getQuestion(int index){
+
+    public Question getQuestion(int index) {
         return questions.get(index);
     }
 }

@@ -38,17 +38,21 @@ public class UDPClientHandler {
 
     private final ServerState state;
     private final UDPComunication socket;
-    private final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1024);
+    private final UDPChallengeProvider challengeProvider;
 
     public UDPClientHandler(ServerState serverState, UDPComunication socket) {
         this.state = serverState;
         this.socket = socket;
+        this.challengeProvider = new UDPChallengeProvider(socket, state);
     }
 
     public PDU decodePacket(PDU pdu, InetAddress innetAddress, int port) {
 
         PDU answer = new PDU(PDUType.REPLY);
         String ip = innetAddress.toString();
+        String challengeName;
+        int questionId;
+
         switch (pdu.getType()) {
             case HELLO:
                 answer.addParameter(PDUType.REPLY_OK, 0);
@@ -77,10 +81,12 @@ public class UDPClientHandler {
                 answer = listChallenges();
                 break;
             case MAKE_CHALLENGE:
-                String challengeName = (String) pdu.popParameter(PDUType.MAKE_CHALLENGE_CHALLENGE);
+                challengeName = (String) pdu.popParameter(PDUType.MAKE_CHALLENGE_CHALLENGE);
                 LocalDate date = (LocalDate) pdu.popParameter(PDUType.MAKE_CHALLENGE_DATE);
                 LocalTime time = (LocalTime) pdu.popParameter(PDUType.MAKE_CHALLENGE_HOUR);
                 answer = makeChallenge(ip, challengeName, date, time);
+                //also start the challenge
+                challengeProvider.startChallenge(state.getChallenge(challengeName));
                 break;
             case ACCEPT_CHALLENGE:
                 challengeName = (String) pdu.popParameter(PDUType.ACCEPT_CHALLENGE_CHALLENGE);
@@ -93,7 +99,7 @@ public class UDPClientHandler {
             case ANSWER:
                 int choice = (byte) pdu.popParameter(PDUType.ANSWER_NQUESTION);
                 challengeName = (String) pdu.popParameter(PDUType.ANSWER_CHALLENGE);
-                int questionId = (byte) pdu.popParameter(PDUType.ANSWER_NQUESTION);
+                questionId = (byte) pdu.popParameter(PDUType.ANSWER_NQUESTION);
                 answer = answer(ip, challengeName, choice, questionId);
                 break;
             case RETRANSMIT:
@@ -188,51 +194,19 @@ public class UDPClientHandler {
         return answer;
     }
 
-    private PDU makeChallenge(String ip, String name, LocalDate date, LocalTime time) {
-        PDU answer = new PDU(PDUType.REPLY);
-        Challenge challenge = new Challenge(name, date, time);
-
+    private PDU makeChallenge(String ip, String challengeName, LocalDate date, LocalTime time) {
+        Challenge challenge = new Challenge(challengeName, date, time);
         challenge.addSubscribers(state.getSession(ip));
 
-        state.addChallenge(name, challenge);
-        state.addOwner(name, "localhost");
-        answer.addParameter(PDUType.REPLY_CHALLE, name);
+        state.addChallenge(challengeName, challenge);
+        state.addOwner(challengeName, "localhost");
+
+        PDU answer = new PDU(PDUType.REPLY);
+
+        answer.addParameter(PDUType.REPLY_CHALLE, challengeName);
         answer.addParameter(PDUType.REPLY_DATE, date);
         answer.addParameter(PDUType.REPLY_HOUR, time);
 
-        executor.schedule(() -> {
-            if (challenge.getSubscribers().size() > 1) {
-                startChallenge(challenge);
-            } else {
-                answer.addParameter(PDUType.REPLY_ERRO, "Numero insuficiente de jogadores para iniciar desafio");
-            }
-
-            //  }, LocalDate.now().until(date.atTime(time), ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
-        }, 5000, TimeUnit.MILLISECONDS);
-
-        //@todo: criar thread que irá acordar quando for date,time
-        //       esta thread irá verificar se existe pessoas suficientes, 
-        //       caso exista envia a primeira questao.
-        //              Após enviar a primeira questao aguarda tempo X por resposta do User
-        //              caso  user nao responda resposta errada será assumida
-        //              Envia proxima Questao, caso não seja a ultima.
-        //       caso não exista dá erro. 
-        // criar thread aqui que confirma a existencia de pessoas       
-        // criar função sendQuestion(int numero da questao)
-        //      caso seja a ultima questao:
-        //           responder com o rating
-        //      caso não seja a ultima questao:
-        //          envia questao, espera X tempo, quem respondeu respondeu, quem nao respondeu marca errada
-        //          /!\ sistema de lock para nao deixar responder a answer fora do tempo
-        //          chama proxima questao
-        // do lado do servidor
-        // Quando se envia uma questão terá que se enviar 1 pdu com cenas normais (ver pagina 5 do enunciado)
-        // e também tera que se enviar a musica criar função sendFramentedMusic:
-        // que irá criar os framentos e enviar somehow...
-        // do lado do cliente:
-        // quando se fica a espera de uma questão, a seguir irá-se esperar a musica.
-        // a seguir a ter estas duas coisas irá por na interface,
-        // depois espera-se por a proxima questao, entretanto posse-se enviar a resposta.
         return answer;
     }
 
@@ -299,11 +273,19 @@ public class UDPClientHandler {
             //erro;
         }
         PDU p = new PDU(PDUType.REPLY);
-        musicBlockAux(p, q, nblock);
+        createMusicBlockPDU(p, q, nblock);
         return p;
     }
 
-    private boolean musicBlockAux(PDU pduAux, Question q, int index) {
+    /**
+     * Auxiliar function to calculate the PDU
+     *
+     * @param pduAux
+     * @param q
+     * @param index
+     * @return if there are next, the last fragment return false, otherwise true
+     */
+    static boolean createMusicBlockPDU(PDU pduAux, Question q, int index) {
         int sizeofBlock = 48 * 1024;
         int size = sizeofBlock;
         if ((sizeofBlock * index + sizeofBlock) > q.getMusicArray().length) {
@@ -320,82 +302,135 @@ public class UDPClientHandler {
         return true;
     }
 
-    private void startChallenge(Challenge challenge) {
-        try {
+//<<<<<<< HEAD
+//            for (i = 1; i <= 5; i++) {
+//                Question q = state.getChallenge(challenge.getName()).getQuestion(i);
+//                PDU ans = makeQuestion(challenge.getName(), i);
+//=======
+    /*private void startChallengeNow(Challenge challenge) {
 
-            int i, nQuestion;
-            int sizeQ = state.getQuestions().size();
-            Random r = new Random();
+     int i, nQuestion;
+     int sizeQ = state.getQuestions().size();
+     Random r = new Random();
+     */
+    /**
+     * generate all the questions for this challenge
+     */
+    /*for (i = 1; i <= 10; i++) {
+     Question q;
+     do {
+     q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
+     // avoid repetead questions
+     } while (challenge.hasQuestion(q));
+     challenge.addQuestion(q);
+     }
 
-            /**
-             * generate all the questions for this challenge
-             */
-            for (i = 1; i <= 5; i++) {
-                Question q;
-                do {
-                    q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
-                    // avoid repetead questions
-                } while (challenge.hasQuestion(q));
-                challenge.addQuestion(q);
-            }
+     for (i = 1; i <= 10; i++) {
+     PDU ans = makeQuestion(challenge.getName(), i);
+     >>>>>>> d9655d8b23d4bedcab8fb2c349f2b3f4a88b0172
+     //@todo nesta parte de escolher perguntas, não podem haver repetidas
+     >>>>>>> master
 
-            for (i = 1; i <= 5; i++) {
-                Question q = state.getChallenge(challenge.getName()).getQuestion(i);
-                PDU ans = makeQuestion(challenge.getName(), i);
+     challenge.getSubscribers().stream()
+     .filter(user -> user.getIP() != null)
+     .forEach((user) -> {
+     socket.sendPDU(ans, user.getIP(), user.getPort());
+     });
 
-                challenge.getSubscribers().stream()
-                        .filter(user -> user.getIP() != null)
-                        .forEach((user) -> {
-                            socket.sendPDU(ans, user.getIP(), user.getPort());
-                        });
+     //music: 
+     q.loadMusic();
 
-                //music: 
-                q.loadMusic();
+     i = 0;
+     boolean b = true;
+     while (b) {
+     PDU musicPDU = new PDU(PDUType.REPLY);
+     //@todo: ruioliveiras continuar aqui, esta merda precisa de continue se nao for o ultimo
+     b = createMusicBlockPDU(musicPDU, q, i++);
+     if (b) {
+     challenge.getSubscribers().stream()
+     .filter(user -> user.getIP() != null)
+     .forEach((user) -> {
+     socket.sendPDU(musicPDU, user.getIP(), user.getPort());
+     });
+     }
+     };
 
-                i = 0;
-                boolean b = true;
-                while (b) {
-                    PDU musicPDU = new PDU(PDUType.REPLY);
-                    //@todo: ruioliveiras continuar aqui, esta merda precisa de continue se nao for o ultimo
-                    b = musicBlockAux(musicPDU, q, i++);
-                    if (b) {
-                        challenge.getSubscribers().stream()
-                                .filter(user -> user.getIP() != null)
-                                .forEach((user) -> {
-                                    socket.sendPDU(musicPDU, user.getIP(), user.getPort());
-                                });
-                    }
-                };
+     }
+     } catch (Exception ex) {
+     ex.printStackTrace();
+     }
 
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+     }
 
-    }
+     public PDU makeQuestion(String challengeName, int number) {
+     PDU questionPDU = new PDU(PDUType.REPLY);
+     Question q = state.getChallenge(challengeName).getQuestion(number - 1);
+     String questionText = q.getQuestion();
+     String[] answers = q.getAnwser();
+     int correct = q.getCorrect(), i;
 
-    public PDU makeQuestion(String challengeName, int number) {
-        PDU questionPDU = new PDU(PDUType.REPLY);
-        Question q = state.getChallenge(challengeName).getQuestion(number - 1);
-        String questionText = q.getQuestion();
-        String[] answers = q.getAnwser();
-        int correct = q.getCorrect(), i;
-
-        questionPDU.addParameter(PDUType.REPLY_CHALLE, challengeName);
-        questionPDU.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) number);
-        questionPDU.addParameter(PDUType.REPLY_QUESTION, questionText);
-        questionPDU.addParameter(PDUType.REPLY_CORRECT, (byte) q.getCorrect());
-        for (i = 0; i < 3; i++) {
-            questionPDU.addParameter(PDUType.REPLY_NUM_ANSWER, (byte) (i + 1));
-            questionPDU.addParameter(PDUType.REPLY_ANSWER, answers[i]);
-        }
-        //image:
-        q.loadImage();
-        questionPDU.addParameter(PDUType.REPLY_IMG, q.getImageArray());
-        questionPDU.addParameter(PDUType.CONTINUE,(byte) 0);
+     questionPDU.addParameter(PDUType.REPLY_CHALLE, challengeName);
+     questionPDU.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) number);
+     questionPDU.addParameter(PDUType.REPLY_QUESTION, questionText);
+     questionPDU.addParameter(PDUType.REPLY_CORRECT, (byte) q.getCorrect());
+     for (i = 0; i < 3; i++) {
+     questionPDU.addParameter(PDUType.REPLY_NUM_ANSWER, (byte) (i + 1));
+     questionPDU.addParameter(PDUType.REPLY_ANSWER, answers[i]);
+     }
+     //image:
+     q.loadImage();
+     questionPDU.addParameter(PDUType.REPLY_IMG, q.getImageArray());
+     questionPDU.addParameter(PDUType.CONTINUE,(byte) 0);
         
-        return questionPDU;
+     return questionPDU;
 
-    }
+     }*/
+    /*
+     private PDU startChallengeNow(String ip, String name, LocalDate date, LocalTime time) {
+     PDU answer = new PDU(PDUType.REPLY);
+     Challenge challenge = new Challenge(name, date, time);
 
+     challenge.addSubscribers(state.getSession(ip));
+
+     state.addChallenge(name, challenge);
+     state.addOwner(name, "localhost");
+     answer.addParameter(PDUType.REPLY_CHALLE, name);
+     answer.addParameter(PDUType.REPLY_DATE, date);
+     answer.addParameter(PDUType.REPLY_HOUR, time);
+
+     executor.schedule(() -> {
+     if (challenge.getSubscribers().size() > 1) {
+     startChallengeNow(challenge);
+     } else {
+     answer.addParameter(PDUType.REPLY_ERRO, "Numero insuficiente de jogadores para iniciar desafio");
+     }
+
+     //  }, LocalDate.now().until(date.atTime(time), ChronoUnit.MILLIS), TimeUnit.MILLISECONDS);
+     }, 5000, TimeUnit.MILLISECONDS);
+
+     //@todo: criar thread que irá acordar quando for date,time
+     //       esta thread irá verificar se existe pessoas suficientes, 
+     //       caso exista envia a primeira questao.
+     //              Após enviar a primeira questao aguarda tempo X por resposta do User
+     //              caso  user nao responda resposta errada será assumida
+     //              Envia proxima Questao, caso não seja a ultima.
+     //       caso não exista dá erro. 
+     // criar thread aqui que confirma a existencia de pessoas       
+     // criar função sendQuestion(int numero da questao)
+     //      caso seja a ultima questao:
+     //           responder com o rating
+     //      caso não seja a ultima questao:
+     //          envia questao, espera X tempo, quem respondeu respondeu, quem nao respondeu marca errada
+     //          /!\ sistema de lock para nao deixar responder a answer fora do tempo
+     //          chama proxima questao
+     // do lado do servidor
+     // Quando se envia uma questão terá que se enviar 1 pdu com cenas normais (ver pagina 5 do enunciado)
+     // e também tera que se enviar a musica criar função sendFramentedMusic:
+     // que irá criar os framentos e enviar somehow...
+     // do lado do cliente:
+     // quando se fica a espera de uma questão, a seguir irá-se esperar a musica.
+     // a seguir a ter estas duas coisas irá por na interface,
+     // depois espera-se por a proxima questao, entretanto posse-se enviar a resposta.
+     return answer;
+     }*/
 }
