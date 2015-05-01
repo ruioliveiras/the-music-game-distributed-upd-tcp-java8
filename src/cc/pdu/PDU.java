@@ -29,14 +29,10 @@ public class PDU {
     private int sizeBytes; //1 byte
     // Other Parameters
     private Map<PDUType, List<Object>> parameters;
-    private List<Map<PDUType, List<Object>>> fragments;
-    private int fragmentIndex = 0;
     private boolean pduContinue;
 
     public PDU() {
         this.parameters = new HashMap<>();
-        this.fragments = new ArrayList<>();
-        this.fragments.add(parameters);
     }
 
     public PDU(PDUType type) {
@@ -51,7 +47,6 @@ public class PDU {
         this.pduType = pduType;
         this.nField = nField;
         this.parameters = new HashMap<>();
-        this.fragments = new ArrayList<>();
     }
 
     /**
@@ -233,27 +228,8 @@ public class PDU {
                 && parameters.get(p).size() > 0;
     }
 
-    public void startFragment() {
-        fragmentIndex = 0;
-    }
-
-    public boolean nextFragment() {
-        if (fragmentIndex < fragments.size()) {
-            parameters = fragments.get(fragmentIndex++);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public boolean hasContinue() {
         return this.pduContinue;
-    }
-
-    public void initNextFragment() {
-        this.addParameter(PDUType.CONTINUE, (byte) 0);
-        parameters = new HashMap<>();
-        fragments.add(parameters);
     }
 
     // is fragmeted 

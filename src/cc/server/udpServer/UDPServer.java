@@ -80,11 +80,11 @@ public class UDPServer {
 
             pdu_response = handler.decodePacket(pdu_received, dest_ip, dest_port);
 
-            do {
-                dadosEnviar = pdu_response.toByte();
-                send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest_ip, dest_port);
-                this.getS_socket().send(send_packet);
-            } while (pdu_response.nextFragment());
+//            do {
+//                dadosEnviar = pdu_response.toByte();
+//                send_packet = new DatagramPacket(dadosEnviar, dadosEnviar.length, dest_ip, dest_port);
+//                this.getS_socket().send(send_packet);
+//            } while (pdu_response.nextFragment());
             //this.getS_socket().send(send_packet);
         }
     }

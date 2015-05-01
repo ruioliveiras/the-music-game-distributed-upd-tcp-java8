@@ -313,7 +313,6 @@ public class UDPClientHandler {
             return false;
         }
         byte[] res = ByteBuffer.allocate(size).put(q.getMusicArray(), index * sizeofBlock, size).array();
-        pduAux.initNextFragment();
         pduAux.addParameter(PDUType.REPLY_NUM_BLOCK, (byte) index);
         pduAux.addParameter(PDUType.REPLY_BLOCK, res);
         //pduAux.addParameter(PDUType.CONTINUE, (byte) 0);
@@ -341,32 +340,33 @@ public class UDPClientHandler {
             }
 
             for (i = 1; i <= 5; i++) {
+                Question q = state.getChallenge(challenge.getName()).getQuestion(i);
                 PDU ans = makeQuestion(challenge.getName(), i);
-//@todo nesta parte de escolher perguntas, não podem haver repetidas
 
                 challenge.getSubscribers().stream()
                         .filter(user -> user.getIP() != null)
                         .forEach((user) -> {
-                            socket.sendPDU(ans,user.getIP(), user.getPort());
+                            socket.sendPDU(ans, user.getIP(), user.getPort());
                         });
-                
 
-                //@todo fazer merge do ans com o pdu do makeQuestion(nQuestion)
-//            SOLUCÇÂO? TALVEZ SIM TALVEZ NAO....
-//                do {
-//                    final byte[] dadosEnviar = ans.toByte();
-//
-//                    challenge.getSubscribers().stream()
-//                            .filter(user -> user.getIP() != null)
-//                            .map((user) -> new DatagramPacket(dadosEnviar, dadosEnviar.length, user.getIP(), user.getPort()))
-//                            .forEach((datagram) -> {
-//                                try {
-//                                    socket.send(datagram);
-//                                } catch (IOException ex) {
-//                                    throw new RuntimeException(ex);
-//                                }
-//                            });
-//                } while (ans.nextFragment());
+                //music: 
+                q.loadMusic();
+
+                i = 0;
+                boolean b = true;
+                while (b) {
+                    PDU musicPDU = new PDU(PDUType.REPLY);
+                    //@todo: ruioliveiras continuar aqui, esta merda precisa de continue se nao for o ultimo
+                    b = musicBlockAux(musicPDU, q, i++);
+                    if (b) {
+                        challenge.getSubscribers().stream()
+                                .filter(user -> user.getIP() != null)
+                                .forEach((user) -> {
+                                    socket.sendPDU(musicPDU, user.getIP(), user.getPort());
+                                });
+                    }
+                };
+
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -384,7 +384,7 @@ public class UDPClientHandler {
         questionPDU.addParameter(PDUType.REPLY_CHALLE, challengeName);
         questionPDU.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) number);
         questionPDU.addParameter(PDUType.REPLY_QUESTION, questionText);
-        questionPDU.addParameter(PDUType.REPLY_CORRECT,(byte) q.getCorrect());
+        questionPDU.addParameter(PDUType.REPLY_CORRECT, (byte) q.getCorrect());
         for (i = 0; i < 3; i++) {
             questionPDU.addParameter(PDUType.REPLY_NUM_ANSWER, (byte) (i + 1));
             questionPDU.addParameter(PDUType.REPLY_ANSWER, answers[i]);
@@ -392,15 +392,8 @@ public class UDPClientHandler {
         //image:
         q.loadImage();
         questionPDU.addParameter(PDUType.REPLY_IMG, q.getImageArray());
-        //music: 
-        q.loadMusic();
-
-        i = 0;
-        //questionPDU.initNextFragment();
-        while (musicBlockAux(questionPDU, q, i)) {
-            i++;
-        };
-       
+        questionPDU.addParameter(PDUType.CONTINUE,(byte) 0);
+        
         return questionPDU;
 
     }
