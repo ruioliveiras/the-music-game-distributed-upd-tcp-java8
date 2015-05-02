@@ -5,6 +5,7 @@
  */
 package cc.model;
 
+import cc.server.tcpServer.facade.TcpClient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -43,6 +44,8 @@ public class Challenge {
      * Map from user.nick to his score.
      */
     private final Map<String, Integer> scores;
+    
+    private final Set<TcpClient> servers;
 
     /**
      * Set of the questions generated for the challenge
@@ -53,6 +56,7 @@ public class Challenge {
         subscribers = new HashSet<>();
         scores = new HashMap<>();
         questions = new ArrayList<>();
+        servers = new HashSet<>();
     }
 
     /**
@@ -116,5 +120,14 @@ public class Challenge {
 
     public Question getQuestion(int index) {
         return questions.get(index);
+    }
+    
+    
+    public void addServer(TcpClient u) {
+        servers.add(u);
+    }
+    
+    public Set<TcpClient> getServers(){
+        return servers;
     }
 }

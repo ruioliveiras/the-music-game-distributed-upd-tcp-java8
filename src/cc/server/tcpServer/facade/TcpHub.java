@@ -10,6 +10,7 @@ import cc.server.ServerToServerFacade;
 import java.net.InetAddress;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  *
@@ -38,9 +39,9 @@ public class TcpHub implements ServerToServerFacade {
     }
 
     @Override
-    public void registerAcceptChallenge(String challeName, String nick) {
+    public void registerAcceptChallenge(String challeName,String name, String nick) {
         for (ServerToServerFacade sts : state.getNeighbors()) {
-            sts.registerAcceptChallenge(challeName, nick);
+            sts.registerAcceptChallenge(challeName,name, nick);
         }
     }
 
@@ -50,5 +51,12 @@ public class TcpHub implements ServerToServerFacade {
             sts.registerScore(nick, score);
         }
     }
-
+    
+    @Override
+    public void question(String challengeName, int nQuestion, String question, 
+            int correct, String[] answers, byte[] img, List<byte[]> music){
+        for (ServerToServerFacade sts : state.getNeighbors()) {
+            sts.question(challengeName,nQuestion,question,correct,answers,img,music);
+        }
+    }
 }

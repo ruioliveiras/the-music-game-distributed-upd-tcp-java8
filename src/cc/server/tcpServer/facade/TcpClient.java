@@ -14,6 +14,7 @@ import java.net.InetAddress;
 import java.net.Socket;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  *
@@ -52,10 +53,11 @@ public class TcpClient implements ServerToServerFacade {
     }
 
     @Override
-    synchronized public void registerAcceptChallenge(String challeName, String nick) {
+    synchronized public void registerAcceptChallenge(String challeName, String name, String nick) {
         PDU pdu = new PDU(PDUType.INFO);
         pdu.addParameter(PDUType.INFO_CERT, challeName);
-        pdu.addParameter(PDUType.INFO_NAME, nick);
+        pdu.addParameter(PDUType.INFO_NAME, name);
+        pdu.addParameter(PDUType.INFO_NICK, nick);
         comm.sendPDU(pdu);
     }
 
@@ -67,27 +69,54 @@ public class TcpClient implements ServerToServerFacade {
         comm.sendPDU(pdu);
     }
 
+    synchronized public void question(String challengeName, int nQuestion, String question,
+            int correct, String[] answers, byte[] img, List<byte[]> musics) {
+
+        PDU pdu = new PDU(PDUType.REPLY);
+
+        pdu.addParameter(PDUType.REPLY_CHALLE, challengeName);
+        pdu.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) nQuestion);
+        pdu.addParameter(PDUType.REPLY_QUESTION, question);
+        pdu.addParameter(PDUType.REPLY_CORRECT, (byte) correct);
+        for (int i = 0; i < answers.length; i++) {
+            pdu.addParameter(PDUType.REPLY_NUM_ANSWER, (byte) (i + 1));
+            pdu.addParameter(PDUType.REPLY_ANSWER, answers[i]);
+        }
+        //@todo fazer o loadImage na classe Question
+        pdu.addParameter(PDUType.REPLY_IMG, img);
+
+        for (int i = 0; i < musics.size(); i++) {
+            pdu.addParameter(PDUType.REPLY_NUM_BLOCK, (byte) i);
+            pdu.addParameter(PDUType.REPLY_BLOCK, musics.get(i));
+        }
+        comm.sendPDU(pdu);
+    }
+
     /**
      * Get this port where this Client are connected
+     *
      * @return the port number
      */
-    synchronized public int getServerPort(){
+    synchronized public int getServerPort() {
         return comm.getPort();
-    } 
+    }
 
     /**
      * Get Ip as String
-     * @return 
+     *
+     * @return
      */
-    synchronized public String getServerIp(){
+    synchronized public String getServerIp() {
         return comm.getIp();
-    } 
-    
+    }
+
     /**
-     * Get ip As 
-     * @return 
+     * Get ip As
+     *
+     * @return
      */
-    synchronized public InetAddress getServerIpByte(){
+    synchronized public InetAddress getServerIpByte() {
         return comm.getIpByte();
-    } 
+    }
+
 }

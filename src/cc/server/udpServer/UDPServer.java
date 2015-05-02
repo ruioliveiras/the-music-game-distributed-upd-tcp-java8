@@ -33,7 +33,7 @@ public class UDPServer {
             s_socket = new DatagramSocket(port);
             com = new UDPServerCommunication();
             this.state = state;
-            handler = new UDPClientHandler(state, null);
+//            handler = new UDPClientHandler(state, null);
 
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Servidor.");
@@ -49,7 +49,7 @@ public class UDPServer {
             s_socket = new DatagramSocket(port, adress);
             com = new UDPServerCommunication();
             this.state = state;
-            handler = new UDPClientHandler(state, null);
+//            handler = new UDPClientHandler(state, null);
 
         } catch (SocketException ex) {
             System.out.println("Não foi possível criar Servidor.");

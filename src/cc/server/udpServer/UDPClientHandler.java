@@ -11,6 +11,8 @@ import cc.model.User;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.tcpServer.ServerState;
+import cc.server.tcpServer.facade.TcpHub;
+import cc.server.tcpServer.facade.TcpLocal;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -39,11 +41,15 @@ public class UDPClientHandler {
     private final ServerState state;
     private final UDPComunication socket;
     private final UDPChallengeProvider challengeProvider;
+    private final TcpLocal tcpLocal;
+    private final TcpHub tcpHub;
 
-    public UDPClientHandler(ServerState serverState, UDPComunication socket) {
+    public UDPClientHandler(ServerState serverState, TcpLocal tcpLocal, TcpHub tcpHub, UDPComunication socket) {
         this.state = serverState;
         this.socket = socket;
         this.challengeProvider = new UDPChallengeProvider(socket, state);
+        this.tcpHub = tcpHub;
+        this.tcpLocal = tcpLocal;
     }
 
     public PDU decodePacket(PDU pdu, InetAddress innetAddress, int port) {
@@ -97,7 +103,7 @@ public class UDPClientHandler {
                 answer = deleteChallenge(challengeName);
                 break;
             case ANSWER:
-                int choice = (byte) pdu.popParameter(PDUType.ANSWER_NQUESTION);
+                int choice = (byte) pdu.popParameter(PDUType.ANSWER_CHOOSE);
                 challengeName = (String) pdu.popParameter(PDUType.ANSWER_CHALLENGE);
                 questionId = (byte) pdu.popParameter(PDUType.ANSWER_NQUESTION);
                 answer = answer(ip, challengeName, choice, questionId);
@@ -168,10 +174,13 @@ public class UDPClientHandler {
 
     private PDU end(String ip) {
         PDU answer = new PDU(PDUType.REPLY);
-        int score = 0;
+        Challenge challenge = state.getChallenge(state.getSession(ip).getActualChallenge());
 
-        //nao sei como vou buscar o jogo que acabou de terminar
-        answer.addParameter(PDUType.REPLY_SCORE, score);
+        challenge.getSubscribers().stream()
+                .map((user) -> user.getName())
+                .peek((userName) -> answer.addParameter(PDUType.REPLY_NAME, userName))
+                .map((userName) -> challenge.getScore(userName))
+                .forEach((score) -> answer.addParameter(PDUType.REPLY_SCORE, (short) (int) score));
 
         return answer;
     }
@@ -195,12 +204,15 @@ public class UDPClientHandler {
     }
 
     private PDU makeChallenge(String ip, String challengeName, LocalDate date, LocalTime time) {
+        User user = state.getSession(ip);
         Challenge challenge = new Challenge(challengeName, date, time);
-        challenge.addSubscribers(state.getSession(ip));
+        challenge.addSubscribers(user);
+        user.setActualChallenge(challengeName);
 
         state.addChallenge(challengeName, challenge);
         state.addOwner(challengeName, "localhost");
-
+        tcpHub.registerChallenge(challengeName, date, time, user.getName(), user.getNick());
+        
         PDU answer = new PDU(PDUType.REPLY);
 
         answer.addParameter(PDUType.REPLY_CHALLE, challengeName);
@@ -214,10 +226,17 @@ public class UDPClientHandler {
         PDU answer = new PDU(PDUType.REPLY);
 
         User user = state.getSession(ip);
-        //a key das challenges do state é o nome da challenge ou do owner?
-        state.getChallenge(challengeName).addSubscribers(user);
-        answer.addParameter(PDUType.REPLY_OK, 0);
+       
+        String ownerIp = state.getOwnerIp(challengeName);
+        if (ownerIp.equals("localhost")) {
+            state.getChallenge(challengeName)
+                    .addSubscribers(user);
+        } else {
+            state.getNeighbor(ownerIp).registerAcceptChallenge(challengeName,user.getName() ,user.getNick());
+        }
+        user.setActualChallenge(challengeName);
 
+        answer.addParameter(PDUType.REPLY_OK, 0);
         return answer;
     }
 
@@ -236,19 +255,20 @@ public class UDPClientHandler {
 
     private PDU answer(String ip, String challengeName, int choice, int questionId) {
         PDU answer = new PDU(PDUType.REPLY);
+        Challenge challange = state.getChallenge(challengeName);
         String nickname = state.getSession(ip).getNick();
 
         answer.addParameter(PDUType.REPLY_CHALLE, challengeName);
-        answer.addParameter(PDUType.REPLY_NUM_QUESTION, questionId);
+        answer.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) questionId);
 
-        if (state.getQuestion(questionId).getCorrect() == choice) {
-            answer.addParameter(PDUType.REPLY_CORRECT, 1);
-            answer.addParameter(PDUType.REPLY_POINTS, 2);
-            state.getChallenge(challengeName).answer(nickname, true);
+        if (challange.getQuestion(questionId).getCorrect() == choice) {
+            answer.addParameter(PDUType.REPLY_CORRECT, (byte) 1);
+            answer.addParameter(PDUType.REPLY_POINTS, (byte) 2);
+            challange.answer(nickname, true);
         } else {
-            answer.addParameter(PDUType.REPLY_CORRECT, 0);
-            answer.addParameter(PDUType.REPLY_POINTS, -1);
-            state.getChallenge(challengeName).answer(nickname, false);
+            answer.addParameter(PDUType.REPLY_CORRECT, (byte) 0);
+            answer.addParameter(PDUType.REPLY_POINTS, (byte) -1);
+            challange.answer(nickname, false);
         }
 
         return answer;
@@ -305,7 +325,7 @@ public class UDPClientHandler {
 //<<<<<<< HEAD
 //            for (i = 1; i <= 5; i++) {
 //                Question q = state.getChallenge(challenge.getName()).getQuestion(i);
-//                PDU ans = makeQuestion(challenge.getName(), i);
+//                PDU ans = makeQuestionPDU(challenge.getName(), i);
 //=======
     /*private void startChallengeNow(Challenge challenge) {
 
@@ -326,7 +346,7 @@ public class UDPClientHandler {
      }
 
      for (i = 1; i <= 10; i++) {
-     PDU ans = makeQuestion(challenge.getName(), i);
+     PDU ans = makeQuestionPDU(challenge.getName(), i);
      >>>>>>> d9655d8b23d4bedcab8fb2c349f2b3f4a88b0172
      //@todo nesta parte de escolher perguntas, não podem haver repetidas
      >>>>>>> master
@@ -362,7 +382,7 @@ public class UDPClientHandler {
 
      }
 
-     public PDU makeQuestion(String challengeName, int number) {
+     public PDU makeQuestionPDU(String challengeName, int number) {
      PDU questionPDU = new PDU(PDUType.REPLY);
      Question q = state.getChallenge(challengeName).getQuestion(number - 1);
      String questionText = q.getQuestion();

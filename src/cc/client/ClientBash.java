@@ -130,31 +130,43 @@ public class ClientBash {
                     System.out.println("Número de argumentos inválido!");
                 }
                 break;
-
-            //estes dois nao é o utilizar que envia, mas sim a aplicação que efetua consoante necessário    
-            /*case "ANSWER":
-             if (checkTotalArgs(nargs, 4)){
-             if(testNumeric(args[1]) && testNumeric(args[3])){
-             client.makeDatagramAnswer(args[1], args[2], args[3]);
-             }
-             }
-             else {
-             System.out.println("Número de argumentos inválido!");
-             }
-             break;
-             case "RETRANSMIT":
-             if (checkTotalArgs(nargs, 4)){
-             if(testNumeric(args[2]) && testNumeric(args[3])){
-             client.makeDatagramRetransmit();
-             }
-             else {
-             System.out.println("Formato de argumentos inválido!");
-             }
-             }
-             else {
-             System.out.println("Número de argumentos inválido!");
-             }
-             break;*/
+            //Este gajo não é preciso mas para testar dá geito.
+            case "ANSWER":
+                if (checkTotalArgs(nargs, 4)) {
+                    if (testNumeric(args[1]) && testNumeric(args[3])) {
+                        client.makeDatagramAnswer(Byte.parseByte(args[1]), args[2], Byte.parseByte(args[3]));
+                    }
+                } else {
+                    System.out.println("Número de argumentos inválido!");
+                }
+                break;
+            case "QUIT":
+                if (checkTotalArgs(nargs, 1)) {
+                    client.makeDatagramQuit();
+                } else {
+                    System.out.println("Número de argumentos inválido!");
+                }
+                break;
+            case "END":
+                if (checkTotalArgs(nargs, 1)) {
+                    if (testNumeric(args[1]) && testNumeric(args[3])) {
+                        client.makeDatagramEnd();
+                    }
+                } else {
+                    System.out.println("Número de argumentos inválido!");
+                }
+                break;
+//            case "RETRANSMIT":
+//                if (checkTotalArgs(nargs, 4)) {
+//                    if (testNumeric(args[2]) && testNumeric(args[3])) {
+//                        client.makeDatagramRetransmit();
+//                    } else {
+//                        System.out.println("Formato de argumentos inválido!");
+//                    }
+//                } else {
+//                    System.out.println("Número de argumentos inválido!");
+//                }
+//                break;
             case "LIST_RANKING":
                 if (checkTotalArgs(nargs, 1)) {
                     client.makeDatagramList_Ranking();

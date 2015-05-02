@@ -8,6 +8,7 @@ package cc.server;
 import java.net.InetAddress;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * This interface declare all the business that can be done in server to server
@@ -42,9 +43,10 @@ public interface ServerToServerFacade {
      * should be send only to the server owner of the Challenge
      *
      * @param challeName
+     * @param name
      * @param nick
      */
-    public void registerAcceptChallenge(String challeName, String nick);
+     public void registerAcceptChallenge(String challeName, String name, String nick);
 
     /**
      * In the end of challenge should register the score of each person
@@ -53,4 +55,19 @@ public interface ServerToServerFacade {
      * @param score
      */
     public void registerScore(String nick, int score);
+    
+    
+    /**
+     * Send a new question for a certain challenge
+     *
+     * @param challengeName
+     * @param nQuestion
+     * @param question
+     * @param correct
+     * @param music
+     * @param img
+     */
+    public void question(String challengeName, int nQuestion, String question, 
+            int correct, String[] answers, byte[] img, List<byte[]> music);
+
 }

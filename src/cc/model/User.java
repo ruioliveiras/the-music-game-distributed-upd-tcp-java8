@@ -29,6 +29,11 @@ public class User {
      * This rating can be local or global.
      */
     private int rating;
+    /**
+     * The ActualChallenge name where this users are subscribed.
+     * null if is not in any challenge.
+     */
+    private String actualChallenge;
     
     private InetAddress currentIP;
     private int currentPort;
@@ -96,5 +101,14 @@ public class User {
     public void setPort(int port) {
         this.currentPort = port;
     }
+
+    public void setActualChallenge(String actualChallenge) {
+        this.actualChallenge = actualChallenge;
+    }
+
+    public String getActualChallenge() {
+        return actualChallenge;
+    }
+    
     
 }

@@ -188,6 +188,7 @@ public class UDPClient {
         udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
+        receive.popParameter(PDUType.REPLY_CORRECT);
         //ptu.processAnswer(receive);
     }
 

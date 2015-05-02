@@ -9,9 +9,11 @@ import cc.model.Challenge;
 import cc.model.User;
 import cc.server.tcpServer.ServerState;
 import cc.server.ServerToServerFacade;
+import cc.server.udpServer.UDPChallengeProvider;
 import java.net.InetAddress;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  *
@@ -19,10 +21,12 @@ import java.time.LocalTime;
  */
 public class TcpLocal implements ServerToServerFacade {
 
+    private final UDPChallengeProvider challengeProvider;
     private final ServerState state;
 
-    public TcpLocal(ServerState s) {
+    public TcpLocal(ServerState s, UDPChallengeProvider challengeProvider) {
         this.state = s;
+        this.challengeProvider = challengeProvider;
     }
 
     @Override
@@ -36,19 +40,29 @@ public class TcpLocal implements ServerToServerFacade {
     }
 
     @Override
-    public void registerAcceptChallenge(String challeName, String nick) {
+    public void registerAcceptChallenge(String challeName, String name, String nick) {
         String ip = state.getOwnerIp(challeName);
         if (ip.equals("localhost")) {
-            state.getChallenge(challeName)
-                    .addSubscribers(new User(nick, nick));
+            Challenge challenge = state.getChallenge(challeName);
+            challenge.addSubscribers(new User(name, nick));
         } else {
-            state.getNeighbor(ip).registerAcceptChallenge(challeName, nick);
+            state.getNeighbor(ip).registerAcceptChallenge(challeName, name, nick);
         }
     }
 
     @Override
     public void registerScore(String nick, int score) {
 
+    }
+
+    @Override
+    public void question(String challengeName, int nQuestion, String question,
+            int correct, String[] answers, byte[] img, List<byte[]> music) {
+        Challenge challenge = state.getChallenge(challengeName);
+        challenge.getSubscribers().stream()
+                .forEach(user -> {
+                    challengeProvider.sendQuestion(challengeName,nQuestion,question,correct,answers,img,music);
+                });
     }
 
     // this guy will has a copy of the serverState

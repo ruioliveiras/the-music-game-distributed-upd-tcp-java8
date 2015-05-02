@@ -1,5 +1,6 @@
 package cc.thegame;
 
+import cc.client.UDPClient;
 import cc.model.Question;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -29,6 +30,9 @@ import javax.imageio.ImageIO;
  */
 public class AppController {
 
+    private UDPClient client;
+    private Question actualQuestion;
+    
     @FXML
     private Button r1_button, r2_button, r3_button;
     

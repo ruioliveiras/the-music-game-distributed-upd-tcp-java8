@@ -17,8 +17,10 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import sun.java2d.cmm.kcms.CMM;
 
 /**
  * This class meets a client and call the correct functions has need.
@@ -35,13 +37,13 @@ public class ServerHandler implements Runnable {
 
     /**
      * Main Constructor of ServerHandler
-     * 
+     *
      * @param name
      * @param state
      * @param socket
      * @param facadeMem
      * @param facadeHub
-     * @throws IOException 
+     * @throws IOException
      */
     public ServerHandler(String name, ServerState state, Socket socket,
             TcpLocal facadeMem, TcpHub facadeHub
@@ -64,7 +66,12 @@ public class ServerHandler implements Runnable {
                 }
                 //if this pdu are fragmented, don't wory, because the the serverConnunication work on this and this pdu area already done
                 System.out.println("i'm:" + name + ",attending:" + comm.getIp() + " - " + pdu);
-                foward01(pdu);
+                if (pdu.getType() ==PDUType.INFO){
+                    foward_InfoV1(pdu);    
+                } else {
+                    foward_OtherV1(pdu);    
+                }
+                
 
             }
 
@@ -78,18 +85,18 @@ public class ServerHandler implements Runnable {
      * some exceptional cases - where can't only call a method
      *
      * Note this function works for the version 01 of the PDU.
-     * 
+     *
      * @param pdu
      * @throws UnknownHostException
      */
-    protected void foward01(PDU pdu) throws UnknownHostException {
+    protected void foward_InfoV1(PDU pdu) throws UnknownHostException {
         if (pdu.getType().getId() != PDUType.INFO.getId()) {
             // error this is just INFOS 
         }
 
         PDUType[] newChallenge = {PDUType.INFO_CHALLE, PDUType.INFO_DATE, PDUType.INFO_HOUR, PDUType.INFO_NAME, PDUType.INFO_NICK};
         PDUType[] newServer = {PDUType.INFO_IPSERVER, PDUType.INFO_PORT};
-        PDUType[] registerAcceptChallenge = {PDUType.INFO_NICK, PDUType.INFO_CHALLE};
+        PDUType[] registerAcceptChallenge = {PDUType.INFO_CHALLE, PDUType.INFO_NAME, PDUType.INFO_NICK};
         PDUType[] registerScore = {PDUType.INFO_NICK, PDUType.INFO_CHALLE};
         Object[] p;
 
@@ -112,7 +119,7 @@ public class ServerHandler implements Runnable {
             } else {
                 // if the server that are announcing don't exist (are not in the neighbors):
                 //     -> announce the newServer to my neighbors
-            
+
                 // register in other servers
                 facadeHub.registerServer(ip, port);
                 // register in the current server
@@ -130,10 +137,14 @@ public class ServerHandler implements Runnable {
 
             }
         } else if ((p = checkRequest(pdu, registerAcceptChallenge)) != null) {
+            String challengeName = (String) p[0];
             facadeMem.registerAcceptChallenge(
-                    (String) p[0],
-                    (String) p[1]
+                    challengeName,
+                    (String) p[1],
+                    (String) p[2]
             );
+            state.getChallenge(challengeName)
+                    .addServer((TcpClient) state.getNeighbor(comm.getIp()));
         } else if ((p = checkRequest(pdu, registerScore)) != null) {
             facadeMem.registerScore(
                     (String) p[0],
@@ -142,11 +153,34 @@ public class ServerHandler implements Runnable {
         }
     }
 
+    protected void foward_OtherV1(PDU pdu) {
+        if (pdu.getType().getId() != PDUType.REPLY.getId()) {
+            //errro
+        }
+        PDUType[] newQuestion = {PDUType.REPLY_CHALLE, PDUType.REPLY_NUM_QUESTION,
+            PDUType.REPLY_QUESTION, PDUType.REPLY_CORRECT, PDUType.REPLY_NUM_ANSWER,
+            PDUType.REPLY_ANSWER, PDUType.REPLY_IMG, PDUType.REPLY_NUM_BLOCK,
+            PDUType.REPLY_BLOCK};
+        Object[] p;
+        if ((p = checkRequest(pdu, newQuestion)) != null) {
+            String aux[] = new String[((List<Object>) p[4]).size()];
+            facadeMem.question(
+                    (String) p[0], (byte) p[1], (String) p[2], (byte) p[3],
+                    ((List<Object>) p[4]).toArray(aux),
+                    (byte[]) p[4],
+                    (List<byte[]>) p[5]
+            );
+        } else {
+            //error
+        }
+    }
+
     /**
      * Simple auxiliary function
+     *
      * @param pdu
      * @param required
-     * @return 
+     * @return
      */
     private Object[] checkRequest(PDU pdu, PDUType[] required) {
         Object[] ret = new Object[required.length];
@@ -155,9 +189,15 @@ public class ServerHandler implements Runnable {
             if (!pdu.hasParameter(p)) {
                 return null;
             } else {
-                ret[i++] = pdu.popParameter(p);
+                List<Object> r = pdu.getAllParameter(p);
+                if (r.size() == 1) {
+                    ret[i++] = pdu.popParameter(p);
+                } else {
+                    ret[i++] = r;
+                }
             }
         }
         return ret;
     }
+
 }

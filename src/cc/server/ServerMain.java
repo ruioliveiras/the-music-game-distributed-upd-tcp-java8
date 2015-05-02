@@ -28,7 +28,9 @@ import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -41,7 +43,7 @@ public class ServerMain {
     private final static int DEFAULT_TCP_PORT = 8080;
     private final static int DEFAULT_UDP_PORT = 5050;
     private static ServerMain mainMain;
-    
+
     private final String name;
     private final ServerState state;
     /* TCP */
@@ -104,7 +106,7 @@ public class ServerMain {
         }
         ServerMain main = new ServerMain(portUdp, portTcp, InetAddress.getByName("127.0.0.1"));
         mainMain = main;
-        startInOtherThread(main, "MainServer1");
+        startTCPServer_OtherThread(main, "MainServer1");
         testServers();
         testClient();
         mainMain.testFragmentation();
@@ -122,21 +124,21 @@ public class ServerMain {
         // comment this is want to testServers
         ServerMain main2 = new ServerMain(portUdp + 1, portTcp + 1, InetAddress.getByName("127.0.0.2"));
         main2.init("127.0.0.1", portTcp + "");
-        startInOtherThread(main2, "MainServer2");
+        startTCPServer_OtherThread(main2, "MainServer2");
 
         Thread.sleep(1000);
         System.out.println("3-------");
 
         ServerMain main3 = new ServerMain(portUdp + 2, portTcp + 2, InetAddress.getByName("127.0.0.3"));
         main3.init("127.0.0.1", portTcp + "");
-        startInOtherThread(main3, "MainServer2");
+        startTCPServer_OtherThread(main3, "MainServer2");
 
         Thread.sleep(1000);
         System.out.println("4-------");
 
         ServerMain main4 = new ServerMain(portUdp + 3, portTcp + 3, InetAddress.getByName("127.0.0.4"));
         main4.init("127.0.0.1", portTcp + "");
-        startInOtherThread(main4, "MainServer4");
+        startTCPServer_OtherThread(main4, "MainServer4");
     }
 
     public static void testClient() throws IOException {
@@ -205,27 +207,37 @@ public class ServerMain {
     }
 
     public static void testClient04() throws IOException {
-//        final ClientBash c1 = new ClientBash("127.0.0.70", "127.0.0.1", 5050);
+        final ClientBash c1 = new ClientBash("127.0.0.70", "127.0.0.1", 5050);
         final ClientBash c2 = new ClientBash("127.0.0.71", "127.0.0.1", 5050);
         final ClientBash c3 = new ClientBash("127.0.0.72", "127.0.0.1", 5050);
-        
-    //    c1.execute("LOGIN prc 123");
+
+        c1.execute("LOGIN prc 123");
         c2.execute("LOGIN ruioliveiras 123");
         c3.execute("LOGIN orlando 123");
+        ;
 
-        new Thread(() -> {
-  //          c1.getUDPClient().getNextQuestion();
-        }).start();
-        new Thread(() -> {
-           c2.getUDPClient().getNextQuestion();
-        }).start();
-        new Thread(() -> {
-            c3.getUDPClient().getNextQuestion();
-        }).start();
+        startUDPChallengeClient_OtherThread(c1, "Circo", Arrays.asList(1, 2, 3, 4));
+        startUDPChallengeClient_OtherThread(c2, "Circo", Arrays.asList(1, 2, 3, 4));
+        startUDPChallengeClient_OtherThread(c3, "Circo", Arrays.asList(1, 2, 3, 4));
 
     }
 
-    public static void startInOtherThread(final ServerMain main, String name) {
+    public static void startUDPChallengeClient_OtherThread(ClientBash cb, String challenge, List<Integer> anwsers) {
+        new Thread(() -> {
+            try {
+
+                for (int i = 0; i < UDPChallengeProvider.CHALLENGE_NUMQUESTION; i++) {
+                    cb.getUDPClient().getNextQuestion();
+                    cb.execute("ANSWER " + anwsers.get(i) + " " + challenge + " " + i);
+                }
+                cb.execute("END");
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }).start();
+    }
+
+    public static void startTCPServer_OtherThread(final ServerMain main, String name) {
         Thread t1 = new Thread(() -> {
             try {
                 main.startTCP();
