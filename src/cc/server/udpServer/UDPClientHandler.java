@@ -44,10 +44,10 @@ public class UDPClientHandler {
     private final TcpLocal tcpLocal;
     private final TcpHub tcpHub;
 
-    public UDPClientHandler(ServerState serverState, TcpLocal tcpLocal, TcpHub tcpHub, UDPComunication socket) {
+    public UDPClientHandler(ServerState serverState, TcpLocal tcpLocal, TcpHub tcpHub, UDPComunication socket, UDPChallengeProvider challengeProvider) {
         this.state = serverState;
         this.socket = socket;
-        this.challengeProvider = new UDPChallengeProvider(socket, state);
+        this.challengeProvider = challengeProvider;
         this.tcpHub = tcpHub;
         this.tcpLocal = tcpLocal;
     }
@@ -306,17 +306,17 @@ public class UDPClientHandler {
      * @return if there are next, the last fragment return false, otherwise true
      */
     static boolean createMusicBlockPDU(PDU pduAux, Question q, int index) {
-        int sizeofBlock = 48 * 1024;
-        int size = sizeofBlock;
-        if ((sizeofBlock * index + sizeofBlock) > q.getMusicArray().length) {
-            size = q.getMusicArray().length - (sizeofBlock * index + sizeofBlock);
-        }
-        if (size < 0) {
-            return false;
-        }
-        byte[] res = ByteBuffer.allocate(size).put(q.getMusicArray(), index * sizeofBlock, size).array();
+//        int sizeofBlock = 48 * 1024;
+//        int size = sizeofBlock;
+//        if ((sizeofBlock * index + sizeofBlock) > q.getMusicArray().length) {
+//            size = q.getMusicArray().length - (sizeofBlock * index + sizeofBlock);
+//        }
+//        if (size < 0) {
+//            return false;
+//        }
+//        byte[] res = ByteBuffer.allocate(size).put(q.getMusicArray(), index * sizeofBlock, size).array();
         pduAux.addParameter(PDUType.REPLY_NUM_BLOCK, (byte) index);
-        pduAux.addParameter(PDUType.REPLY_BLOCK, res);
+        pduAux.addParameter(PDUType.REPLY_BLOCK, q.getMusicArray().get(index));
         //pduAux.addParameter(PDUType.CONTINUE, (byte) 0);
 
         return true;

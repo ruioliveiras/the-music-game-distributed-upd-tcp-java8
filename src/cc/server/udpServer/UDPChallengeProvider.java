@@ -15,10 +15,15 @@ import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.IntStream;
 import javafx.util.Pair;
+import util.T3;
+import util.T2;
 
 /**
  *
@@ -64,7 +69,7 @@ public class UDPChallengeProvider {
         /**
          * generate all the questions for this challenge
          */
-        for (i = 1; i <= CHALLENGE_NUMQUESTION; i++) {
+        for (i = 0; i < CHALLENGE_NUMQUESTION; i++) {
             do {
                 q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
                 // avoid repetead questions
@@ -72,36 +77,12 @@ public class UDPChallengeProvider {
             challenge.addQuestion(q);
         }
 
-        for (i = 1; i <= CHALLENGE_NUMQUESTION; i++) {
+        for (i = 0; i < CHALLENGE_NUMQUESTION; i++) {
             q = challenge.getQuestion(i);
-            PDU ans = makeQuestionPDU(challenge, i);
-            challenge.getSubscribers().stream()
-                    .filter(user -> user.getIP() != null)
-                    .forEach((user) -> {
-                        socket.sendPDU(ans, user.getIP(), user.getPort());
-                    });
-
-            //music: 
+            q.loadImage();
             q.loadMusic();
-
-            i = 0;
-            boolean hasNext = true;
-            while (hasNext) {
-                PDU musicPDU = new PDU(PDUType.REPLY);
-                //@todo: ruioliveiras continuar aqui, esta merda precisa de continue se nao for o ultimo
-                hasNext = UDPClientHandler.createMusicBlockPDU(musicPDU, q, i++);
-                if (hasNext) {
-                    musicPDU.addParameter(PDUType.CONTINUE, (byte) 0);
-                }
-
-                challenge.getSubscribers().stream()
-                        .filter(user -> user.getIP() != null)
-                        .forEach((user) -> {
-                            socket.sendPDU(musicPDU, user.getIP(), user.getPort());
-                        });
-//                challenge.getServers().stream()
-//                        .forEach((server)->{ server.});
-            };
+            this.sendQuestion(challenge.getName(),i,q.getQuestion(),q.getCorrect(),
+                    q.getAnwser(), q.getImageArray() ,q.getMusicArray());
             Thread.sleep(1000);
         }
     }
@@ -115,45 +96,17 @@ public class UDPChallengeProvider {
                 .forEach((user) -> {
                     socket.sendPDU(ans, user.getIP(), user.getPort());
                 });
-
+        
         IntStream.range(0, question.length())
-                .mapToObj(i -> new Pair<>(i, music.get(i)))
-                .map((pair) -> {
-                    PDU pdu = new PDU(PDUType.REPLY);
-
-                    return pdu;
-                })
-                .flatMap((pdu) -> challenge.getSubscribers().stream().map(u -> new Pair<>(u, pdu)))
-                .filter(pair -> pair.getKey().getIP() != null)
-                .forEach((pair) -> {
-                    socket.sendPDU(pair.getValue(), pair.getKey().getIP(), pair.getKey().getPort());
+                .mapToObj(i -> new T3<>(i, music.get(i), new PDU(PDUType.REPLY)))
+                .peek(t -> t.c.addParameter(PDUType.REPLY_NUM_BLOCK,(byte)(int) t.a))
+                .peek(t -> t.c.addParameter(PDUType.REPLY_BLOCK, t.b))
+                .peek(t ->{ if (t.a < music.size()) t.c.addParameter(PDUType.CONTINUE,(byte) 0); })
+                .map(t -> t.c)
+                .flatMap(pdu -> challenge.getSubscribers().stream().map(u ->new T2<>(u,pdu)))
+                .forEach(t -> {
+                    socket.sendPDU(t.b, t.a.getIP(), t.a.getPort());
                 });
-
-        int i = 0;
-        boolean hasNext = true;
-        while (music) {
-            PDU musicPDU = new PDU(PDUType.REPLY);
-            //@todo: ruioliveiras continuar aqui, esta merda precisa de continue se nao for o ultimo
-            hasNext = UDPClientHandler.createMusicBlockPDU(musicPDU, q, i++);
-            if (hasNext) {
-                musicPDU.addParameter(PDUType.CONTINUE, (byte) 0);
-            }
-
-            challenge.getSubscribers().stream()
-                    .filter(user -> user.getIP() != null)
-                    .forEach((user) -> {
-                        socket.sendPDU(musicPDU, user.getIP(), user.getPort());
-                    });
-//                challenge.getServers().stream()
-//                        .forEach((server)->{ server.});
-        };
-    }
-
-    public PDU makeQuestionPDU(Challenge challenge, int nQuestion) {
-        Question q = challenge.getQuestion(nQuestion);
-        q.loadImage();
-        return makeQuestionPDU(challenge.getName(), nQuestion, q.getQuestion(),
-                q.getCorrect(), q.getAnwser(), q.getImageArray());
     }
 
     public PDU makeQuestionPDU(String challengeName, int nQuestion, String question,

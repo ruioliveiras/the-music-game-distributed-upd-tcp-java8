@@ -52,8 +52,9 @@ public class ServerMain {
     private final TcpHub tcpHub;
 
     /* UDP */
-    private final UDPComunication udpServer;
+    private final UDPComunication udpCom;
     private final UDPClientHandler udpHandler;
+    private final UDPChallengeProvider udpChallenge;
 
     //vai estar declarado static aqui um server state, e um server facade.
     //vai ter um metodo para começar o server handler 
@@ -62,13 +63,16 @@ public class ServerMain {
         this.name = "" + tcpListingPort;
         this.parseChallengeFile("desafio-000001.txt");
 
+        this.udpCom = new UDPComunication(udpPort, address, 0, null);
+        this.udpCom.setLabelMode(false);
+        this.udpChallenge = new UDPChallengeProvider(udpCom, state);
+
+        
         this.tcpSS = new ServerSocket(tcpListingPort, 0, address);
-        this.tcpLocal = new TcpLocal(state);
+        this.tcpLocal = new TcpLocal(state, udpChallenge);
         this.tcpHub = new TcpHub(state);
 
-        udpServer = new UDPComunication(udpPort, address, 0, null);
-        udpServer.setLabelMode(false);
-        udpHandler = new UDPClientHandler(state, udpServer);
+        udpHandler = new UDPClientHandler(state, tcpLocal, tcpHub, udpCom, udpChallenge);
     }
 
     public void init(String initIp, String initPort) throws UnknownHostException {
@@ -88,10 +92,10 @@ public class ServerMain {
 
     public void startUdp() throws IOException {
         while (true) {
-            PDU pdu = udpServer.nextPDU();
+            PDU pdu = udpCom.nextPDU();
             //create thread? no
-            pdu = udpHandler.decodePacket(pdu, udpServer.getDestIp(), udpServer.getDestPort());
-            udpServer.sendPDU(pdu);
+            pdu = udpHandler.decodePacket(pdu, udpCom.getDestIp(), udpCom.getDestPort());
+            udpCom.sendPDU(pdu);
         }
     }
 

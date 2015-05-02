@@ -10,8 +10,11 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.util.Pair;
 
@@ -265,13 +268,16 @@ public class UDPClient {
                 // add
                 .forEach((t) -> musicBytes.put(t.getKey(), t.getValue()));
 
-        ByteBuffer buffer = ByteBuffer.allocate((numberBlocks + 1) * musicBytes.firstEntry().getValue().length);
-        musicBytes.entrySet().stream().sequential()
-                .forEach((a) -> buffer.put(a.getValue()));
+//        ByteBuffer buffer = ByteBuffer.allocate((numberBlocks + 1) * musicBytes.firstEntry().getValue().length);
+//        musicBytes.entrySet().stream().sequential()
+//                .forEach((a) -> buffer.put(a.getValue()));
 
+        List<byte[]> buffer = musicBytes.entrySet().stream().sequential()
+                .map(pair -> pair.getValue())
+                .collect(Collectors.toList());
 // percorrer todos e se for maior que o anterior entao faz pede retrasmit do bloco
 //@todo receber os blocos da musica
-        question = new Question(questionText, answers, correct, img, buffer.array());
+        question = new Question(questionText, answers, correct, img, buffer);
 
         return question;
     }

@@ -8,8 +8,12 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.IntStream;
 import javax.imageio.ImageIO;
 
 /**
@@ -47,7 +51,7 @@ public class Question {
     /**
      * Byte array of this question's Music
      */
-    public byte[] musicArray;
+    public List<byte[]> musicArray;
 
     /**
      * Main constructor
@@ -68,7 +72,7 @@ public class Question {
 //        this.musicArray = musicArray;
     }
 
-    public Question(String question, String[] anwser, int correct, byte[] imageArray, byte[] musicArray) {
+    public Question(String question, String[] anwser, int correct, byte[] imageArray, List<byte[]> musicArray) {
         this.question = question;
         this.answer = anwser;
         this.correct = correct;
@@ -94,9 +98,23 @@ public class Question {
         if (musicArray != null) {
             return;
         }
+        musicArray = new ArrayList<>();
         try {
-            Path path = Paths.get(musicPath);
-            musicArray = Files.readAllBytes(path);
+            //Path path = Paths.get(musicPath);
+            FileInputStream fis = new FileInputStream(musicPath);
+            while (fis.available()> 0){
+                int available = fis.available();
+                byte[] buffer;
+                if (available < 1024*48){
+                    buffer = new byte[available];
+                } else{
+                    buffer = new byte[1024*48];
+                }
+                fis.read(buffer);
+                musicArray.add(buffer);
+            }
+            fis.close();
+            
         } catch (IOException ex) {
             throw new RuntimeException("reading music");
         }
@@ -122,7 +140,7 @@ public class Question {
         return musicPath;
     }
 
-    public byte[] getMusicArray() {
+    public List<byte[]> getMusicArray() {
         return musicArray;
     }
 
