@@ -34,7 +34,7 @@ public class UDPComunication {
             } else {
                 socket = new DatagramSocket(sourcePort, sourceIp);
                 socket.setReceiveBufferSize(1024 * 1024 * 50);
-                System.out.print("HOW MAY KBBYTES: " + socket.getReceiveBufferSize() / 1024);
+//                System.out.print("HOW MAY KBBYTES: " + socket.getReceiveBufferSize() / 1024);
             }
             this.destPort = destPort;
             this.destIp = destIp;
@@ -62,9 +62,12 @@ public class UDPComunication {
         int i = 0;
 
         try {
+            if (destIp == null){
+                return;
+            }
             b = pdu.toByte();
             DatagramPacket send_packet = new DatagramPacket(b, pdu.getSizeBytes(), destIp, destPort);
-            System.out.println("sendPDU fragment: " + Thread.currentThread().getName() + "|" + i++);
+//            System.out.println("sendPDU fragment: " + Thread.currentThread().getName() + "|" + i++);
             // if (i>1) Thread.sleep(1000);
             this.socket.send(send_packet);
         } catch (IOException exception) {
@@ -87,7 +90,7 @@ public class UDPComunication {
             pData = connectionReceiveBytes();
             //reading the pdu just to see the label
             pduAux.initHeaderFromBytes(pData, 0);
-            System.out.println("read fragment: " + Thread.currentThread().getName() + "|" + i++);
+//            System.out.println("read fragment: " + Thread.currentThread().getName() + "|" + i++);
 
             // if is the currect response
             if (!labelMode) {

@@ -212,7 +212,7 @@ public class UDPClientHandler {
         state.addChallenge(challengeName, challenge);
         state.addOwner(challengeName, "localhost");
         tcpHub.registerChallenge(challengeName, date, time, user.getName(), user.getNick());
-        
+
         PDU answer = new PDU(PDUType.REPLY);
 
         answer.addParameter(PDUType.REPLY_CHALLE, challengeName);
@@ -226,13 +226,13 @@ public class UDPClientHandler {
         PDU answer = new PDU(PDUType.REPLY);
 
         User user = state.getSession(ip);
-       
+
         String ownerIp = state.getOwnerIp(challengeName);
-        if (ownerIp.equals("localhost")) {
-            state.getChallenge(challengeName)
-                    .addSubscribers(user);
-        } else {
-            state.getNeighbor(ownerIp).registerAcceptChallenge(challengeName,user.getName() ,user.getNick());
+        state.getChallenge(challengeName)
+                .addSubscribers(user);
+
+        if (!ownerIp.equals("localhost")) {
+            state.getNeighbor(ownerIp).registerAcceptChallenge(challengeName, user.getName(), user.getNick());
         }
         user.setActualChallenge(challengeName);
 
@@ -287,7 +287,7 @@ public class UDPClientHandler {
     }
 
     public PDU retransmit(String challengeName, int questionId, int nblock) {
-        Question q = state.getQuestion(questionId);
+        Question q = state.getChallenge(challengeName).getQuestion(questionId);
         q.loadMusic();
         if (q == null) {
             //erro;

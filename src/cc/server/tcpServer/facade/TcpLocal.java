@@ -6,6 +6,7 @@
 package cc.server.tcpServer.facade;
 
 import cc.model.Challenge;
+import cc.model.Question;
 import cc.model.User;
 import cc.server.tcpServer.ServerState;
 import cc.server.ServerToServerFacade;
@@ -58,11 +59,9 @@ public class TcpLocal implements ServerToServerFacade {
     @Override
     public void question(String challengeName, int nQuestion, String question,
             int correct, String[] answers, byte[] img, List<byte[]> music) {
-        Challenge challenge = state.getChallenge(challengeName);
-        challenge.getSubscribers().stream()
-                .forEach(user -> {
-                    challengeProvider.sendQuestion(challengeName,nQuestion,question,correct,answers,img,music);
-                });
+        state.getChallenge(challengeName).addQuestion(new Question(question, answers, correct, img, music));
+        challengeProvider.sendQuestion(challengeName, nQuestion, question, correct, answers, img, music);
+        
     }
 
     // this guy will has a copy of the serverState

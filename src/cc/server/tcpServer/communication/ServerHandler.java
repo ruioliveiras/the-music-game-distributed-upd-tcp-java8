@@ -66,7 +66,7 @@ public class ServerHandler implements Runnable {
                 }
                 //if this pdu are fragmented, don't wory, because the the serverConnunication work on this and this pdu area already done
                 System.out.println("i'm:" + name + ",attending:" + comm.getIp() + " - " + pdu);
-                if (pdu.getType() ==PDUType.INFO){
+                if (pdu.getType() == PDUType.INFO){
                     foward_InfoV1(pdu);    
                 } else {
                     foward_OtherV1(pdu);    
@@ -97,9 +97,9 @@ public class ServerHandler implements Runnable {
         PDUType[] newChallenge = {PDUType.INFO_CHALLE, PDUType.INFO_DATE, PDUType.INFO_HOUR, PDUType.INFO_NAME, PDUType.INFO_NICK};
         PDUType[] newServer = {PDUType.INFO_IPSERVER, PDUType.INFO_PORT};
         PDUType[] registerAcceptChallenge = {PDUType.INFO_CHALLE, PDUType.INFO_NAME, PDUType.INFO_NICK};
-        PDUType[] registerScore = {PDUType.INFO_NICK, PDUType.INFO_CHALLE};
+        PDUType[] registerScore = {PDUType.INFO_NICK, PDUType.INFO_CHALLE, PDUType.INFO_SCORE};
         Object[] p;
-
+        
         if ((p = checkRequest(pdu, newChallenge)) != null) {
             facadeMem.registerChallenge(
                     (String) p[0],
@@ -166,9 +166,9 @@ public class ServerHandler implements Runnable {
             String aux[] = new String[((List<Object>) p[4]).size()];
             facadeMem.question(
                     (String) p[0], (byte) p[1], (String) p[2], (byte) p[3],
-                    ((List<Object>) p[4]).toArray(aux),
-                    (byte[]) p[4],
-                    (List<byte[]>) p[5]
+                    ((List<Object>) p[5]).toArray(aux),
+                    (byte[]) p[6],
+                    (List<byte[]>) p[8]
             );
         } else {
             //error
@@ -191,7 +191,7 @@ public class ServerHandler implements Runnable {
             } else {
                 List<Object> r = pdu.getAllParameter(p);
                 if (r.size() == 1) {
-                    ret[i++] = pdu.popParameter(p);
+                    ret[i++] = r.get(0);
                 } else {
                     ret[i++] = r;
                 }

@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.Socket;
 
 /**
@@ -24,7 +25,9 @@ public class TCPCommunication {
     private InputStream is;
     private OutputStream os;
 
-    /** Creates a new ServerCommunication using a pre-initialized socket.
+    /**
+     * Creates a new ServerCommunication using a pre-initialized socket.
+     *
      * @param socket
      */
     public TCPCommunication(Socket socket) {
@@ -46,26 +49,29 @@ public class TCPCommunication {
     public PDU nextPDU() throws IOException {
         PDU pdu = new PDU();
         byte[] headerBuffer = new byte[8];
-        byte[] bodyBuffer = new byte[1024];
+        byte[] bodyBuffer;
 
-        if (is.read(headerBuffer, 0, 8) == 8) {
-            pdu.initHeaderFromBytes(headerBuffer, 0);
-            if (pdu.getParameterSizeBytes() > bodyBuffer.length) {
-                //error
-            }
+        do {
+            if (is.read(headerBuffer, 0, 8) == 8) {
+                pdu.initHeaderFromBytes(headerBuffer, 0);
+                bodyBuffer = new byte[pdu.getSizeBytes()];
+                if (pdu.getParameterSizeBytes() > bodyBuffer.length) {
+
+                }
 //          if has label then is fragmented
 //          if (pdu.getLabel()){
 //                
 //          }
 
-            if (is.read(bodyBuffer, 0, pdu.getParameterSizeBytes()) != pdu.getParameterSizeBytes()) {
+                if (is.read(bodyBuffer, 0, pdu.getParameterSizeBytes()) != pdu.getParameterSizeBytes()) {
+                    //error
+                }
+                pdu.initParametersFromBytes(bodyBuffer, 0);
+            } else {
                 //error
             }
-            pdu.initParametersFromBytes(bodyBuffer, 0);
-        } else {
-            //error
-        }
-
+        } while (pdu.hasContinue());
+        
         return pdu;
     }
 
@@ -98,7 +104,7 @@ public class TCPCommunication {
      * @return
      */
     public String getIp() {
-        return socket.getInetAddress().toString();
+        return getIpByte().toString();
     }
 
     /**
@@ -107,6 +113,9 @@ public class TCPCommunication {
      * @return
      */
     public InetAddress getIpByte() {
-        return socket.getInetAddress();
+        if (socket.getRemoteSocketAddress() instanceof InetSocketAddress) {
+            return ((InetSocketAddress) socket.getRemoteSocketAddress()).getAddress();
+        }
+        return null;
     }
 }

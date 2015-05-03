@@ -22,11 +22,11 @@ import java.util.List;
  */
 public class TcpClient implements ServerToServerFacade {
 
-    TCPCommunication comm;
+    private TCPCommunication comm;
 
-    public TcpClient(InetAddress ip, int port) {
+    public TcpClient(InetAddress ip, int port, InetAddress locaAddress) {
         try {
-            comm = new TCPCommunication(new Socket(ip, port));
+            comm = new TCPCommunication(new Socket(ip, port,locaAddress, 0));
         } catch (IOException ex) {
             throw new RuntimeException();
         }
@@ -43,7 +43,7 @@ public class TcpClient implements ServerToServerFacade {
     @Override
     synchronized public void registerChallenge(String challeName, LocalDate d, LocalTime time, String user, String nick) {
         PDU pdu = new PDU(PDUType.INFO);
-        pdu.addParameter(PDUType.INFO_CERT, challeName);
+        pdu.addParameter(PDUType.INFO_CHALLE, challeName);
         pdu.addParameter(PDUType.INFO_DATE, d);
         pdu.addParameter(PDUType.INFO_HOUR, time);
         pdu.addParameter(PDUType.INFO_NICK, user);
@@ -55,7 +55,7 @@ public class TcpClient implements ServerToServerFacade {
     @Override
     synchronized public void registerAcceptChallenge(String challeName, String name, String nick) {
         PDU pdu = new PDU(PDUType.INFO);
-        pdu.addParameter(PDUType.INFO_CERT, challeName);
+        pdu.addParameter(PDUType.INFO_CHALLE, challeName);
         pdu.addParameter(PDUType.INFO_NAME, name);
         pdu.addParameter(PDUType.INFO_NICK, nick);
         comm.sendPDU(pdu);
@@ -84,12 +84,17 @@ public class TcpClient implements ServerToServerFacade {
         }
         //@todo fazer o loadImage na classe Question
         pdu.addParameter(PDUType.REPLY_IMG, img);
-
+        pdu.addParameter(PDUType.CONTINUE, (byte)0);
+        comm.sendPDU(pdu);
         for (int i = 0; i < musics.size(); i++) {
+            pdu = new PDU(PDUType.REPLY); 
             pdu.addParameter(PDUType.REPLY_NUM_BLOCK, (byte) i);
             pdu.addParameter(PDUType.REPLY_BLOCK, musics.get(i));
+            if (i + 1 < musics.size()) {
+                pdu.addParameter(PDUType.CONTINUE, (byte)0);
+            }
+            comm.sendPDU(pdu);
         }
-        comm.sendPDU(pdu);
     }
 
     /**

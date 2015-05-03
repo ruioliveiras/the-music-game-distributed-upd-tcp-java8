@@ -101,9 +101,7 @@ public class PDU {
 
             offset += parameter.getDataType().getSize(obj);
 
-            if (parameter.equals(PDUType.REPLY_BLOCK)) {
-                System.out.println("ola");
-            }
+
             if (parameter.equals(PDUType.CONTINUE)) {
                 pduContinue = true;
             }

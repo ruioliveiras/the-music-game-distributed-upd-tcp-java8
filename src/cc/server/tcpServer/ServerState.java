@@ -63,7 +63,10 @@ public class ServerState {
      */
     private final Map<String, String> challengeOwner;
 
-    public ServerState() {
+    private final InetAddress localIp;
+    private final int localTcpPort;
+    
+    public ServerState(InetAddress localIp, int localPort ) {
         neighbors = new ConcurrentHashMap<>();
         localUsers = new ConcurrentHashMap<>();
         challenges = new ConcurrentHashMap<>();
@@ -71,6 +74,8 @@ public class ServerState {
         globalUsers = new ConcurrentHashMap<>();
         questions = new ConcurrentHashMap<>();
         sessions = new ConcurrentHashMap<>();
+        this.localIp = localIp;
+        this.localTcpPort = localPort;
     }
 
     /**
@@ -88,7 +93,7 @@ public class ServerState {
      * @param port 
      */
     public void addNeighbors(InetAddress ip, int port) {
-        neighbors.put(ip.toString(), new TcpClient(ip, port));
+        neighbors.put(ip.toString(), new TcpClient(ip, port, localIp));
     }
    
     /**

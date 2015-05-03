@@ -40,7 +40,7 @@ import java.util.logging.Logger;
  */
 public class ServerMain {
 
-    private final static int DEFAULT_TCP_PORT = 8080;
+    private final static int DEFAULT_TCP_PORT = 8081;
     private final static int DEFAULT_UDP_PORT = 5050;
     private static ServerMain mainMain;
 
@@ -59,7 +59,7 @@ public class ServerMain {
     //vai estar declarado static aqui um server state, e um server facade.
     //vai ter um metodo para começar o server handler 
     public ServerMain(int udpPort, int tcpListingPort, InetAddress address) throws IOException {
-        this.state = new ServerState();
+        this.state = new ServerState(address, tcpListingPort);
         this.name = "" + tcpListingPort;
         this.parseChallengeFile("desafio-000001.txt");
 
@@ -119,7 +119,7 @@ public class ServerMain {
     }
 
     public static void testServers() throws IOException, InterruptedException {
-        int portTcp = 8080;
+        int portTcp = DEFAULT_TCP_PORT;
         int portUdp = 5050;
 
         Thread.sleep(400);
@@ -150,6 +150,7 @@ public class ServerMain {
         testClient02();
         testClient03();
         testClient04();
+        testClient05();
     }
 
     public void testFragmentation() {
@@ -218,18 +219,40 @@ public class ServerMain {
         c1.execute("LOGIN prc 123");
         c2.execute("LOGIN ruioliveiras 123");
         c3.execute("LOGIN orlando 123");
-        ;
 
         startUDPChallengeClient_OtherThread(c1, "Circo", Arrays.asList(1, 2, 3, 4));
         startUDPChallengeClient_OtherThread(c2, "Circo", Arrays.asList(1, 2, 3, 4));
         startUDPChallengeClient_OtherThread(c3, "Circo", Arrays.asList(1, 2, 3, 4));
 
     }
+    
+    
+    public static void testClient05() throws IOException {
+        ClientBash c1 = new ClientBash("127.0.0.73", "127.0.0.2", 5051);
+        ClientBash c2 = new ClientBash("127.0.0.74", "127.0.0.2", 5051);
+        ClientBash c3 = new ClientBash("127.0.0.75", "127.0.0.2", 5051);
+        //cb.execute("REGISTAR nome nick pass");
+        c1.execute("REGISTER tiago mct 123");
+        c1.execute("LOGIN mct 123");
+        c1.execute("ACCEPT_CHALLENGE Circo");
+
+        c2.execute("REGISTER fernando fmendes 123");
+        c2.execute("LOGIN fmendes 123");
+        c2.execute("ACCEPT_CHALLENGE Circo");
+
+        c3.execute("REGISTER joao rodrigues 123");
+        c3.execute("LOGIN rodrigues 123");
+        c3.execute("ACCEPT_CHALLENGE Circo");
+
+        startUDPChallengeClient_OtherThread(c1, "Circo", Arrays.asList(1, 2, 3, 4));
+        startUDPChallengeClient_OtherThread(c2, "Circo", Arrays.asList(1, 2, 3, 4));
+        startUDPChallengeClient_OtherThread(c3, "Circo", Arrays.asList(1, 2, 3, 4));
+    }
+    
 
     public static void startUDPChallengeClient_OtherThread(ClientBash cb, String challenge, List<Integer> anwsers) {
         new Thread(() -> {
             try {
-
                 for (int i = 0; i < UDPChallengeProvider.CHALLENGE_NUMQUESTION; i++) {
                     cb.getUDPClient().getNextQuestion();
                     cb.execute("ANSWER " + anwsers.get(i) + " " + challenge + " " + i);

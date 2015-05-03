@@ -116,13 +116,13 @@ public class UDPServer {
     public static void main(String args[]) {
         int server_port = 12345;
 
-        UDPServer s1 = new UDPServer(12345, new ServerState());
-        try {
-            //s1.unicastConnection();
-            s1.multicastConnection();
-        } catch (IOException ex) {
-            Logger.getLogger(UDPServer.class.getName()).log(Level.SEVERE, null, ex);
-        }
+//        UDPServer s1 = new UDPServer(12345, new ServerState());
+//        try {
+//            //s1.unicastConnection();
+//            s1.multicastConnection();
+//        } catch (IOException ex) {
+//            Logger.getLogger(UDPServer.class.getName()).log(Level.SEVERE, null, ex);
+//        }
 
     }
 }

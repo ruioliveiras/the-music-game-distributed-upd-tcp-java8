@@ -6,6 +6,7 @@ import cc.model.User;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.tcpServer.ServerState;
+import cc.server.tcpServer.facade.TcpClient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -60,8 +61,7 @@ public class UDPChallengeProvider {
 
     }
 
-    public void startChallengeNow(Challenge challenge) throws InterruptedException {
-        Question q;
+    public void startChallengeNow(final Challenge challenge) throws InterruptedException {
         int i, nQuestion;
         int sizeQ = state.getQuestions().size();
         Random r = new Random();
@@ -70,6 +70,7 @@ public class UDPChallengeProvider {
          * generate all the questions for this challenge
          */
         for (i = 0; i < CHALLENGE_NUMQUESTION; i++) {
+            Question q;
             do {
                 q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
                 // avoid repetead questions
@@ -78,11 +79,19 @@ public class UDPChallengeProvider {
         }
 
         for (i = 0; i < CHALLENGE_NUMQUESTION; i++) {
-            q = challenge.getQuestion(i);
+            final Question q = challenge.getQuestion(i);
+            final int iAux = i;
             q.loadImage();
             q.loadMusic();
+            challenge.getServers().stream()
+                    .forEach((TcpClient s) ->{
+                        s.question(challenge.getName(), iAux, q.getQuestion(), 
+                            q.getCorrect(),q.getAnwser(),q.getImageArray(),
+                            q.getMusicArray());
+                    });
             this.sendQuestion(challenge.getName(),i,q.getQuestion(),q.getCorrect(),
                     q.getAnwser(), q.getImageArray() ,q.getMusicArray());
+            
             Thread.sleep(1000);
         }
     }
@@ -92,18 +101,21 @@ public class UDPChallengeProvider {
         Challenge challenge = state.getChallenge(challengeName);
         PDU ans = makeQuestionPDU(challengeName, nQuestion, question, correct, answers, img);
         challenge.getSubscribers().stream()
+                // this condition are here to avoid send PDU to people from other server( that has not ip ), 
                 .filter(user -> user.getIP() != null)
                 .forEach((user) -> {
                     socket.sendPDU(ans, user.getIP(), user.getPort());
                 });
         
         IntStream.range(0, question.length())
+                .filter(i -> i < music.size())
                 .mapToObj(i -> new T3<>(i, music.get(i), new PDU(PDUType.REPLY)))
                 .peek(t -> t.c.addParameter(PDUType.REPLY_NUM_BLOCK,(byte)(int) t.a))
                 .peek(t -> t.c.addParameter(PDUType.REPLY_BLOCK, t.b))
-                .peek(t ->{ if (t.a < music.size()) t.c.addParameter(PDUType.CONTINUE,(byte) 0); })
+                .peek(t ->{ if (t.a < music.size() - 1) t.c.addParameter(PDUType.CONTINUE,(byte) 0); })
                 .map(t -> t.c)
                 .flatMap(pdu -> challenge.getSubscribers().stream().map(u ->new T2<>(u,pdu)))
+                .filter(t -> t.a.getIP() != null)
                 .forEach(t -> {
                     socket.sendPDU(t.b, t.a.getIP(), t.a.getPort());
                 });
