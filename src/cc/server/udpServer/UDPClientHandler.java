@@ -177,7 +177,7 @@ public class UDPClientHandler {
         Challenge challenge = state.getChallenge(state.getSession(ip).getActualChallenge());
 
         challenge.getSubscribers().stream()
-                .map((user) -> user.getName())
+                .map((user) -> user.getNick())
                 .peek((userName) -> answer.addParameter(PDUType.REPLY_NAME, userName))
                 .map((userName) -> challenge.getScore(userName))
                 .forEach((score) -> answer.addParameter(PDUType.REPLY_SCORE, (short) (int) score));

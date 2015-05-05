@@ -27,6 +27,7 @@ public class PDUToUser {
             
             System.out.println("Servidor: \nNome: "+name+"\nScore: "+score);
         }
+        
     }
 
     void processEnd(PDU receive) {
@@ -36,6 +37,7 @@ public class PDUToUser {
             score = (Short) receive.popParameter(PDUType.REPLY_SCORE);
         
         System.out.println("Servidor: \nScore: "+score);
+        
     }
 
     void processChallenges(PDU receive) {

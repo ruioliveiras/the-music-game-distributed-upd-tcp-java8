@@ -149,9 +149,7 @@ public class ClientBash {
                 break;
             case "END":
                 if (checkTotalArgs(nargs, 1)) {
-                    if (testNumeric(args[1]) && testNumeric(args[3])) {
-                        client.makeDatagramEnd();
-                    }
+                    client.makeDatagramEnd();
                 } else {
                     System.out.println("Número de argumentos inválido!");
                 }
