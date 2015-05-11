@@ -52,8 +52,8 @@ public class TcpLocal implements ServerToServerFacade {
     }
 
     @Override
-    public void registerScore(String nick, int score) {
-
+    public void registerScore(String challengeName, String nick, int score) {
+        state.getChallenge(challengeName).addScore(nick,score);
     }
 
     @Override
