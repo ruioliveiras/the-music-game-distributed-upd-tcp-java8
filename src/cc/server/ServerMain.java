@@ -257,9 +257,12 @@ public class ServerMain {
                     cb.getUDPClient().getNextQuestion();
                     cb.execute("ANSWER " + anwsers.get(i) + " " + challenge + " " + i);
                 }
+                Thread.sleep(200);
                 cb.execute("END");
             } catch (IOException ex) {
                 ex.printStackTrace();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerMain.class.getName()).log(Level.SEVERE, null, ex);
             }
         }).start();
     }

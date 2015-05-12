@@ -134,6 +134,6 @@ public class Challenge {
     }
 
     public void addScore(String userNick, int score) {
-        scores.put(userNick, scores.get(userNick) + score);
+        scores.put(userNick, scores.getOrDefault(userNick,0) + score);
     }
 }
