@@ -4,6 +4,7 @@ import cc.model.Question;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.udpServer.UDPComunication;
+import cc.swinggame.MainInterface;
 import cc.thegame.AppController;
 import cc.thegame.AppMain;
 import java.net.*;
@@ -15,10 +16,13 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.util.Pair;
 
 /**
@@ -32,6 +36,7 @@ public class UDPClient {
     //private UDPClientCommunication udp_com;
     private UDPComunication udp_com;
     private PDUToUser ptu;
+    final AppController iGraf = new AppController();
 
     public UDPClient(String sourceIp, int sourcePort, String dest, int port) {
         try {
@@ -39,7 +44,6 @@ public class UDPClient {
             dest_port = port;
             udp_com = new UDPComunication(sourcePort, InetAddress.getByName(sourceIp), port, InetAddress.getByName(dest));
             ptu = new PDUToUser(true, "C"+sourceIp+"]");
-
         } catch (UnknownHostException ex) {
             System.out.println("Não foi possível criar Cliente.");
         }
@@ -167,6 +171,7 @@ public class UDPClient {
         
         ptu.processOk();
 
+        System.out.println("does Challenge");
         doChallenge();
               
         //@todo: ficar a espera de resposta do servidor com proxima questao ou erro
@@ -237,36 +242,42 @@ public class UDPClient {
 
     public void doChallenge(){
         
+        int current_points = 0;
         String args[] = null;
-        int pergunta = 0;
-        
+        int pergunta = 0, answerGiven = 0;
+   
         Question actualQ = null;
         
         String s1[] = {"resposta p11", "resposta p12", "resposta p13"};
         String s2[] = {"resposta p21", "resposta p22", "resposta p23"};
         
-        javafx.application.Application.launch(AppMain.class);
-        AppController iGraf = new AppController();
-    
+        //javafx.application.Application.launch(AppMain.class);
+        //AppMain appM = new AppMain();
+        //AppController iGraf = new AppController();
+        //Thread t_app = new Thread(appM);
+        //t_app.start();
         Question q1 = new Question("Pergunta 1", s1, 1, "", "");
         Question q2 = new Question("Pergunta 2", s1, 1, "", "");
         
+        MainInterface mInt = new MainInterface();
+        mInt.setVisible(true);
+        
         for(pergunta=0; pergunta<10; pergunta++){
-            actualQ = getNextQuestion();
-            iGraf.createQuestion(actualQ);
             
-            //depois de responder tem de saber o que respondeu... talvez meter aqui listeners... 
-            //talvez meter os listeners na appcontroler e receber o indice da resposta na createQuestion.
-            //limpar a interface
-            //enviar a resposta
-            //ficar a espera do resultado
-            //apresentar o resultado ao user
-            //limpar 
+            //Question actualQ = getNextQuestion();
+            answerGiven = mInt.createQuestion(q1);
+            System.out.println("Resposta dada: " + answerGiven);
+            
+            /*try {
+                Thread.sleep(5000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
+            }*/
+            
+            //answerGiven = mInt.createQuestion(q2);
+            //mInt.refreshFrame();
         
-        }
-        
-        iGraf.createQuestion(q2);
-        
+        }     
              
         
         //ao inicio do metodo, iniciar a interface

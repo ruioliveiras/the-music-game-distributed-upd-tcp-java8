@@ -6,6 +6,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.layout.AnchorPane;
@@ -18,7 +19,7 @@ import javafx.stage.Stage;
  * @author paulo
  */
 
-public class AppMain extends Application {
+public class AppMain extends Application implements Runnable {
 	
 	@Override
 	public void start(Stage primaryStage) {
@@ -33,16 +34,12 @@ public class AppMain extends Application {
                     primaryStage.show();
                 } catch (IOException ex) {
                     Logger.getLogger(AppMain.class.getName()).log(Level.SEVERE, null, ex);
-                }
-
-                        
+                }                        
 	}
-	
-        /*public static void main(String[] args) {
-            launch(args);
-	}*/
-}
 
-/*            } catch (IOException ex) {
-                System.out.println("Problema ao carregar a interface.");
-            }*/
+    @Override
+    public void run() {
+        launch();
+        if(Platform.isFxApplicationThread()) System.out.println("Sim, e.");
+    }
+}

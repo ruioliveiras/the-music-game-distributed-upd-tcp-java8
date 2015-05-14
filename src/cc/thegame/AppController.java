@@ -67,6 +67,7 @@ public class AppController {
         r3_button.setText(answers[2]);
         
         setTimer(1F);
+        
         /*question_text.setText(quest.getQuestion());
         try {
             question_image = toImage(quest.getImageArray());
@@ -156,11 +157,11 @@ public class AppController {
         question_text.setDisable(true);
         question_text.setWrapText(true);
         
-        String[] answers = {"init1","init2","init3"};
+        //String[] answers = {"init1","init2","init3"};
             
-        Question q1 = new Question("Teste1", answers, 1, new byte[1], null);
+        //Question q1 = new Question("Teste1", answers, 1, new byte[1], null);
                         
-        createQuestion(q1);
+        //createQuestion(q1);
                
         //cleanInterface();
             
