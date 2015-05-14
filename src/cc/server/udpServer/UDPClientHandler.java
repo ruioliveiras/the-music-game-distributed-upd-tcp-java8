@@ -177,7 +177,7 @@ public class UDPClientHandler {
         Challenge challenge = state.getChallenge(state.getSession(ip).getActualChallenge());
 
         challenge.getSubscribers().stream()
-                .map((user) -> user.getName())
+                .map((user) -> user.getNick())
                 .peek((userName) -> answer.addParameter(PDUType.REPLY_NAME, userName))
                 .map((userName) -> challenge.getScore(userName))
                 .forEach((score) -> answer.addParameter(PDUType.REPLY_SCORE, (short) (int) score));
@@ -261,14 +261,21 @@ public class UDPClientHandler {
         answer.addParameter(PDUType.REPLY_CHALLE, challengeName);
         answer.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) questionId);
 
-        if (challange.getQuestion(questionId).getCorrect() == choice) {
+        boolean correct = challange.getQuestion(questionId).getCorrect() == choice;
+        int points = challange.answer(nickname, correct);
+
+        if (correct) {
             answer.addParameter(PDUType.REPLY_CORRECT, (byte) 1);
-            answer.addParameter(PDUType.REPLY_POINTS, (byte) 2);
-            challange.answer(nickname, true);
         } else {
             answer.addParameter(PDUType.REPLY_CORRECT, (byte) 0);
-            answer.addParameter(PDUType.REPLY_POINTS, (byte) -1);
-            challange.answer(nickname, false);
+        }
+        answer.addParameter(PDUType.REPLY_POINTS, (byte) points);
+        String owner = state.getOwnerIp(challengeName);
+        if (owner.equals("localhost")) {
+            challange.getServers().stream()
+                    .forEach(s -> s.registerScore(challengeName, nickname, points));
+        } else {
+            state.getNeighbor(owner).registerScore(challengeName, nickname, points);
         }
 
         return answer;

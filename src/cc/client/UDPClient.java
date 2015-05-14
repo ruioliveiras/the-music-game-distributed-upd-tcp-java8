@@ -38,7 +38,7 @@ public class UDPClient {
             dest_ip = InetAddress.getByName(dest);
             dest_port = port;
             udp_com = new UDPComunication(sourcePort, InetAddress.getByName(sourceIp), port, InetAddress.getByName(dest));
-            ptu = new PDUToUser();
+            ptu = new PDUToUser(true, "C"+sourceIp+"]");
 
         } catch (UnknownHostException ex) {
             System.out.println("Não foi possível criar Cliente.");

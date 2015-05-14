@@ -46,9 +46,9 @@ public class TcpHub implements ServerToServerFacade {
     }
 
     @Override
-    public void registerScore(String nick, int score) {
+    public void registerScore(String challengeName,String nick, int score) {
         for (ServerToServerFacade sts : state.getNeighbors()) {
-            sts.registerScore(nick, score);
+            sts.registerScore(challengeName, nick, score);
         }
     }
     

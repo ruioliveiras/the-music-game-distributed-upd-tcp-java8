@@ -117,7 +117,7 @@ public class UDPComunication {
     private byte[] connectionReceiveBytes() {
         byte[] dadosReceber = new byte[1024 * 128];
         DatagramPacket receive_packet = new DatagramPacket(dadosReceber, dadosReceber.length);
-
+        
         try {
             this.socket.receive(receive_packet);
             destPort = receive_packet.getPort();

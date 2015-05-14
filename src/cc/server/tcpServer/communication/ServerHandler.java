@@ -97,7 +97,7 @@ public class ServerHandler implements Runnable {
         PDUType[] newChallenge = {PDUType.INFO_CHALLE, PDUType.INFO_DATE, PDUType.INFO_HOUR, PDUType.INFO_NAME, PDUType.INFO_NICK};
         PDUType[] newServer = {PDUType.INFO_IPSERVER, PDUType.INFO_PORT};
         PDUType[] registerAcceptChallenge = {PDUType.INFO_CHALLE, PDUType.INFO_NAME, PDUType.INFO_NICK};
-        PDUType[] registerScore = {PDUType.INFO_NICK, PDUType.INFO_CHALLE, PDUType.INFO_SCORE};
+        PDUType[] registerScore = {PDUType.INFO_CHALLE, PDUType.INFO_NICK, PDUType.INFO_SCORE};
         Object[] p;
         
         if ((p = checkRequest(pdu, newChallenge)) != null) {
@@ -148,7 +148,8 @@ public class ServerHandler implements Runnable {
         } else if ((p = checkRequest(pdu, registerScore)) != null) {
             facadeMem.registerScore(
                     (String) p[0],
-                    (Integer) p[1]
+                    (String) p[1], 
+                    (Integer) p[2]
             );
         }
     }

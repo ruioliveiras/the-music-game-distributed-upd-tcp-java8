@@ -51,10 +51,11 @@ public interface ServerToServerFacade {
     /**
      * In the end of challenge should register the score of each person
      *
+     * @param challeName
      * @param nick
      * @param score
      */
-    public void registerScore(String nick, int score);
+    public void registerScore(String challeName, String nick, int score);
     
     
     /**

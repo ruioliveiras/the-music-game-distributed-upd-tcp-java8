@@ -220,9 +220,9 @@ public class ServerMain {
         c2.execute("LOGIN ruioliveiras 123");
         c3.execute("LOGIN orlando 123");
 
-        startUDPChallengeClient_OtherThread(c1, "Circo", Arrays.asList(1, 2, 3, 4));
-        startUDPChallengeClient_OtherThread(c2, "Circo", Arrays.asList(1, 2, 3, 4));
-        startUDPChallengeClient_OtherThread(c3, "Circo", Arrays.asList(1, 2, 3, 4));
+        startUDPChallengeClient_OtherThread(c1, "Circo", Arrays.asList(1, 3, 3)); // one correct
+        startUDPChallengeClient_OtherThread(c2, "Circo", Arrays.asList(3, 2, 3)); // all questions anwsers are correct
+        startUDPChallengeClient_OtherThread(c3, "Circo", Arrays.asList(1, 2, 3)); // two correcct
 
     }
     
@@ -244,9 +244,9 @@ public class ServerMain {
         c3.execute("LOGIN rodrigues 123");
         c3.execute("ACCEPT_CHALLENGE Circo");
 
-        startUDPChallengeClient_OtherThread(c1, "Circo", Arrays.asList(1, 2, 3, 4));
-        startUDPChallengeClient_OtherThread(c2, "Circo", Arrays.asList(1, 2, 3, 4));
-        startUDPChallengeClient_OtherThread(c3, "Circo", Arrays.asList(1, 2, 3, 4));
+        startUDPChallengeClient_OtherThread(c1, "Circo", Arrays.asList(3, 1, 1));
+        startUDPChallengeClient_OtherThread(c2, "Circo", Arrays.asList(1, 1, 1));
+        startUDPChallengeClient_OtherThread(c3, "Circo", Arrays.asList(3, 2, 3));
     }
     
 
@@ -257,9 +257,12 @@ public class ServerMain {
                     cb.getUDPClient().getNextQuestion();
                     cb.execute("ANSWER " + anwsers.get(i) + " " + challenge + " " + i);
                 }
+                Thread.sleep(200);
                 cb.execute("END");
             } catch (IOException ex) {
                 ex.printStackTrace();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ServerMain.class.getName()).log(Level.SEVERE, null, ex);
             }
         }).start();
     }

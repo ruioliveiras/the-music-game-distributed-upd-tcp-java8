@@ -102,11 +102,13 @@ public class Challenge {
         return scores.get(userNick);
     }
 
-    public void answer(String userNick, boolean isCorrect) {
+    public int answer(String userNick, boolean isCorrect) {
         if (isCorrect) {
             scores.put(userNick, scores.get(userNick) + 2);
+            return 2;
         } else {
             scores.put(userNick, scores.get(userNick) - 1);
+            return -1;
         }
     }
 
@@ -129,5 +131,9 @@ public class Challenge {
     
     public Set<TcpClient> getServers(){
         return servers;
+    }
+
+    public void addScore(String userNick, int score) {
+        scores.put(userNick, scores.getOrDefault(userNick,0) + score);
     }
 }

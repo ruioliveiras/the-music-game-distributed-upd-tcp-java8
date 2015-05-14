@@ -69,13 +69,19 @@ public class UDPChallengeProvider {
         /**
          * generate all the questions for this challenge
          */
-        for (i = 0; i < CHALLENGE_NUMQUESTION; i++) {
-            Question q;
-            do {
-                q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
-                // avoid repetead questions
-            } while (challenge.hasQuestion(q));
-            challenge.addQuestion(q);
+        if (challenge.getName().equals("Circo")) {
+            for (i = 0; i < CHALLENGE_NUMQUESTION; i++) {
+                challenge.addQuestion(state.getQuestion(i + 1));
+            }
+        } else {
+            for (i = 0; i < CHALLENGE_NUMQUESTION; i++) {
+                Question q;
+                do {
+                    q = state.getQuestion(r.nextInt(sizeQ - 1) + 1);
+                    // avoid repetead questions
+                } while (challenge.hasQuestion(q));
+                challenge.addQuestion(q);
+            }
         }
 
         for (i = 0; i < CHALLENGE_NUMQUESTION; i++) {
@@ -84,14 +90,14 @@ public class UDPChallengeProvider {
             q.loadImage();
             q.loadMusic();
             challenge.getServers().stream()
-                    .forEach((TcpClient s) ->{
-                        s.question(challenge.getName(), iAux, q.getQuestion(), 
-                            q.getCorrect(),q.getAnwser(),q.getImageArray(),
-                            q.getMusicArray());
+                    .forEach((TcpClient s) -> {
+                        s.question(challenge.getName(), iAux, q.getQuestion(),
+                                q.getCorrect(), q.getAnwser(), q.getImageArray(),
+                                q.getMusicArray());
                     });
-            this.sendQuestion(challenge.getName(),i,q.getQuestion(),q.getCorrect(),
-                    q.getAnwser(), q.getImageArray() ,q.getMusicArray());
-            
+            this.sendQuestion(challenge.getName(), i, q.getQuestion(), q.getCorrect(),
+                    q.getAnwser(), q.getImageArray(), q.getMusicArray());
+
             Thread.sleep(1000);
         }
     }
@@ -106,15 +112,19 @@ public class UDPChallengeProvider {
                 .forEach((user) -> {
                     socket.sendPDU(ans, user.getIP(), user.getPort());
                 });
-        
-        IntStream.range(0, question.length())
+
+        IntStream.range(0, music.size())
                 .filter(i -> i < music.size())
                 .mapToObj(i -> new T3<>(i, music.get(i), new PDU(PDUType.REPLY)))
-                .peek(t -> t.c.addParameter(PDUType.REPLY_NUM_BLOCK,(byte)(int) t.a))
+                .peek(t -> t.c.addParameter(PDUType.REPLY_NUM_BLOCK, (byte) (int) t.a))
                 .peek(t -> t.c.addParameter(PDUType.REPLY_BLOCK, t.b))
-                .peek(t ->{ if (t.a < music.size() - 1) t.c.addParameter(PDUType.CONTINUE,(byte) 0); })
+                .peek(t -> {
+                    if (t.a < music.size() - 1) {
+                        t.c.addParameter(PDUType.CONTINUE, (byte) 0);
+                    }
+                })
                 .map(t -> t.c)
-                .flatMap(pdu -> challenge.getSubscribers().stream().map(u ->new T2<>(u,pdu)))
+                .flatMap(pdu -> challenge.getSubscribers().stream().map(u -> new T2<>(u, pdu)))
                 .filter(t -> t.a.getIP() != null)
                 .forEach(t -> {
                     socket.sendPDU(t.b, t.a.getIP(), t.a.getPort());

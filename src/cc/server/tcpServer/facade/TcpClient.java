@@ -62,9 +62,10 @@ public class TcpClient implements ServerToServerFacade {
     }
 
     @Override
-    synchronized public void registerScore(String nick, int score) {
+    synchronized public void registerScore(String challengeName, String nick, int score) {
         PDU pdu = new PDU(PDUType.INFO);
-        pdu.addParameter(PDUType.INFO_NAME, nick);
+        pdu.addParameter(PDUType.INFO_CHALLE, challengeName);
+        pdu.addParameter(PDUType.INFO_NICK, nick);
         pdu.addParameter(PDUType.INFO_SCORE, score);
         comm.sendPDU(pdu);
     }

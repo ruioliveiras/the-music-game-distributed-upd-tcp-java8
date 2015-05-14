@@ -13,39 +13,89 @@ import java.util.Map;
  */
 public class PDUToUser {
 
+    boolean oneline;
+    String name;
+    
+    public PDUToUser() {
+        oneline = false;
+        name = "";
+    }
+    
+    public PDUToUser(boolean ol, String nome) {
+        oneline = ol;
+        name = nome;
+    }
     
     public void processOk() {
-        System.out.println("Servidor: OK");        
+        System.out.println(name+": Servidor: OK");        
     }
 
     void processLogin(PDU receive) {
         String name = null; int score = 0;
+        StringBuilder sb = new StringBuilder();
+        String answer;
         
         while(receive.hasParameter(PDUType.REPLY_NAME)){
             name = (String)receive.popParameter(PDUType.REPLY_NAME);
             score = (Short) receive.popParameter(PDUType.REPLY_SCORE);
             
-            System.out.println("Servidor: \nNome: "+name+"\nScore: "+score);
+            sb.append(this.name).append(": Servidor: \nNome: ")
+                        .append(name).append("\nScore: ").append(score);
+            
+            answer = sb.toString();
+            if (oneline) {
+                answer = answer.replace('\n', ' ');
+                System.out.println(answer);
+            }
+            else {
+                System.out.println(answer);
+            }            
         }
+        
     }
 
     void processEnd(PDU receive) {
-        int score = 0;
+        StringBuilder sb = new StringBuilder();
+        String answer;
+        sb.append(this.name);
         
-        if(receive.hasParameter(PDUType.REPLY_SCORE))
-            score = (Short) receive.popParameter(PDUType.REPLY_SCORE);
-        
-        System.out.println("Servidor: \nScore: "+score);
+        while(receive.hasParameter(PDUType.REPLY_SCORE)){
+           int score = (Short) receive.popParameter(PDUType.REPLY_SCORE);
+           String name = (String) receive.popParameter(PDUType.REPLY_NAME);
+             
+           sb.append(": Servidor end:\n").append(name).append(" - ").append(score).append("\n");
+        }
+        answer = sb.toString();
+        if(oneline) {
+            answer = answer.replace('\n', ' ');
+            System.out.println(answer);
+        }
+        else {
+            System.out.println(answer);
+        }
     }
 
     void processChallenges(PDU receive) {
-        String desafio = null; LocalDate ld= null; LocalTime lt = null; 
+        String answer, desafio = null; LocalDate ld= null; LocalTime lt = null;
+        StringBuilder sb = new StringBuilder();
         
         while(receive.hasParameter(PDUType.REPLY_CHALLE)){
             desafio = (String)receive.popParameter(PDUType.REPLY_CHALLE);
             ld = (LocalDate)receive.popParameter(PDUType.REPLY_DATE);
             lt = (LocalTime)receive.popParameter(PDUType.REPLY_HOUR);
-            System.out.println("Servidor: \nDesafio: "+desafio+"\nData: "+ld.toString()+"\nHora: "+lt.toString());   
+            
+            sb.append(name).append(": Servidor: \nDesafio: ").append(desafio)
+                    .append("\nData: ").append(ld.toString()).append("\nHora: ")
+                    .append(lt.toString());
+            answer = sb.toString();
+        
+            if(oneline) {
+                answer = answer.replace('\n', ' ');
+                System.out.println(answer);
+            }
+            else {
+                System.out.println(answer);
+            }
         }
     }
 
@@ -55,13 +105,27 @@ public class PDUToUser {
     }
 */
     void processRankings(PDU receive) {
-        String name = null; String nick = null; int score = 0; 
+        String answer, name = null; String nick = null; int score = 0;
+        StringBuilder sb = new StringBuilder();
         
         while(receive.hasParameter(PDUType.REPLY_NAME)){
             name = (String)receive.popParameter(PDUType.REPLY_NAME);
             nick = (String)receive.popParameter(PDUType.REPLY_NICK);
             score = (int)receive.popParameter(PDUType.REPLY_SCORE);
-            System.out.println("Servidor: \nNome: "+name+"\nAlcunha: "+nick+"\nPontuação: "+score);   
+            
+            sb.append(this.name).append(": Servidor: \nNome: ").append(name)
+                    .append("\nAlcunha: ").append(nick).append("\nPontuação: ")
+                    .append(score);
+            
+            answer = sb.toString();
+            
+            if(oneline) {
+                answer = answer.replace('\n', ' ');
+                System.out.println(answer);
+            }
+            else {
+                System.out.println(answer);
+            }
         }
     }
 }
