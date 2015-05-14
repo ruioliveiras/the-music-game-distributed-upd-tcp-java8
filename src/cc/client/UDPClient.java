@@ -4,6 +4,8 @@ import cc.model.Question;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.udpServer.UDPComunication;
+import cc.thegame.AppController;
+import cc.thegame.AppMain;
 import java.net.*;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
@@ -16,6 +18,7 @@ import java.util.TreeMap;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import javafx.application.Application;
 import javafx.util.Pair;
 
 /**
@@ -153,16 +156,21 @@ public class UDPClient {
     }
 
     public void makeDatagramAcceptChallenge(String desafio) {
-        PDU send = new PDU(PDUType.ACCEPT_CHALLENGE);
+        /*PDU send = new PDU(PDUType.ACCEPT_CHALLENGE);
 
         send.addParameter(PDUType.ACCEPT_CHALLENGE_CHALLENGE, desafio);
 
         udp_com.sendPDU(send);
 
-        PDU receive = udp_com.nextPDU();
+        PDU receive = udp_com.nextPDU();*/
+        //determinar se receive é uma questão.
+        
         ptu.processOk();
 
+        doChallenge();
+              
         //@todo: ficar a espera de resposta do servidor com proxima questao ou erro
+        //esta funcionalidade talvez melhor implementar no desafio...
     }
 
     public void makeDatagramDeleteChallenge(String desafio) {
@@ -227,6 +235,50 @@ public class UDPClient {
         udp_com.close();
     }
 
+    public void doChallenge(){
+        
+        String args[] = null;
+        int pergunta = 0;
+        
+        Question actualQ = null;
+        
+        String s1[] = {"resposta p11", "resposta p12", "resposta p13"};
+        String s2[] = {"resposta p21", "resposta p22", "resposta p23"};
+        
+        javafx.application.Application.launch(AppMain.class);
+        AppController iGraf = new AppController();
+    
+        Question q1 = new Question("Pergunta 1", s1, 1, "", "");
+        Question q2 = new Question("Pergunta 2", s1, 1, "", "");
+        
+        for(pergunta=0; pergunta<10; pergunta++){
+            actualQ = getNextQuestion();
+            iGraf.createQuestion(actualQ);
+            
+            //depois de responder tem de saber o que respondeu... talvez meter aqui listeners... 
+            //talvez meter os listeners na appcontroler e receber o indice da resposta na createQuestion.
+            //limpar a interface
+            //enviar a resposta
+            //ficar a espera do resultado
+            //apresentar o resultado ao user
+            //limpar 
+        
+        }
+        
+        iGraf.createQuestion(q2);
+        
+             
+        
+        //ao inicio do metodo, iniciar a interface
+        //meter a esperar pelo proximo pdu... se calhar mete-se o controlo do erro no metodo de receber a questao
+        //enquanto nao tiver feito as 10 perguntas, fazer sempre o mesmo ciclo
+        //depois do ciclo, receber o pdu com os pontos que amealhou
+        
+        
+    }
+    
+    
+    
     public Question getNextQuestion() {
         Question question;
         int numberBlocks = 0;

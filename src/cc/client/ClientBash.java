@@ -116,7 +116,7 @@ public class ClientBash {
                     System.out.println("Número de argumentos inválido!");
                 }
                 break;
-            case "ACCEPT_CHALLENGE":
+            case "ACCEPT_CHALLENGE": 
                 if (checkTotalArgs(nargs, 2)) {
                     client.makeDatagramAcceptChallenge(args[1]);
                 } else {
