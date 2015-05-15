@@ -10,6 +10,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -57,11 +58,11 @@ public class MainInterface extends javax.swing.JFrame {
     
     //falta tratar para o caso em que nao respondeu
     public void showResult(int given, int correctAnswer){
-        if(correctAnswer == 1) r1_button.setBackground(Color.green); 
-        else if(correctAnswer == 2) r2_button.setBackground(Color.green);
-        else if(correctAnswer == 3) r3_button.setBackground(Color.green);
+        if(correctAnswer == 0) r1_button.setBackground(Color.green); 
+        else if(correctAnswer == 1) r2_button.setBackground(Color.green);
+        else if(correctAnswer == 2) r3_button.setBackground(Color.green);
         
-        if(correctAnswer!=given-1){
+        if(correctAnswer != given-1){
             if(given == 1) r1_button.setBackground(Color.red); 
             else if(given == 2) r2_button.setBackground(Color.red); 
             else if(given == 3) r3_button.setBackground(Color.red);    
@@ -71,16 +72,17 @@ public class MainInterface extends javax.swing.JFrame {
     public int createQuestion(Question quest){
         String[] answers = quest.getAnwser();
         String question_text = quest.getQuestion();
-        
+
         answerState=0;
         
-        setQuestionTheme();
         r1_button.setText(answers[0]);
         r2_button.setText(answers[1]);
-        r3_button.setText(answers[2]);
-        
+        r3_button.setText(answers[2]);           
+ 
         question_area.setText(question_text);
         
+        setQuestionTheme();
+           
         //setTimer(100);
         
         //while(answerState == 0);
@@ -101,6 +103,10 @@ public class MainInterface extends javax.swing.JFrame {
             System.out.println("Não foi possível converter a imagem.");
         } */     
     }  
+    
+    public void updateScore(int points){
+        i_points.setText(Integer.toString(points));
+    }
     
     public synchronized void setAnswerState(int state){
         answerState = state;
@@ -229,9 +235,12 @@ public class MainInterface extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
-                    .addComponent(i_points, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(i_points, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(17, 17, 17)
+                        .addComponent(jLabel1)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addGap(18, 18, 18)
                 .addComponent(image_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(20, 20, 20))
         );
@@ -245,9 +254,9 @@ public class MainInterface extends javax.swing.JFrame {
                         .addComponent(image_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGap(18, 18, 18)
                         .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(21, 21, 21)))
+                        .addGap(44, 44, 44)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
                 .addComponent(progress_bar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
