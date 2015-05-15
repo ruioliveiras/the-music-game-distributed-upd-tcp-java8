@@ -284,10 +284,10 @@ public class UDPClientHandler {
     private PDU listRanking() {
         PDU answer = new PDU(PDUType.REPLY);
 
-        for (User user : state.getLocalUsers()) {
+        for (User user : state.getGlobalUsers()) {
             answer.addParameter(PDUType.REPLY_NAME, user.getName());
             answer.addParameter(PDUType.REPLY_NICK, user.getNick());
-            answer.addParameter(PDUType.REPLY_SCORE, user.getRating());
+            answer.addParameter(PDUType.REPLY_SCORE,(Short)(short) user.getRating());
         }
 
         return answer;

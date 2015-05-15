@@ -108,14 +108,17 @@ public class PDUToUser {
         String answer, name = null; String nick = null; int score = 0;
         StringBuilder sb = new StringBuilder();
         
+         sb.append(this.name).append(": Servidor disse:");
         while(receive.hasParameter(PDUType.REPLY_NAME)){
             name = (String)receive.popParameter(PDUType.REPLY_NAME);
             nick = (String)receive.popParameter(PDUType.REPLY_NICK);
-            score = (int)receive.popParameter(PDUType.REPLY_SCORE);
+            score = (short)receive.popParameter(PDUType.REPLY_SCORE);
             
-            sb.append(this.name).append(": Servidor: \nNome: ").append(name)
-                    .append("\nAlcunha: ").append(nick).append("\nPontuação: ")
-                    .append(score);
+           sb.append("\n(Nome: ").append(name)
+                    .append(" Alcunha: ").append(nick)
+                    .append(" Pontuação: ").append(score)
+                    .append(")");
+           
             
             answer = sb.toString();
             

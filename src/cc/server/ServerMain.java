@@ -151,6 +151,7 @@ public class ServerMain {
         testClient03();
         testClient04();
         testClient05();
+
     }
 
     public void testFragmentation() {
@@ -248,7 +249,6 @@ public class ServerMain {
         startUDPChallengeClient_OtherThread(c2, "Circo", Arrays.asList(1, 1, 1));
         startUDPChallengeClient_OtherThread(c3, "Circo", Arrays.asList(3, 2, 3));
     }
-    
 
     public static void startUDPChallengeClient_OtherThread(ClientBash cb, String challenge, List<Integer> anwsers) {
         new Thread(() -> {
@@ -259,6 +259,7 @@ public class ServerMain {
                 }
                 Thread.sleep(200);
                 cb.execute("END");
+                cb.execute("LIST_RANKING");
             } catch (IOException ex) {
                 ex.printStackTrace();
             } catch (InterruptedException ex) {
