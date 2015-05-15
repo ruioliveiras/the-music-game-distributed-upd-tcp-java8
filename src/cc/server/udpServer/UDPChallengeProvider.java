@@ -106,6 +106,7 @@ public class UDPChallengeProvider {
             int correct, String[] answers, byte[] img, List<byte[]> music) {
         Challenge challenge = state.getChallenge(challengeName);
         PDU ans = makeQuestionPDU(challengeName, nQuestion, question, correct, answers, img);
+
         challenge.getSubscribers().stream()
                 // this condition are here to avoid send PDU to people from other server( that has not ip ), 
                 .filter(user -> user.getIP() != null)
@@ -129,6 +130,7 @@ public class UDPChallengeProvider {
                 .forEach(t -> {
                     socket.sendPDU(t.b, t.a.getIP(), t.a.getPort());
                 });
+
     }
 
     public PDU makeQuestionPDU(String challengeName, int nQuestion, String question,

@@ -25,11 +25,7 @@ public class TcpClient implements ServerToServerFacade {
     private TCPCommunication comm;
 
     public TcpClient(InetAddress ip, int port, InetAddress locaAddress) {
-        try {
-            comm = new TCPCommunication(new Socket(ip, port,locaAddress, 0));
-        } catch (IOException ex) {
-            throw new RuntimeException();
-        }
+        comm = new TCPCommunication(ip, port, locaAddress);
     }
 
     @Override
@@ -85,14 +81,14 @@ public class TcpClient implements ServerToServerFacade {
         }
         //@todo fazer o loadImage na classe Question
         pdu.addParameter(PDUType.REPLY_IMG, img);
-        pdu.addParameter(PDUType.CONTINUE, (byte)0);
+        pdu.addParameter(PDUType.CONTINUE, (byte) 0);
         comm.sendPDU(pdu);
         for (int i = 0; i < musics.size(); i++) {
-            pdu = new PDU(PDUType.REPLY); 
+            pdu = new PDU(PDUType.REPLY);
             pdu.addParameter(PDUType.REPLY_NUM_BLOCK, (byte) i);
             pdu.addParameter(PDUType.REPLY_BLOCK, musics.get(i));
             if (i + 1 < musics.size()) {
-                pdu.addParameter(PDUType.CONTINUE, (byte)0);
+                pdu.addParameter(PDUType.CONTINUE, (byte) 0);
             }
             comm.sendPDU(pdu);
         }

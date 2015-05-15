@@ -6,12 +6,17 @@
 package cc.server.tcpServer.communication;
 
 import cc.pdu.PDU;
+import cc.pdu.PDUType;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class as purpose encapsulate a socket - to use PDU. So it will read PDU
@@ -21,9 +26,23 @@ import java.net.Socket;
  */
 public class TCPCommunication {
 
-    private final Socket socket;
+    public static int TIMEOUT_DEFAULT = 60 *1000; // milisecods;
+    public static int TTL_DEFAULT = 3;
+    private Socket socket;
     private InputStream is;
     private OutputStream os;
+
+    public InetAddress localAddress;
+
+    public TCPCommunication(InetAddress ip, int port, InetAddress locaAddress) {
+        try {
+            this.localAddress = locaAddress;
+            socket = new Socket(ip, port, locaAddress, 0);
+            init();
+        } catch (IOException ex) {
+            throw new RuntimeException();
+        }
+    }
 
     /**
      * Creates a new ServerCommunication using a pre-initialized socket.
@@ -31,8 +50,14 @@ public class TCPCommunication {
      * @param socket
      */
     public TCPCommunication(Socket socket) {
+        this.socket = socket;
+        init();
+
+    }
+
+    private void init() {
         try {
-            this.socket = socket;
+            socket.setSoTimeout(TIMEOUT_DEFAULT);
             is = socket.getInputStream();
             os = socket.getOutputStream();
         } catch (IOException ex) {
@@ -41,37 +66,58 @@ public class TCPCommunication {
     }
 
     /**
-     * Get the Next PDU, if there aren't wait.
+     * Get the Next PDU, if there aren't wait timeout milliseconds.
+     *
+     * @param timeout in milliseconds
+     * @return
+     * @throws SocketTimeoutException
+     * @throws SocketException
+     */
+    public PDU nextPDU(int timeout) throws SocketTimeoutException, SocketException {
+        socket.setSoTimeout(timeout);
+        PDU p = nextPDU();
+        socket.setSoTimeout(TIMEOUT_DEFAULT);
+        return p;
+    }
+
+    /**
+     * Get the Next PDU, if there aren't wait TIMEOUT_DEFAULT .
      *
      * @return
-     * @throws IOException
+     * @throws java.net.SocketTimeoutException
+     * @throws java.net.SocketException
      */
-    public PDU nextPDU() throws IOException {
+    public PDU nextPDU() throws SocketTimeoutException, SocketException {
         PDU pdu = new PDU();
         byte[] headerBuffer = new byte[8];
         byte[] bodyBuffer;
+        try {
+            do {
+                if (is.read(headerBuffer, 0, 8) == 8) {
+                    pdu.initHeaderFromBytes(headerBuffer, 0);
+                    if (pdu.getVersion() == 0) {
+                        closeSocket();
+                        throw new SocketTimeoutException("Received close pdu");
+                    }
+                    bodyBuffer = new byte[pdu.getSizeBytes()];
+                    if (pdu.getParameterSizeBytes() > bodyBuffer.length) {
 
-        do {
-            if (is.read(headerBuffer, 0, 8) == 8) {
-                pdu.initHeaderFromBytes(headerBuffer, 0);
-                bodyBuffer = new byte[pdu.getSizeBytes()];
-                if (pdu.getParameterSizeBytes() > bodyBuffer.length) {
+                    }
 
-                }
-//          if has label then is fragmented
-//          if (pdu.getLabel()){
-//                
-//          }
-
-                if (is.read(bodyBuffer, 0, pdu.getParameterSizeBytes()) != pdu.getParameterSizeBytes()) {
+                    if (is.read(bodyBuffer, 0, pdu.getParameterSizeBytes()) != pdu.getParameterSizeBytes()) {
+                        //error
+                    }
+                    pdu.initParametersFromBytes(bodyBuffer, 0);
+                } else {
                     //error
                 }
-                pdu.initParametersFromBytes(bodyBuffer, 0);
-            } else {
-                //error
-            }
-        } while (pdu.hasContinue());
-        
+            } while (pdu.hasContinue());
+        } catch (SocketTimeoutException s) {
+            throw s;
+        } catch (IOException ex) {
+            throw new SocketException("IOExecption reading inputstream: " + ex.getMessage());
+        }
+
         return pdu;
     }
 
@@ -81,12 +127,77 @@ public class TCPCommunication {
      * @param p
      */
     public void sendPDU(PDU p) {
+        sendPDU(p, TTL_DEFAULT);
+    }
+
+    /**
+     * Protected method to send a pdu, but bec
+     *
+     * @param p
+     * @param ttl
+     */
+    protected void sendPDU(PDU p, int ttl) {
         try {
-            os.write(p.toByte());
-            os.flush();
+            if (socket.isConnected()) {
+                os.write(p.toByte());
+                os.flush();
+            } else {
+                throw new SocketException();
+            }
+        } catch (SocketException se) {
+            // Socket Exception Try to reconnect ttl times.
+            try {
+                this.reconnect();
+            } catch (IOException ex) {
+                throw new RuntimeException(ex);
+            }
+            if (ttl > 0) {
+                sendPDU(p, ttl - 1);
+            }
         } catch (IOException ex) {
-            throw new RuntimeException("a");
+            throw new RuntimeException(ex);
         }
+    }
+
+    /**
+     * End this connection
+     */
+    public void close() {
+        PDU close = new PDU(0, PDUType.TCP_CONTROL);
+        close.setLabel(1);
+        try {
+            sendPDU(close, 0);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        closeSocket();
+    }
+
+    private void closeSocket() {
+        try {
+            is.close();
+        } catch (Exception ex) {
+        }
+        try {
+            os.close();
+        } catch (Exception ex) {
+        }
+        try {
+            socket.close();
+        } catch (Exception ex) {
+        }
+    }
+
+    public void reconnect() throws IOException {
+        this.closeSocket();
+        Socket newSocket = new Socket(
+                socket.getInetAddress(), socket.getPort(),
+                localAddress, 0
+        );
+        this.socket = newSocket;
+        this.socket.setSoTimeout(TIMEOUT_DEFAULT);
+        this.is = socket.getInputStream();
+        this.os = socket.getOutputStream();
     }
 
     /**
@@ -118,4 +229,5 @@ public class TCPCommunication {
         }
         return null;
     }
+
 }

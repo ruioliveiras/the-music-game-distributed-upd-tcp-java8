@@ -14,13 +14,13 @@ import cc.server.tcpServer.facade.TcpHub;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import sun.java2d.cmm.kcms.CMM;
 
 /**
  * This class meets a client and call the correct functions has need.
@@ -66,17 +66,18 @@ public class ServerHandler implements Runnable {
                 }
                 //if this pdu are fragmented, don't wory, because the the serverConnunication work on this and this pdu area already done
                 System.out.println("i'm:" + name + ",attending:" + comm.getIp() + " - " + pdu);
-                if (pdu.getType() == PDUType.INFO){
-                    foward_InfoV1(pdu);    
+                if (pdu.getType() == PDUType.INFO) {
+                    foward_InfoV1(pdu);
                 } else {
-                    foward_OtherV1(pdu);    
+                    foward_OtherV1(pdu);
                 }
-                
-
             }
-
-        } catch (IOException ex) {
-            Logger.getLogger(ServerHandler.class.getName()).log(Level.SEVERE, null, ex);
+        }catch (SocketTimeoutException ste){
+            // do nothing just close
+        }catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } finally {
+            comm.close();
         }
     }
 
@@ -99,7 +100,7 @@ public class ServerHandler implements Runnable {
         PDUType[] registerAcceptChallenge = {PDUType.INFO_CHALLE, PDUType.INFO_NAME, PDUType.INFO_NICK};
         PDUType[] registerScore = {PDUType.INFO_CHALLE, PDUType.INFO_NICK, PDUType.INFO_SCORE};
         Object[] p;
-        
+
         if ((p = checkRequest(pdu, newChallenge)) != null) {
             facadeMem.registerChallenge(
                     (String) p[0],
@@ -148,9 +149,11 @@ public class ServerHandler implements Runnable {
         } else if ((p = checkRequest(pdu, registerScore)) != null) {
             facadeMem.registerScore(
                     (String) p[0],
-                    (String) p[1], 
+                    (String) p[1],
                     (Integer) p[2]
             );
+        } else {
+           throw new RuntimeException("Unknow PDU request type");
         }
     }
 
@@ -164,15 +167,15 @@ public class ServerHandler implements Runnable {
             PDUType.REPLY_BLOCK};
         Object[] p;
         if ((p = checkRequest(pdu, newQuestion)) != null) {
-            String aux[] = new String[((List<Object>) p[4]).size()];
+            String aux[] = new String[((List) p[4]).size()];
             facadeMem.question(
                     (String) p[0], (byte) p[1], (String) p[2], (byte) p[3],
-                    ((List<Object>) p[5]).toArray(aux),
+                    ((List<String>) p[5]).toArray(aux),
                     (byte[]) p[6],
-                    (List<byte[]>) p[8]
+                    (List<byte[]>) (List) p[8]
             );
         } else {
-            //error
+           throw new RuntimeException("Unknow PDU request type");
         }
     }
 

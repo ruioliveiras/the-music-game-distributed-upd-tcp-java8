@@ -86,7 +86,8 @@ public enum PDUType {
         INFO_MUSIC(INFO, 19, PDUDataType.string),
         INFO_SCORE(INFO, 20, PDUDataType.int32),
         INFO_IPSERVER(INFO, 30, PDUDataType.ip),
-        INFO_PORT(INFO, 31, PDUDataType.port);
+        INFO_PORT(INFO, 31, PDUDataType.port),
+    TCP_CONTROL(500,0);
     //--------------------
     private int id, numParam;
     private PDUType parent;

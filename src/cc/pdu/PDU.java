@@ -21,7 +21,7 @@ public class PDU {
     public final static int HEADER_SIZE_BYTES = 8;
 
     // header parameters
-    private int version; // 1 byte
+    private int version = 1; // 1 byte
     private boolean secure; // 1 byte
     private int label; // 2 byte
     private PDUType pduType; // 1 byte
@@ -35,6 +35,12 @@ public class PDU {
         this.parameters = new HashMap<>();
     }
 
+    public PDU(int version, PDUType type) {
+        this();
+        this.version = version;
+        this.pduType = type;
+    }
+    
     public PDU(PDUType type) {
         this();
         this.pduType = type;
@@ -146,6 +152,9 @@ public class PDU {
         b.put((byte) pduType.getId());
         b.put((byte) nField);
         b.putShort((short) sizeBytes);
+        if(sizeBytes > Short.MAX_VALUE * 2){
+            throw  new RuntimeException("max size of PDU");
+        }
         //params:
 //        boolean done;
 //        do {
