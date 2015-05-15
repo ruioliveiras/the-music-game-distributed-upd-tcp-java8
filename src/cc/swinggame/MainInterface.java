@@ -12,11 +12,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javax.imageio.ImageIO;
-import javax.swing.SwingUtilities;
 
 /**
  *
@@ -24,8 +25,8 @@ import javax.swing.SwingUtilities;
  */
 public class MainInterface extends javax.swing.JFrame {
 
-    private int answerState;
-    
+    private volatile int answerState;
+    private final Object obj = new Object();
     /**
      * Creates new form MainInterface
      */
@@ -33,9 +34,7 @@ public class MainInterface extends javax.swing.JFrame {
         initComponents();
         question_area.setLineWrap(true);
         answerState = 0;
-        r1_button.setBackground(Color.blue);
-        r2_button.setBackground(Color.blue);
-        r3_button.setBackground(Color.blue);
+        setQuestionTheme();
     }   
     
     public void refreshFrame(){
@@ -44,23 +43,56 @@ public class MainInterface extends javax.swing.JFrame {
         repaint();
     }
     
+    public synchronized void setQuestionTheme(){
+        r1_button.setBackground(Color.blue);
+        r2_button.setBackground(Color.blue);
+        r3_button.setBackground(Color.blue);
+        r1_button.setEnabled(true);
+        r2_button.setEnabled(true);
+        r3_button.setEnabled(true);
+        
+        //question_image = null;
+        //if(music_player.getStatus()==PLAYING) music_player.stop();  
+    }
+    
+    //falta tratar para o caso em que nao respondeu
+    public void showResult(int given, int correctAnswer){
+        if(correctAnswer == 1) r1_button.setBackground(Color.green); 
+        else if(correctAnswer == 2) r2_button.setBackground(Color.green);
+        else if(correctAnswer == 3) r3_button.setBackground(Color.green);
+        
+        if(correctAnswer!=given-1){
+            if(given == 1) r1_button.setBackground(Color.red); 
+            else if(given == 2) r2_button.setBackground(Color.red); 
+            else if(given == 3) r3_button.setBackground(Color.red);    
+        }
+    }
+    
     public int createQuestion(Question quest){
         String[] answers = quest.getAnwser();
         String question_text = quest.getQuestion();
         
         answerState=0;
         
+        setQuestionTheme();
         r1_button.setText(answers[0]);
         r2_button.setText(answers[1]);
         r3_button.setText(answers[2]);
         
         question_area.setText(question_text);
         
-        setTimer(100);
-                System.out.println("Nao Passou.");
-        while(answerState == 0) System.out.println("Ciclo.");;
+        //setTimer(100);
         
-        System.out.println("Passou.");
+        //while(answerState == 0);
+        
+        synchronized(obj){
+            try {
+                obj.wait();
+            } catch (InterruptedException ex) {
+                Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
         return answerState;
         /*
         try {
@@ -70,6 +102,10 @@ public class MainInterface extends javax.swing.JFrame {
         } */     
     }  
     
+    public synchronized void setAnswerState(int state){
+        answerState = state;
+    }
+    /*
     public void setTimer(double inicial_value){
         final Timer timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
@@ -79,14 +115,15 @@ public class MainInterface extends javax.swing.JFrame {
                 i-=1F;
                 progress_bar.setValue((int) i);
                 progress_bar.setStringPainted(true);
-                if (i <= 0){
+                if (i <= 1){
                     answerState=4;
+                }
+                if(answerState != 0 ) {
                     timer.cancel();
                 }
             }
         }, 0, 1000);
-        
-    }
+    }*/
     
     private void playMusic(){
                             
@@ -97,16 +134,10 @@ public class MainInterface extends javax.swing.JFrame {
         */
     }
     
-    public void cleanInterface(){
-        r1_button.setText("");
-        r2_button.setText("");
-        r3_button.setText("");
-        question_area.setText("");
-        r1_button.setBackground(Color.blue);
-        r2_button.setBackground(Color.blue);
-        r3_button.setBackground(Color.blue);
-        //question_image = null;
-        //if(music_player.getStatus()==PLAYING) music_player.stop();   
+    public void notifyObject(){
+         synchronized(obj){
+            obj.notify(); 
+        }
     }
     
     public ImageView toImage(byte[] iArray) throws IOException{
@@ -245,20 +276,28 @@ public class MainInterface extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void r1_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r1_buttonActionPerformed
-        System.out.println("AnswerState: "+answerState);
-        answerState=1;
+        setAnswerState(1);
         r1_button.setBackground(Color.YELLOW);
-        System.out.println("AnswerState: "+answerState);
+        r2_button.setEnabled(false);
+        r3_button.setEnabled(false);
+        notifyObject();
     }//GEN-LAST:event_r1_buttonActionPerformed
 
     private void r2_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r2_buttonActionPerformed
-        answerState=2;
+        setAnswerState(2);
         r2_button.setBackground(Color.YELLOW);
+        r1_button.setEnabled(false);
+        r3_button.setEnabled(false);
+        notifyObject();        
     }//GEN-LAST:event_r2_buttonActionPerformed
 
     private void r3_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r3_buttonActionPerformed
-        answerState=3;
+        setAnswerState(3);
+        //answerState=3;
         r3_button.setBackground(Color.YELLOW);
+        r1_button.setEnabled(false);
+        r2_button.setEnabled(false);
+        notifyObject();
     }//GEN-LAST:event_r3_buttonActionPerformed
 
     /**
