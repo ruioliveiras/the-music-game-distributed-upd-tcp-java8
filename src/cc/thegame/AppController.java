@@ -30,7 +30,6 @@ import javax.imageio.ImageIO;
  */
 public class AppController {
 
-    private UDPClient client;
     private Question actualQuestion;
     
     @FXML
@@ -66,6 +65,8 @@ public class AppController {
         r1_button.setText(answers[0]);
         r2_button.setText(answers[1]);
         r3_button.setText(answers[2]);
+        
+        setTimer(1F);
         
         /*question_text.setText(quest.getQuestion());
         try {
@@ -141,39 +142,28 @@ public class AppController {
      */
     public void initialize() {
         
-        try {
-            r1_button.setOnAction((event) -> {
-                r1_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
-            });
+        r1_button.setOnAction((event) -> {
+            r1_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
+        });
             
-            r2_button.setOnAction((event) -> {
-                r2_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
-            });
+        r2_button.setOnAction((event) -> {
+            r2_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
+        });
+           
+        r3_button.setOnAction((event) -> {
+            r3_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
+        });
             
-            r3_button.setOnAction((event) -> {
-                r3_button.setStyle("-fx-background-color: #3DA428; -fx-font-size: 14px;");
-            });
+        question_text.setDisable(true);
+        question_text.setWrapText(true);
+        
+        //String[] answers = {"init1","init2","init3"};
             
-            String[] answers = {"Orlando","Paulo","Rui"};
+        //Question q1 = new Question("Teste1", answers, 1, new byte[1], null);
+                        
+        //createQuestion(q1);
+               
+        //cleanInterface();
             
-            Question q1 = new Question("Quem é o maior?", answers, 1, new byte[1], null);
-            Question q2 = new Question("Sou eu, o Zé Carlos", answers, 1, new byte[1], null);
-            
-            
-            createQuestion(q1);
-            
-            sleep(1000);
-            
-            actualizeQuestion(q2);
-            
-            
-            //cleanInterface();
-            
-            
-            question_text.setDisable(true);
-            question_text.setWrapText(true);
-        } catch (InterruptedException ex) {
-            Logger.getLogger(AppController.class.getName()).log(Level.SEVERE, null, ex);
-        }
     }    
 }

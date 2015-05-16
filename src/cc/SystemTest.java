@@ -33,10 +33,8 @@ public class SystemTest {
 
     private static ServerMain mainMain;
 
-    public static void main(String[] args) {
-    }
 
-    public static void main2(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) throws IOException, InterruptedException {
         int portTcp, portUdp;
         if (args.length >= 3) {
             portTcp = Integer.parseInt(args[1]);

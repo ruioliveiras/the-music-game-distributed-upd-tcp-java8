@@ -116,7 +116,7 @@ public class ClientBash {
                     System.out.println("Número de argumentos inválido!");
                 }
                 break;
-            case "ACCEPT_CHALLENGE":
+            case "ACCEPT_CHALLENGE": 
                 if (checkTotalArgs(nargs, 2)) {
                     client.makeDatagramAcceptChallenge(args[1]);
                 } else {
@@ -185,9 +185,11 @@ public class ClientBash {
         String command;
 
         try {
-            while (!(command = in.readLine()).toUpperCase().equals("END")) {
+            /*while (!(command = in.readLine()).toUpperCase().equals("END")) {
                 c_bash.execute(command.toUpperCase());
-            }
+            }*/
+            c_bash.execute("ACCEPT_CHALLENGE desafio");   
+            
             System.out.println("Obrigado e Até à Próxima!");
         } catch (IOException ex) {
             System.out.println("Erro ao ler do stdin na Bash");
