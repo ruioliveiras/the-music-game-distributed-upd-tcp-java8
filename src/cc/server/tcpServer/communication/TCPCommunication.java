@@ -26,7 +26,7 @@ import java.util.logging.Logger;
  */
 public class TCPCommunication {
 
-    public static int TIMEOUT_DEFAULT = 60 *1000; // milisecods;
+    public static int TIMEOUT_DEFAULT = 1000; // milisecods;
     public static int TTL_DEFAULT = 3;
     private Socket socket;
     private InputStream is;
@@ -95,10 +95,7 @@ public class TCPCommunication {
             do {
                 if (is.read(headerBuffer, 0, 8) == 8) {
                     pdu.initHeaderFromBytes(headerBuffer, 0);
-                    if (pdu.getVersion() == 0) {
-                        closeSocket();
-                        throw new SocketTimeoutException("Received close pdu");
-                    }
+
                     bodyBuffer = new byte[pdu.getSizeBytes()];
                     if (pdu.getParameterSizeBytes() > bodyBuffer.length) {
 
@@ -138,12 +135,15 @@ public class TCPCommunication {
      */
     protected void sendPDU(PDU p, int ttl) {
         try {
-            if (socket.isConnected()) {
-                os.write(p.toByte());
-                os.flush();
-            } else {
-                throw new SocketException();
+            if (is.available() > 0) {
+                PDU pdu = nextPDU();
+                if (pdu.getVersion() == 0) {
+                    closeSocket();
+                    throw new SocketException("Received close pdu");
+                }
             }
+            os.write(p.toByte());
+            os.flush();
         } catch (SocketException se) {
             // Socket Exception Try to reconnect ttl times.
             try {

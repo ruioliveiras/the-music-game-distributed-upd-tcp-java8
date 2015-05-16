@@ -6,6 +6,7 @@
 package cc;
 
 import cc.client.ClientBash;
+import cc.model.User;
 import cc.server.ServerMain;
 import static cc.server.ServerMain.DEFAULT_TCP_PORT;
 import static cc.server.ServerMain.DEFAULT_UDP_PORT;
@@ -15,10 +16,14 @@ import java.net.InetAddress;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.util.Pair;
 
 /**
  *
@@ -28,7 +33,10 @@ public class SystemTest {
 
     private static ServerMain mainMain;
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+    public static void main(String[] args) {
+    }
+
+    public static void main2(String[] args) throws IOException, InterruptedException {
         int portTcp, portUdp;
         if (args.length >= 3) {
             portTcp = Integer.parseInt(args[1]);
@@ -150,9 +158,9 @@ public class SystemTest {
         c2.execute("LOGIN ruioliveiras 123");
         c3.execute("LOGIN orlando 123");
 
-        startUDPChallengeClient_OtherThread("ThreadPaulo",c1, "Circo", Arrays.asList(1, 3, 3)); // one correct
-        startUDPChallengeClient_OtherThread("ThreadRui",c2, "Circo", Arrays.asList(3, 2, 3)); // all questions anwsers are correct
-        startUDPChallengeClient_OtherThread("ThreadOrlando",c3, "Circo", Arrays.asList(1, 2, 3)); // two correcct
+        startUDPChallengeClient_OtherThread("ThreadPaulo", c1, "Circo", Arrays.asList(1, 3, 3)); // one correct
+        startUDPChallengeClient_OtherThread("ThreadRui", c2, "Circo", Arrays.asList(3, 2, 3)); // all questions anwsers are correct
+        startUDPChallengeClient_OtherThread("ThreadOrlando", c3, "Circo", Arrays.asList(1, 2, 3)); // two correcct
 
     }
 
@@ -173,12 +181,12 @@ public class SystemTest {
         c3.execute("LOGIN rodrigues 123");
         c3.execute("ACCEPT_CHALLENGE Circo");
 
-        startUDPChallengeClient_OtherThread("ThreadTiago",c1, "Circo", Arrays.asList(3, 1, 1));
-        startUDPChallengeClient_OtherThread("ThreadMendes",c2, "Circo", Arrays.asList(1, 1, 1));
-        startUDPChallengeClient_OtherThread("ThreadRodrigues",c3, "Circo", Arrays.asList(3, 2, 3));
+        startUDPChallengeClient_OtherThread("ThreadTiago", c1, "Circo", Arrays.asList(3, 1, 1));
+        startUDPChallengeClient_OtherThread("ThreadMendes", c2, "Circo", Arrays.asList(1, 1, 1));
+        startUDPChallengeClient_OtherThread("ThreadRodrigues", c3, "Circo", Arrays.asList(3, 2, 3));
     }
 
-    public static void startUDPChallengeClient_OtherThread(String threadName,ClientBash cb, String challenge, List<Integer> anwsers) {
+    public static void startUDPChallengeClient_OtherThread(String threadName, ClientBash cb, String challenge, List<Integer> anwsers) {
         new Thread(() -> {
             try {
                 for (int i = 0; i < UDPChallengeProvider.CHALLENGE_NUMQUESTION; i++) {
