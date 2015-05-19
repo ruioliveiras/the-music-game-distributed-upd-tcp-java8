@@ -247,7 +247,7 @@ public class UDPClient {
         int pergunta = 0, answerGiven = 0;
    
         Question actualQ = null;
-        /*
+        
         String s1[] = {"resposta p11", "resposta p12", "resposta p13"};
         String s2[] = {"resposta p21", "resposta p22", "resposta p23"};
         String s3[] = {"resposta p31", "resposta p32", "resposta p33"};
@@ -272,12 +272,12 @@ public class UDPClient {
         
         List<Question> l = new ArrayList<>();
         l.add(q1); l.add(q2); l.add(q3); l.add(q4); l.add(q5); l.add(q6); l.add(q7); l.add(q8); l.add(q9); l.add(q10); 
-        */
-        MainInterface mInt = new MainInterface();
+        
+        MainInterface mInt = new MainInterface(this);
         mInt.setVisible(true);
              
         
-        for(pergunta=0; pergunta<10; pergunta++){
+        /*for(pergunta=0; pergunta<10; pergunta++){
             
             actualQ = getNextQuestion();
             answerGiven = mInt.createQuestion(actualQ);
@@ -304,9 +304,9 @@ public class UDPClient {
             } catch (InterruptedException ex) {
                 Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
+        }*/
             //For testing
-            /*for(Question q : l){
+            for(Question q : l){
                 answerGiven = mInt.createQuestion(q);
                 correctAnswer_index = q.getCorrect();
                 System.out.println("Resposta dada: " + answerGiven);
@@ -318,7 +318,7 @@ public class UDPClient {
                 } catch (InterruptedException ex) {
                     Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
                 }
-            }*/
+            }
 
         //ao inicio do metodo, iniciar a interface
         //meter a esperar pelo proximo pdu... se calhar mete-se o controlo do erro no metodo de receber a questao
