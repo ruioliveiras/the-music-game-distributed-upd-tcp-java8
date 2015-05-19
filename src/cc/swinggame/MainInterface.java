@@ -7,12 +7,16 @@ package cc.swinggame;
 
 import cc.client.UDPClient;
 import cc.model.Question;
+import cc.pdu.PDU;
+import cc.pdu.PDUType;
 import java.awt.Color;
 import java.awt.LayoutManager;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -40,6 +44,7 @@ public class MainInterface extends javax.swing.JFrame {
     private Thread current_song;
     private MusicRunnable music_runnable;
     private Timer timer;
+    private String currentChallenge;
     
     /**
      * Creates new form MainInterface
@@ -53,6 +58,75 @@ public class MainInterface extends javax.swing.JFrame {
         this.udp_client = udpC;
         setQuestionTheme();
     }   
+    
+    //falta fechar a janela no fim do desafio
+    public void doChallenge(String desafio){
+        
+        int currentPoints = 0, correctAnswer = 0, correctAnswer_index=0, pointsWon = 0;
+        String args[] = null;
+        int pergunta = 0, answerGiven = 0;
+   
+        Question actualQ = null;
+        
+        String s1[] = {"resposta p11", "resposta p12", "resposta p13"};
+        String s2[] = {"resposta p21", "resposta p22", "resposta p23"};
+        String s3[] = {"resposta p31", "resposta p32", "resposta p33"};
+        String s4[] = {"resposta p41", "resposta p42", "resposta p43"};
+        String s5[] = {"resposta p51", "resposta p52", "resposta p53"};
+        
+        Question q1 = new Question("Pergunta 1", s1, 1, "", "");
+        Question q2 = new Question("Pergunta 2", s2, 1, "", "");
+        Question q3 = new Question("Pergunta 3", s3, 1, "", "");
+        Question q4 = new Question("Pergunta 4", s4, 1, "", "");
+        Question q5 = new Question("Pergunta 5", s5, 1, "", "");
+        
+        List<Question> l = new ArrayList<>();
+        l.add(q1); l.add(q2); l.add(q3); l.add(q4); l.add(q5); 
+        
+        /*for(pergunta=0; pergunta<10; pergunta++){
+            
+            actualQ = getNextQuestion();
+            answerGiven = mInt.createQuestion(actualQ);
+            correctAnswer_index = actualQ.getCorrect();
+            
+            
+            //falta enviar o datagrama com os valores passados como bytes
+            //valor escolhar é variavel answerGiven, valor questao é a variavel pergunta
+            //makeDatagramAnswer(Byte escolha, desafio, Byte questao);
+            
+            PDU receive = udp_com.nextPDU();
+
+            correctAnswer = (byte) receive.popParameter(PDUType.REPLY_CORRECT);
+            pointsWon = (byte) receive.popParameter(PDUType.REPLY_POINTS);
+            
+            currentPoints += pointsWon;
+            
+            mInt.showResult(answerGiven, correctAnswer_index);
+            mInt.updateScore(currentPoints);
+            
+            
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }*/
+            //For testing
+            for(Question q : l){
+                answerGiven = createQuestion(q);
+                correctAnswer_index = q.getCorrect();
+                System.out.println("Resposta dada: " + answerGiven);
+                showResult(answerGiven, correctAnswer_index);
+                currentPoints++;
+                updateScore(currentPoints);
+                try {
+                    Thread.sleep(5000);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }       
+    }
+    
     
     public void refreshFrame(){
         invalidate();
@@ -82,17 +156,23 @@ public class MainInterface extends javax.swing.JFrame {
         }
     }
     
-    public int createQuestion(Question quest){
+    public void setQuestionTexts(Question quest){
         String[] answers = quest.getAnwser();
         String question_text = quest.getQuestion();
 
-        answerState=0;
-        
         r1_button.setText(answers[0]);
         r2_button.setText(answers[1]);
         r3_button.setText(answers[2]);           
  
         question_area.setText(question_text);
+        
+    }
+    
+    public int createQuestion(Question quest){
+        
+        answerState=0;
+        
+        setQuestionTexts(quest);
         
         setQuestionTheme();
            
@@ -104,20 +184,15 @@ public class MainInterface extends javax.swing.JFrame {
             Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-    
-        
-        //while(answerState == 0);
-        
+        /*
         synchronized(obj){
             try {
                 obj.wait();
             } catch (InterruptedException ex) {
                 Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }
-        
-        stopMusic();
-        
+        }*/
+
         return answerState;    
     }  
     
@@ -132,14 +207,36 @@ public class MainInterface extends javax.swing.JFrame {
         
     }
     
-    public void updateScore(int points){
-        i_points.setText(Integer.toString(points));
-    }
     
     public synchronized void setAnswerState(int state){
         answerState = state;
     }
     
+    public void answerQuestion(int answer){
+
+        //falta enviar o datagrama com os valores passados como bytes
+        //valor escolhar é variavel answerGiven, valor questao é a variavel pergunta
+        //makeDatagramAnswer(Byte escolha, desafio, Byte questao);
+        
+        stopMusic();         
+        getScore(answer);
+        
+            
+    }
+    
+    //arranjar melhor forma de atualizar as respostas
+    public void getScore(int answerGiven){
+        PDU receive = udp_client.getNextPDU();
+      
+        correctAnswer = (byte) receive.popParameter(PDUType.REPLY_CORRECT);
+        pointsWon = (byte) receive.popParameter(PDUType.REPLY_POINTS);
+            
+        currentPoints += pointsWon;
+           
+        showResult(answerGiven, correctAnswer_index);
+        i_points.setText(Integer.toString(current_points));
+        
+    }
     
     public void setTimer(double inicial_value){
         timer = new Timer();
@@ -166,12 +263,7 @@ public class MainInterface extends javax.swing.JFrame {
         current_song = new Thread(music_runnable);
             
         current_song.start();
-        
-        /*File songfile = new File("src/cc/swinggame/testMusic/000001.mp3");
-        Media media = new Media(songfile.toURI().toString());
-        MediaPlayer music_player = new MediaPlayer(media);
-        music_player.play();
-        */
+
     }
     
     public void notifyObject(){
@@ -341,7 +433,8 @@ public class MainInterface extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void r1_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r1_buttonActionPerformed
-        setAnswerState(1);
+        //setAnswerState(1);
+        answerQuestion(1);
         r1_button.setBackground(Color.YELLOW);
         r2_button.setEnabled(false);
         r3_button.setEnabled(false);
@@ -350,6 +443,7 @@ public class MainInterface extends javax.swing.JFrame {
 
     private void r2_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r2_buttonActionPerformed
         setAnswerState(2);
+        answerQuestion(2);
         r2_button.setBackground(Color.YELLOW);
         r1_button.setEnabled(false);
         r3_button.setEnabled(false);
@@ -358,7 +452,8 @@ public class MainInterface extends javax.swing.JFrame {
 
     private void r3_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r3_buttonActionPerformed
         setAnswerState(3);
-        //answerState=3;
+        
+        answerQuestion(3);
         r3_button.setBackground(Color.YELLOW);
         r1_button.setEnabled(false);
         r2_button.setEnabled(false);

@@ -160,6 +160,7 @@ public class UDPClient {
         ptu.processChallenges(receive);
     }
 
+    //estas cenas devem retornar tuplos
     public void makeDatagramAcceptChallenge(String desafio) {
         /*PDU send = new PDU(PDUType.ACCEPT_CHALLENGE);
 
@@ -172,7 +173,7 @@ public class UDPClient {
         
         ptu.processOk();
 
-        doChallenge(desafio);
+        startChallenge(desafio);
               
         //@todo: ficar a espera de resposta do servidor com proxima questao ou erro
         //esta funcionalidade talvez melhor implementar no desafio...
@@ -240,7 +241,7 @@ public class UDPClient {
         udp_com.close();
     }
 
-    public void doChallenge(String desafio){
+    /*public void doChallenge(String desafio){
         
         int currentPoints = 0, correctAnswer = 0, correctAnswer_index=0, pointsWon = 0;
         String args[] = null;
@@ -306,7 +307,7 @@ public class UDPClient {
             }
         }*/
             //For testing
-            for(Question q : l){
+        /*    for(Question q : l){
                 answerGiven = mInt.createQuestion(q);
                 correctAnswer_index = q.getCorrect();
                 System.out.println("Resposta dada: " + answerGiven);
@@ -326,9 +327,18 @@ public class UDPClient {
         //depois do ciclo, receber o pdu com os pontos que amealhou
         
         
+    }*/
+    
+    
+    public void startChallenge(String desafio){
+        MainInterface mInt = new MainInterface(this);
+        mInt.setVisible(true);
+        mInt.doChallenge(desafio);
     }
     
-    
+    public PDU getNextPDU(){        
+        return udp_com.nextPDU();
+    }    
     
     public Question getNextQuestion() {
         Question question;
