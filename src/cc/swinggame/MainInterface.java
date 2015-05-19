@@ -5,12 +5,14 @@
  */
 package cc.swinggame;
 
+import cc.client.UDPClient;
 import cc.model.Question;
 import java.awt.Color;
+import java.awt.LayoutManager;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -19,6 +21,12 @@ import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javax.imageio.ImageIO;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 /**
  *
@@ -28,13 +36,21 @@ public class MainInterface extends javax.swing.JFrame {
 
     private volatile int answerState;
     private final Object obj = new Object();
+    private UDPClient udp_client;
+    private Thread current_song;
+    private MusicRunnable music_runnable;
+    private Timer timer;
+    
     /**
      * Creates new form MainInterface
      */
-    public MainInterface() {
+    public MainInterface(UDPClient udpC) {
         initComponents();
         question_area.setLineWrap(true);
         answerState = 0;
+        current_song=null;
+        music_runnable = new MusicRunnable();
+        this.udp_client = udpC;
         setQuestionTheme();
     }   
     
@@ -51,11 +67,8 @@ public class MainInterface extends javax.swing.JFrame {
         r1_button.setEnabled(true);
         r2_button.setEnabled(true);
         r3_button.setEnabled(true);
-        
-        //question_image = null;
-        //if(music_player.getStatus()==PLAYING) music_player.stop();  
     }
-    
+        
     //falta tratar para o caso em que nao respondeu
     public void showResult(int given, int correctAnswer){
         if(correctAnswer == 0) r1_button.setBackground(Color.green); 
@@ -83,7 +96,15 @@ public class MainInterface extends javax.swing.JFrame {
         
         setQuestionTheme();
            
-        //setTimer(100);
+        playMusic("src/cc/swinggame/testMusic/000001.mp3");
+        setTimer(100);
+        try {
+            setImage();
+        } catch (IOException ex) {
+            Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    
         
         //while(answerState == 0);
         
@@ -95,14 +116,21 @@ public class MainInterface extends javax.swing.JFrame {
             }
         }
         
-        return answerState;
-        /*
-        try {
-            question_image = toImage(quest.getImageArray());
-        } catch (IOException ex) {
-            System.out.println("Não foi possível converter a imagem.");
-        } */     
+        stopMusic();
+        
+        return answerState;    
     }  
+    
+    public void stopMusic(){
+        music_runnable.terminateMusic();
+        try {
+            current_song.join();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        timer.cancel();
+        
+    }
     
     public void updateScore(int points){
         i_points.setText(Integer.toString(points));
@@ -111,9 +139,10 @@ public class MainInterface extends javax.swing.JFrame {
     public synchronized void setAnswerState(int state){
         answerState = state;
     }
-    /*
+    
+    
     public void setTimer(double inicial_value){
-        final Timer timer = new Timer();
+        timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             double i = inicial_value;
             @Override
@@ -129,14 +158,19 @@ public class MainInterface extends javax.swing.JFrame {
                 }
             }
         }, 0, 1000);
-    }*/
+    }
     
-    private void playMusic(){
-                            
-        /*File songfile = new File("./etc/musica/000001.mp3");
+    private void playMusic(String url){
+        music_runnable.setSong(url);
+
+        current_song = new Thread(music_runnable);
+            
+        current_song.start();
+        
+        /*File songfile = new File("src/cc/swinggame/testMusic/000001.mp3");
         Media media = new Media(songfile.toURI().toString());
         MediaPlayer music_player = new MediaPlayer(media);
-        mp.play();
+        music_player.play();
         */
     }
     
@@ -146,13 +180,35 @@ public class MainInterface extends javax.swing.JFrame {
         }
     }
     
-    public ImageView toImage(byte[] iArray) throws IOException{
+    public void setImage(/*byte[] iArray*/) throws IOException{
         //byte[] bytearray = Base64.decode(base64String);
- 
-	BufferedImage bimage=ImageIO.read(new ByteArrayInputStream(iArray));
-        Image image = SwingFXUtils.toFXImage(bimage, null);
-	return new ImageView((Image) image);
+        BufferedImage myPicture = ImageIO.read(new File("src/cc/swinggame/images/uminho.jpg"));
+        
+        image_panel = new ImagePanel(new ImageIcon("src/cc/swinggame/images/uminho.jpg").getImage());
+        add(image_panel);
+        
+        //this.getContentPane().add(image_panel);
+        //this.pack();
+        //this.setVisible(true);       
+        
+        //image_label.setBounds(200, 200, 200, 200);
+        //backgound_panel.add(image_label);
+        
+        //JOptionPane.showMessageDialog(null, image_label);
+        
+        
+        /*ImageIcon imageI = new ImageIcon("src/cc/swinggame/images/uminho.jpg");
+	image_label = new JLabel(imageI);
+        jPanel1.add(image_label);*/
+        
+//BufferedImage bimage=ImageIO.read(new ByteArrayInputStream(iArray));
+        //Image image = SwingFXUtils.toFXImage(bimage, null);
+
+        
+        
+        
     }
+ 
     
     /**
      * This method is called from within the constructor to initialize the form.
@@ -163,16 +219,16 @@ public class MainInterface extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
+        backgound_panel = new javax.swing.JPanel();
         r1_button = new javax.swing.JButton();
         r2_button = new javax.swing.JButton();
         r3_button = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         question_area = new javax.swing.JTextArea();
         progress_bar = new javax.swing.JProgressBar();
-        image_panel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        pontos_label = new javax.swing.JLabel();
         i_points = new javax.swing.JLabel();
+        image_panel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -205,58 +261,58 @@ public class MainInterface extends javax.swing.JFrame {
 
         progress_bar.setString("");
 
+        pontos_label.setText("Pontos");
+
         javax.swing.GroupLayout image_panelLayout = new javax.swing.GroupLayout(image_panel);
         image_panel.setLayout(image_panelLayout);
         image_panelLayout.setHorizontalGroup(
             image_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 336, Short.MAX_VALUE)
+            .addGap(0, 359, Short.MAX_VALUE)
         );
         image_panelLayout.setVerticalGroup(
             image_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
+            .addGap(0, 253, Short.MAX_VALUE)
         );
 
-        jLabel1.setText("Pontos");
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+        javax.swing.GroupLayout backgound_panelLayout = new javax.swing.GroupLayout(backgound_panel);
+        backgound_panel.setLayout(backgound_panelLayout);
+        backgound_panelLayout.setHorizontalGroup(
+            backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(backgound_panelLayout.createSequentialGroup()
                 .addGap(105, 105, 105)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(r2_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
                     .addComponent(r1_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
                     .addComponent(r3_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addComponent(progress_bar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+            .addGroup(backgound_panelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(i_points, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
+                    .addGroup(backgound_panelLayout.createSequentialGroup()
                         .addGap(17, 17, 17)
-                        .addComponent(jLabel1)
+                        .addComponent(pontos_label)
                         .addGap(0, 0, Short.MAX_VALUE)))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(image_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(20, 20, 20))
+                .addGap(45, 45, 45))
         );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+        backgound_panelLayout.setVerticalGroup(
+            backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(backgound_panelLayout.createSequentialGroup()
                 .addGap(30, 30, 30)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                        .addComponent(image_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(44, 44, 44)))
+                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(backgound_panelLayout.createSequentialGroup()
+                            .addComponent(pontos_label, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(18, 18, 18)
+                            .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGap(44, 44, 44)))
+                    .addComponent(image_panel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
                 .addComponent(progress_bar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -272,12 +328,12 @@ public class MainInterface extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+            .addComponent(backgound_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(backgound_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -345,11 +401,11 @@ public class MainInterface extends javax.swing.JFrame {
     }*/
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel backgound_panel;
     private javax.swing.JLabel i_points;
     private javax.swing.JPanel image_panel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel pontos_label;
     private javax.swing.JProgressBar progress_bar;
     private javax.swing.JTextArea question_area;
     private javax.swing.JButton r1_button;
