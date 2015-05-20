@@ -10,19 +10,11 @@ import cc.model.Question;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.imageio.ImageIO;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 
@@ -32,95 +24,49 @@ import javax.swing.JLabel;
  */
 public class MainInterface extends javax.swing.JFrame {
 
-    private volatile int answerState;
+    private volatile int currentPoints, questionAnswered;
     private final Object obj = new Object();
     private UDPClient udp_client;
     private Thread current_song;
     private MusicRunnable music_runnable;
     private Timer timer;
     private String currentChallenge;
-    
+    private int currentQuestion, currentAnswer;
     /**
      * Creates new form MainInterface
      */
     public MainInterface(UDPClient udpC) {
         initComponents();
         question_area.setLineWrap(true);
-        answerState = 0;
+        currentQuestion = 0;
         current_song=null;
+        currentPoints = 0;
+        questionAnswered = 0;
         music_runnable = new MusicRunnable();
         this.udp_client = udpC;
         setQuestionTheme();
     }   
     
-    //falta fechar a janela no fim do desafio
+    //fechar a janela no fim do desafio ?
+    //nao esta a usar um dos campos
     public void doChallenge(String desafio){
         
         int currentPoints = 0, correctAnswer = 0, correctAnswer_index=0, pointsWon = 0;
         String args[] = null;
-        int pergunta = 0, answerGiven = 0;
+        int answerGiven = 0;
    
         Question actualQ = null;
         
-        String s1[] = {"resposta p11", "resposta p12", "resposta p13"};
-        String s2[] = {"resposta p21", "resposta p22", "resposta p23"};
-        String s3[] = {"resposta p31", "resposta p32", "resposta p33"};
-        String s4[] = {"resposta p41", "resposta p42", "resposta p43"};
-        String s5[] = {"resposta p51", "resposta p52", "resposta p53"};
-        
-        Question q1 = new Question("Pergunta 1", s1, 1, "", "");
-        Question q2 = new Question("Pergunta 2", s2, 1, "", "");
-        Question q3 = new Question("Pergunta 3", s3, 1, "", "");
-        Question q4 = new Question("Pergunta 4", s4, 1, "", "");
-        Question q5 = new Question("Pergunta 5", s5, 1, "", "");
-        
-        List<Question> l = new ArrayList<>();
-        l.add(q1); l.add(q2); l.add(q3); l.add(q4); l.add(q5); 
-        
-        /*for(pergunta=0; pergunta<10; pergunta++){
+        for(currentQuestion=0; currentQuestion<10; currentQuestion++){
             
-            actualQ = getNextQuestion();
-            answerGiven = mInt.createQuestion(actualQ);
+            actualQ = udp_client.getNextQuestion();
+            actualQ.getCorrect();
+            createQuestion(actualQ);
+            
             correctAnswer_index = actualQ.getCorrect();
-            
-            
-            //falta enviar o datagrama com os valores passados como bytes
-            //valor escolhar é variavel answerGiven, valor questao é a variavel pergunta
-            //makeDatagramAnswer(Byte escolha, desafio, Byte questao);
-            
-            PDU receive = udp_com.nextPDU();
-
-            correctAnswer = (byte) receive.popParameter(PDUType.REPLY_CORRECT);
-            pointsWon = (byte) receive.popParameter(PDUType.REPLY_POINTS);
-            
-            currentPoints += pointsWon;
-            
-            mInt.showResult(answerGiven, correctAnswer_index);
-            mInt.updateScore(currentPoints);
-            
-            
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }*/
-            //For testing
-            for(Question q : l){
-                answerGiven = createQuestion(q);
-                correctAnswer_index = q.getCorrect();
-                System.out.println("Resposta dada: " + answerGiven);
-                showResult(answerGiven, correctAnswer_index);
-                currentPoints++;
-                updateScore(currentPoints);
-                try {
-                    Thread.sleep(5000);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(UDPClient.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }       
+          
+        }      
     }
-    
     
     public void refreshFrame(){
         invalidate();
@@ -162,32 +108,23 @@ public class MainInterface extends javax.swing.JFrame {
         
     }
     
-    public int createQuestion(Question quest){
-        
-        answerState=0;
+    //ligar imagem
+    public void createQuestion(Question quest){
         
         setQuestionTexts(quest);
-        
+        questionAnswered = 0;
         setQuestionTheme();
-           
-        playMusic("src/cc/swinggame/testMusic/000001.mp3");
-        setTimer(100);
+                    
+        playMusic(quest.getByteMusicArray());
+        
         try {
-            setImage();
+            setImage(quest.getImageArray());
         } catch (IOException ex) {
-            Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
+            System.out.println("Não foi possível imprimir imagem");
         }
         
-        /*
-        synchronized(obj){
-            try {
-                obj.wait();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }*/
-
-        return answerState;    
+        setTimer(100);
+        
     }  
     
     public void stopMusic(){
@@ -202,34 +139,35 @@ public class MainInterface extends javax.swing.JFrame {
     }
     
     
-    public synchronized void setAnswerState(int state){
-        answerState = state;
-    }
-    
+    //falta enviar o datagrama com os valores passados como bytes
+    //valor escolhar é variavel answerGiven, valor questao é a variavel pergunta            
     public void answerQuestion(int answer){
 
-        //falta enviar o datagrama com os valores passados como bytes
-        //valor escolhar é variavel answerGiven, valor questao é a variavel pergunta
-        //makeDatagramAnswer(Byte escolha, desafio, Byte questao);
-        
         stopMusic();         
-        getScore(answer);
+        questionAnswered = 1;
+        udp_client.makeDatagramAnswer(Byte.MIN_VALUE, currentChallenge, Byte.MIN_VALUE);
         
-            
+        getScore(answer);     
+        
     }
     
     //arranjar melhor forma de atualizar as respostas
+    //parametro relativo à questao não está a ser recebido
     public void getScore(int answerGiven){
         PDU receive = udp_client.getNextPDU();
       
-        correctAnswer = (byte) receive.popParameter(PDUType.REPLY_CORRECT);
-        pointsWon = (byte) receive.popParameter(PDUType.REPLY_POINTS);
-            
-        currentPoints += pointsWon;
-           
-        showResult(answerGiven, correctAnswer_index);
-        i_points.setText(Integer.toString(current_points));
+        int correctAnswer = (byte) receive.popParameter(PDUType.REPLY_CORRECT);
+        int pointsWon = (byte) receive.popParameter(PDUType.REPLY_POINTS);
         
+        if(correctAnswer == 1) currentPoints += pointsWon;
+        else currentPoints -= pointsWon;
+           
+        showResult(answerGiven, currentAnswer);
+        i_points.setText(Integer.toString(currentPoints));
+        
+        /*
+            mInt.showResult(answerGiven, correctAnswer_index);
+        */ 
     }
     
     public void setTimer(double inicial_value){
@@ -242,17 +180,17 @@ public class MainInterface extends javax.swing.JFrame {
                 progress_bar.setValue((int) i);
                 progress_bar.setStringPainted(true);
                 if (i <= 1){
-                    answerState=4;
+                    questionAnswered=1;
                 }
-                if(answerState != 0 ) {
+                if(questionAnswered != 0 ) {
                     timer.cancel();
                 }
             }
         }, 0, 1000);
     }
     
-    private void playMusic(String url){
-        music_runnable.setSong(url);
+    private void playMusic(byte[] music){
+        music_runnable.setSong(music);
 
         current_song = new Thread(music_runnable);
             
@@ -260,44 +198,15 @@ public class MainInterface extends javax.swing.JFrame {
 
     }
     
-    public void notifyObject(){
-         synchronized(obj){
-            obj.notify(); 
-        }
-    }
-    
-    public void setImage(/*byte[] iArray*/) throws IOException{
-        //byte[] bytearray = Base64.decode(base64String);
-        BufferedImage myPicture = ImageIO.read(new File("src/cc/swinggame/images/uminho.jpg"));
-        
-        //image_panel = new ImagePanel(new ImageIcon("src/cc/swinggame/images/uminho.jpg").getImage());
-        //add(image_panel);
-        
-        //this.getContentPane().add(image_panel);
-        //this.pack();
-        //this.setVisible(true);       
-        
-        //image_label.setBounds(200, 200, 200, 200);
-        //backgound_panel.add(image_label);
-        
-        //JOptionPane.showMessageDialog(null, image_label);
-        
-        Path path = Paths.get("src/cc/swinggame/images/","uminho.jpg");
-        byte[] ar = Files.readAllBytes(path);
-        ImageIcon imageI = new ImageIcon(ar);
-	JLabel image_label = new JLabel(imageI);
-       // image_panel = new JPanel();
+    public void setImage(byte[] iArray) throws IOException{
+                
+        ImageIcon imageI = new ImageIcon(iArray);
+        JLabel image_label = new JLabel(imageI);
+     
         image_panel.removeAll();
         image_panel.add(image_label);
         image_panel.revalidate();
-        //image_panel.repaint();
-        
-//BufferedImage bimage=ImageIO.read(new ByteArrayInputStream(iArray));
-        //Image image = SwingFXUtils.toFXImage(bimage, null);
-
-        
-        
-        
+        //image_panel.repaint();       
     }
  
     
@@ -423,30 +332,29 @@ public class MainInterface extends javax.swing.JFrame {
 
     private void r1_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r1_buttonActionPerformed
         //setAnswerState(1);
-        answerQuestion(1);
         r1_button.setBackground(Color.YELLOW);
         r2_button.setEnabled(false);
         r3_button.setEnabled(false);
-        notifyObject();
+        answerQuestion(1);
+        //notifyObject();
     }//GEN-LAST:event_r1_buttonActionPerformed
 
     private void r2_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r2_buttonActionPerformed
-        setAnswerState(2);
-        answerQuestion(2);
+        //setAnswerState(2);
         r2_button.setBackground(Color.YELLOW);
         r1_button.setEnabled(false);
         r3_button.setEnabled(false);
-        notifyObject();        
+        answerQuestion(2);
+        //notifyObject();        
     }//GEN-LAST:event_r2_buttonActionPerformed
 
     private void r3_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r3_buttonActionPerformed
-        setAnswerState(3);
-        
-        answerQuestion(3);
+        //setAnswerState(3);
         r3_button.setBackground(Color.YELLOW);
         r1_button.setEnabled(false);
         r2_button.setEnabled(false);
-        notifyObject();
+        answerQuestion(3);
+        //notifyObject();
     }//GEN-LAST:event_r3_buttonActionPerformed
 
     /**

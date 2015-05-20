@@ -185,10 +185,10 @@ public class ClientBash {
         String command;
 
         try {
-            /*while (!(command = in.readLine()).toUpperCase().equals("END")) {
+            while (!(command = in.readLine()).toUpperCase().equals("END")) {
                 c_bash.execute(command.toUpperCase());
-            }*/
-            c_bash.execute("ACCEPT_CHALLENGE desafio");   
+            }
+            //c_bash.execute("ACCEPT_CHALLENGE desafio");   
             
             System.out.println("Obrigado e Até à Próxima!");
         } catch (IOException ex) {
