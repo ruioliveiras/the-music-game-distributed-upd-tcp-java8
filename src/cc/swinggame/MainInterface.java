@@ -10,27 +10,21 @@ import cc.model.Question;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import java.awt.Color;
-import java.awt.LayoutManager;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javax.imageio.ImageIO;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
 /**
  *
@@ -276,8 +270,8 @@ public class MainInterface extends javax.swing.JFrame {
         //byte[] bytearray = Base64.decode(base64String);
         BufferedImage myPicture = ImageIO.read(new File("src/cc/swinggame/images/uminho.jpg"));
         
-        image_panel = new ImagePanel(new ImageIcon("src/cc/swinggame/images/uminho.jpg").getImage());
-        add(image_panel);
+        //image_panel = new ImagePanel(new ImageIcon("src/cc/swinggame/images/uminho.jpg").getImage());
+        //add(image_panel);
         
         //this.getContentPane().add(image_panel);
         //this.pack();
@@ -288,10 +282,15 @@ public class MainInterface extends javax.swing.JFrame {
         
         //JOptionPane.showMessageDialog(null, image_label);
         
-        
-        /*ImageIcon imageI = new ImageIcon("src/cc/swinggame/images/uminho.jpg");
-	image_label = new JLabel(imageI);
-        jPanel1.add(image_label);*/
+        Path path = Paths.get("src/cc/swinggame/images/","uminho.jpg");
+        byte[] ar = Files.readAllBytes(path);
+        ImageIcon imageI = new ImageIcon(ar);
+	JLabel image_label = new JLabel(imageI);
+       // image_panel = new JPanel();
+        image_panel.removeAll();
+        image_panel.add(image_label);
+        image_panel.revalidate();
+        //image_panel.repaint();
         
 //BufferedImage bimage=ImageIO.read(new ByteArrayInputStream(iArray));
         //Image image = SwingFXUtils.toFXImage(bimage, null);
@@ -355,56 +354,46 @@ public class MainInterface extends javax.swing.JFrame {
 
         pontos_label.setText("Pontos");
 
-        javax.swing.GroupLayout image_panelLayout = new javax.swing.GroupLayout(image_panel);
-        image_panel.setLayout(image_panelLayout);
-        image_panelLayout.setHorizontalGroup(
-            image_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 359, Short.MAX_VALUE)
-        );
-        image_panelLayout.setVerticalGroup(
-            image_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 253, Short.MAX_VALUE)
-        );
-
         javax.swing.GroupLayout backgound_panelLayout = new javax.swing.GroupLayout(backgound_panel);
         backgound_panel.setLayout(backgound_panelLayout);
         backgound_panelLayout.setHorizontalGroup(
             backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(backgound_panelLayout.createSequentialGroup()
-                .addGap(105, 105, 105)
-                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(r2_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
-                    .addComponent(r1_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
-                    .addComponent(r3_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addComponent(progress_bar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(backgound_panelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(i_points, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
                     .addGroup(backgound_panelLayout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addComponent(pontos_label)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(image_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(45, 45, 45))
+                        .addGap(105, 105, 105)
+                        .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(r2_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+                            .addComponent(r1_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+                            .addComponent(r3_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(backgound_panelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(backgound_panelLayout.createSequentialGroup()
+                                .addGap(29, 29, 29)
+                                .addComponent(pontos_label))
+                            .addGroup(backgound_panelLayout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(18, 18, 18)
+                        .addComponent(image_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         backgound_panelLayout.setVerticalGroup(
             backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgound_panelLayout.createSequentialGroup()
                 .addGap(30, 30, 30)
-                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(backgound_panelLayout.createSequentialGroup()
-                            .addComponent(pontos_label, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(18, 18, 18)
-                            .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(44, 44, 44)))
-                    .addComponent(image_panel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                    .addGroup(backgound_panelLayout.createSequentialGroup()
+                        .addComponent(pontos_label, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(44, 44, 44))
+                    .addComponent(image_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
                 .addComponent(progress_bar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
