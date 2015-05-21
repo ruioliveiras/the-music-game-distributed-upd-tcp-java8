@@ -161,18 +161,18 @@ public class UDPClient {
     }
 
     public void makeDatagramAcceptChallenge(String desafio) {
-        /*PDU send = new PDU(PDUType.ACCEPT_CHALLENGE);
+        PDU send = new PDU(PDUType.ACCEPT_CHALLENGE);
 
         send.addParameter(PDUType.ACCEPT_CHALLENGE_CHALLENGE, desafio);
 
         udp_com.sendPDU(send);
 
-        PDU receive = udp_com.nextPDU();*/
+        PDU receive = udp_com.nextPDU();
         //determinar se receive é uma questão.
         
         ptu.processOk();
 
-        doChallenge(desafio);
+//        doChallenge(desafio);
               
         //@todo: ficar a espera de resposta do servidor com proxima questao ou erro
         //esta funcionalidade talvez melhor implementar no desafio...
