@@ -2,6 +2,7 @@ package cc.model;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -144,6 +145,21 @@ public class Question {
         return musicArray;
     }
 
+    public byte[] getByteMusicArray(){
+        
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
+        
+        for(byte[] b: this.musicArray){
+            try {
+                outputStream.write(b);
+            } catch (IOException ex) {
+                Logger.getLogger(Question.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        return outputStream.toByteArray();
+    }
+    
     public byte[] getImageArray() {
         return imageArray;
     }

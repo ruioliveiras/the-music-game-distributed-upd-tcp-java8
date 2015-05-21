@@ -7,26 +7,16 @@ package cc.swinggame;
 
 import cc.client.UDPClient;
 import cc.model.Question;
+import cc.pdu.PDU;
+import cc.pdu.PDUType;
 import java.awt.Color;
-import java.awt.LayoutManager;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javafx.embed.swing.SwingFXUtils;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javax.imageio.ImageIO;
-import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 
 /**
  *
@@ -34,25 +24,49 @@ import javax.swing.JPanel;
  */
 public class MainInterface extends javax.swing.JFrame {
 
-    private volatile int answerState;
+    private volatile int currentPoints, questionAnswered;
     private final Object obj = new Object();
     private UDPClient udp_client;
     private Thread current_song;
     private MusicRunnable music_runnable;
     private Timer timer;
-    
+    private String currentChallenge;
+    private int currentQuestion, currentAnswer;
     /**
      * Creates new form MainInterface
      */
     public MainInterface(UDPClient udpC) {
         initComponents();
         question_area.setLineWrap(true);
-        answerState = 0;
+        currentQuestion = 0;
         current_song=null;
+        currentPoints = 0;
+        questionAnswered = 0;
         music_runnable = new MusicRunnable();
         this.udp_client = udpC;
         setQuestionTheme();
     }   
+    
+    //fechar a janela no fim do desafio ?
+    //nao esta a usar um dos campos
+    public void doChallenge(String desafio){
+        
+        int currentPoints = 0, correctAnswer = 0, correctAnswer_index=0, pointsWon = 0;
+        String args[] = null;
+        int answerGiven = 0;
+   
+        Question actualQ = null;
+        
+        for(currentQuestion=0; currentQuestion<10; currentQuestion++){
+            
+            actualQ = udp_client.getNextQuestion();
+            actualQ.getCorrect();
+            createQuestion(actualQ);
+            
+            correctAnswer_index = actualQ.getCorrect();
+          
+        }      
+    }
     
     public void refreshFrame(){
         invalidate();
@@ -82,43 +96,35 @@ public class MainInterface extends javax.swing.JFrame {
         }
     }
     
-    public int createQuestion(Question quest){
+    public void setQuestionTexts(Question quest){
         String[] answers = quest.getAnwser();
         String question_text = quest.getQuestion();
 
-        answerState=0;
-        
         r1_button.setText(answers[0]);
         r2_button.setText(answers[1]);
         r3_button.setText(answers[2]);           
  
         question_area.setText(question_text);
         
-        setQuestionTheme();
-           
-        playMusic("src/cc/swinggame/testMusic/000001.mp3");
-        setTimer(100);
-        try {
-            setImage();
-        } catch (IOException ex) {
-            Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+    }
     
+    //ligar imagem
+    public void createQuestion(Question quest){
         
-        //while(answerState == 0);
+        setQuestionTexts(quest);
+        questionAnswered = 0;
+        setQuestionTheme();
+                    
+        playMusic(quest.getByteMusicArray());
         
-        synchronized(obj){
-            try {
-                obj.wait();
-            } catch (InterruptedException ex) {
-                Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
-            }
+        try {
+            setImage(quest.getImageArray());
+        } catch (IOException ex) {
+            System.out.println("Não foi possível imprimir imagem");
         }
         
-        stopMusic();
+        setTimer(100);
         
-        return answerState;    
     }  
     
     public void stopMusic(){
@@ -132,14 +138,37 @@ public class MainInterface extends javax.swing.JFrame {
         
     }
     
-    public void updateScore(int points){
-        i_points.setText(Integer.toString(points));
+    
+    //falta enviar o datagrama com os valores passados como bytes
+    //valor escolhar é variavel answerGiven, valor questao é a variavel pergunta            
+    public void answerQuestion(int answer){
+
+        stopMusic();         
+        questionAnswered = 1;
+        udp_client.makeDatagramAnswer(Byte.MIN_VALUE, currentChallenge, Byte.MIN_VALUE);
+        
+        getScore(answer);     
+        
     }
     
-    public synchronized void setAnswerState(int state){
-        answerState = state;
+    //arranjar melhor forma de atualizar as respostas
+    //parametro relativo à questao não está a ser recebido
+    public void getScore(int answerGiven){
+        PDU receive = udp_client.getNextPDU();
+      
+        int correctAnswer = (byte) receive.popParameter(PDUType.REPLY_CORRECT);
+        int pointsWon = (byte) receive.popParameter(PDUType.REPLY_POINTS);
+        
+        if(correctAnswer == 1) currentPoints += pointsWon;
+        else currentPoints -= pointsWon;
+           
+        showResult(answerGiven, currentAnswer);
+        i_points.setText(Integer.toString(currentPoints));
+        
+        /*
+            mInt.showResult(answerGiven, correctAnswer_index);
+        */ 
     }
-    
     
     public void setTimer(double inicial_value){
         timer = new Timer();
@@ -151,62 +180,33 @@ public class MainInterface extends javax.swing.JFrame {
                 progress_bar.setValue((int) i);
                 progress_bar.setStringPainted(true);
                 if (i <= 1){
-                    answerState=4;
+                    questionAnswered=1;
                 }
-                if(answerState != 0 ) {
+                if(questionAnswered != 0 ) {
                     timer.cancel();
                 }
             }
         }, 0, 1000);
     }
     
-    private void playMusic(String url){
-        music_runnable.setSong(url);
+    private void playMusic(byte[] music){
+        music_runnable.setSong(music);
 
         current_song = new Thread(music_runnable);
             
         current_song.start();
-        
-        /*File songfile = new File("src/cc/swinggame/testMusic/000001.mp3");
-        Media media = new Media(songfile.toURI().toString());
-        MediaPlayer music_player = new MediaPlayer(media);
-        music_player.play();
-        */
-    }
-    
-    public void notifyObject(){
-         synchronized(obj){
-            obj.notify(); 
-        }
-    }
-    
-    public void setImage(/*byte[] iArray*/) throws IOException{
-        //byte[] bytearray = Base64.decode(base64String);
-        BufferedImage myPicture = ImageIO.read(new File("src/cc/swinggame/images/uminho.jpg"));
-        
-        image_panel = new ImagePanel(new ImageIcon("src/cc/swinggame/images/uminho.jpg").getImage());
-        add(image_panel);
-        
-        //this.getContentPane().add(image_panel);
-        //this.pack();
-        //this.setVisible(true);       
-        
-        //image_label.setBounds(200, 200, 200, 200);
-        //backgound_panel.add(image_label);
-        
-        //JOptionPane.showMessageDialog(null, image_label);
-        
-        
-        /*ImageIcon imageI = new ImageIcon("src/cc/swinggame/images/uminho.jpg");
-	image_label = new JLabel(imageI);
-        jPanel1.add(image_label);*/
-        
-//BufferedImage bimage=ImageIO.read(new ByteArrayInputStream(iArray));
-        //Image image = SwingFXUtils.toFXImage(bimage, null);
 
-        
-        
-        
+    }
+    
+    public void setImage(byte[] iArray) throws IOException{
+                
+        ImageIcon imageI = new ImageIcon(iArray);
+        JLabel image_label = new JLabel(imageI);
+     
+        image_panel.removeAll();
+        image_panel.add(image_label);
+        image_panel.revalidate();
+        //image_panel.repaint();       
     }
  
     
@@ -263,56 +263,46 @@ public class MainInterface extends javax.swing.JFrame {
 
         pontos_label.setText("Pontos");
 
-        javax.swing.GroupLayout image_panelLayout = new javax.swing.GroupLayout(image_panel);
-        image_panel.setLayout(image_panelLayout);
-        image_panelLayout.setHorizontalGroup(
-            image_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 359, Short.MAX_VALUE)
-        );
-        image_panelLayout.setVerticalGroup(
-            image_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 253, Short.MAX_VALUE)
-        );
-
         javax.swing.GroupLayout backgound_panelLayout = new javax.swing.GroupLayout(backgound_panel);
         backgound_panel.setLayout(backgound_panelLayout);
         backgound_panelLayout.setHorizontalGroup(
             backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(backgound_panelLayout.createSequentialGroup()
-                .addGap(105, 105, 105)
-                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(r2_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
-                    .addComponent(r1_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
-                    .addComponent(r3_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addComponent(progress_bar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(backgound_panelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(i_points, javax.swing.GroupLayout.DEFAULT_SIZE, 80, Short.MAX_VALUE)
                     .addGroup(backgound_panelLayout.createSequentialGroup()
-                        .addGap(17, 17, 17)
-                        .addComponent(pontos_label)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(image_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(45, 45, 45))
+                        .addGap(105, 105, 105)
+                        .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(r2_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+                            .addComponent(r1_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
+                            .addComponent(r3_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(backgound_panelLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(backgound_panelLayout.createSequentialGroup()
+                                .addGap(29, 29, 29)
+                                .addComponent(pontos_label))
+                            .addGroup(backgound_panelLayout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(18, 18, 18)
+                        .addComponent(image_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         backgound_panelLayout.setVerticalGroup(
             backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgound_panelLayout.createSequentialGroup()
                 .addGap(30, 30, 30)
-                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 253, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(backgound_panelLayout.createSequentialGroup()
-                            .addComponent(pontos_label, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(18, 18, 18)
-                            .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGap(44, 44, 44)))
-                    .addComponent(image_panel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                    .addGroup(backgound_panelLayout.createSequentialGroup()
+                        .addComponent(pontos_label, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(44, 44, 44))
+                    .addComponent(image_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 37, Short.MAX_VALUE)
                 .addComponent(progress_bar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -341,28 +331,30 @@ public class MainInterface extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void r1_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r1_buttonActionPerformed
-        setAnswerState(1);
+        //setAnswerState(1);
         r1_button.setBackground(Color.YELLOW);
         r2_button.setEnabled(false);
         r3_button.setEnabled(false);
-        notifyObject();
+        answerQuestion(1);
+        //notifyObject();
     }//GEN-LAST:event_r1_buttonActionPerformed
 
     private void r2_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r2_buttonActionPerformed
-        setAnswerState(2);
+        //setAnswerState(2);
         r2_button.setBackground(Color.YELLOW);
         r1_button.setEnabled(false);
         r3_button.setEnabled(false);
-        notifyObject();        
+        answerQuestion(2);
+        //notifyObject();        
     }//GEN-LAST:event_r2_buttonActionPerformed
 
     private void r3_buttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_r3_buttonActionPerformed
-        setAnswerState(3);
-        //answerState=3;
+        //setAnswerState(3);
         r3_button.setBackground(Color.YELLOW);
         r1_button.setEnabled(false);
         r2_button.setEnabled(false);
-        notifyObject();
+        answerQuestion(3);
+        //notifyObject();
     }//GEN-LAST:event_r3_buttonActionPerformed
 
     /**

@@ -21,23 +21,26 @@ import sun.audio.ContinuousAudioDataStream;
  */
 public class MusicRunnable implements Runnable {
     private JFXPanel fxPanel;
-    private String music_url;
+    //private String music_url;
     private volatile boolean musicRunning;
+    private byte[] musicArray;
     
     
     public MusicRunnable(){
         fxPanel = new JFXPanel();
-        this.music_url = null;
+        //this.music_url = null;
         this.musicRunning = false;
+        this.musicArray = null;
     }
     
     public void terminateMusic(){
         this.musicRunning = false;
     }
     
-    public void setSong(String url){
-        this.music_url = url;
+    public void setSong(byte[] byteArray){
+        //this.music_url = url;
         musicRunning = true;
+        musicArray = byteArray; 
     }
     
     //alternativa...
@@ -48,7 +51,6 @@ public class MusicRunnable implements Runnable {
         AudioDataStream audioStream = new AudioDataStream(audiodata);
         // play()
         AudioPlayer.player.start(audioStream);
-        
         
         // loop()
         /*ContinuousAudioDataStream continuousStream = 
@@ -64,15 +66,15 @@ public class MusicRunnable implements Runnable {
     */        
     @Override
     public void run() {
-        File songfile = new File(music_url);
-        Media media = new Media(songfile.toURI().toString());
-        MediaPlayer music_player = new MediaPlayer(media);
-        music_player.play();    
+        AudioData audiodata = new AudioData(musicArray);
+         
+        //AudioData audioData = new AudioStream(url.openStream()).getData();
+        AudioDataStream audioStream = new AudioDataStream(audiodata);
+        // play()
+        AudioPlayer.player.start(audioStream);
         
-        while(musicRunning);
+        while(musicRunning);      
         
-        music_player.pause();
-        music_player.stop();
-        
+        AudioPlayer.player.stop(audioStream);
     }
 }
