@@ -37,14 +37,18 @@ public class UDPClient {
     //private UDPClientCommunication udp_com;
     private UDPComunication udp_com;
     private PDUToUser ptu;
-    final AppController iGraf = new AppController();
+    private String name;
+    /**
+     * This attribute is used for testing
+     */
+    private boolean withoutInterface = false;
 
     public UDPClient(String sourceIp, int sourcePort, String dest, int port) {
         try {
             dest_ip = InetAddress.getByName(dest);
             dest_port = port;
             udp_com = new UDPComunication(sourcePort, InetAddress.getByName(sourceIp), port, InetAddress.getByName(dest));
-            ptu = new PDUToUser(true, "C"+sourceIp+"]");
+            ptu = new PDUToUser(true, "C" + sourceIp + "]");
         } catch (UnknownHostException ex) {
             System.out.println("Não foi possível criar Cliente.");
         }
@@ -107,7 +111,9 @@ public class UDPClient {
         udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
+        this.name = alcunha;
         ptu.processLogin(receive);
+
     }
 
     public void makeDatagramLogout() {
@@ -158,6 +164,11 @@ public class UDPClient {
 
         PDU receive = udp_com.nextPDU();
         ptu.processChallenges(receive);
+
+        if (!withoutInterface) {
+            startChallenge(desafio);
+        }
+
     }
 
     //estas cenas devem retornar tuplos
@@ -170,12 +181,14 @@ public class UDPClient {
 
         PDU receive = udp_com.nextPDU();
         //determinar se receive é uma questão.
-        
+
         ptu.processOk();
 
 //        doChallenge(desafio);
-        startChallenge(desafio);
-              
+        if (!withoutInterface) {
+            startChallenge(desafio);
+        }
+
         //@todo: ficar a espera de resposta do servidor com proxima questao ou erro
         //esta funcionalidade talvez melhor implementar no desafio...
     }
@@ -190,7 +203,6 @@ public class UDPClient {
         PDU receive = udp_com.nextPDU();
         ptu.processChallenges(receive);
     }
-
 
     public void makeDatagramAnswer(Byte escolha, String desafio, Byte questao) {
         PDU send = new PDU(PDUType.ANSWER);
@@ -224,30 +236,29 @@ public class UDPClient {
         }
     }
 
-    public void makeDatagramList_Ranking(){
+    public void makeDatagramList_Ranking() {
         PDU send = new PDU(PDUType.LIST_RANKING);
 
         udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
-        
+
         ptu.processRankings(receive);
     }
 
     public void closeCSocket() {
         udp_com.close();
     }
-    
-    public void startChallenge(String desafio){
+
+    public void startChallenge(String desafio) {
         MainInterface mInt = new MainInterface(this);
-        mInt.setVisible(true);
-        mInt.doChallenge(desafio);
+        mInt.start(name, desafio);
     }
-    
-    public PDU getNextPDU(){        
+
+    public PDU getNextPDU() {
         return udp_com.nextPDU();
-    }    
-    
+    }
+
     public Question getNextQuestion() {
         Question question;
         int numberBlocks = 0;
@@ -292,7 +303,6 @@ public class UDPClient {
 //        ByteBuffer buffer = ByteBuffer.allocate((numberBlocks + 1) * musicBytes.firstEntry().getValue().length);
 //        musicBytes.entrySet().stream().sequential()
 //                .forEach((a) -> buffer.put(a.getValue()));
-
         List<byte[]> buffer = musicBytes.entrySet().stream().sequential()
                 .map(pair -> pair.getValue())
                 .collect(Collectors.toList());
@@ -301,6 +311,10 @@ public class UDPClient {
         question = new Question(questionText, answers, correct, img, buffer);
 
         return question;
+    }
+
+    public void setWithoutInterface(boolean withoutInterface) {
+        this.withoutInterface = withoutInterface;
     }
 
 }

@@ -5,7 +5,14 @@
  */
 package cc.swinggame;
 
+import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.embed.swing.JFXPanel;
 import javafx.scene.media.Media;
 import javafx.scene.media.MediaPlayer;
@@ -23,39 +30,49 @@ public class MusicRunnable implements Runnable {
     private JFXPanel fxPanel;
     //private String music_url;
     private volatile boolean musicRunning;
-    private byte[] musicArray;
+    private volatile Object musicLock = new Object();
+    
+    private String path;
     
     
     public MusicRunnable(){
         fxPanel = new JFXPanel();
         //this.music_url = null;
         this.musicRunning = false;
-        this.musicArray = null;
+//        this.musicArray = null;
     }
     
     public void terminateMusic(){
         this.musicRunning = false;
-    }
-    
-    public void setSong(byte[] byteArray){
-        //this.music_url = url;
-        musicRunning = true;
-        musicArray = byteArray; 
+        synchronized(musicLock){
+            musicLock.notifyAll();
+        }
     }
     
     //alternativa...
-    public void playByteMusic(byte[] byteArray){
-        AudioData audiodata = new AudioData(byteArray);
-         
-        //AudioData audioData = new AudioStream(url.openStream()).getData();
-        AudioDataStream audioStream = new AudioDataStream(audiodata);
-        // play()
-        AudioPlayer.player.start(audioStream);
-        
-        // loop()
-        /*ContinuousAudioDataStream continuousStream = 
+    public void setSong(byte[] byteArray){
+      musicRunning = true;
+        FileOutputStream out = null;
+        try {
+            path = "temp/" + System.currentTimeMillis()+ ".mp3";
+            out = new FileOutputStream(path);
+            out.write(byteArray);
+            
+            // loop()
+            /*ContinuousAudioDataStream continuousStream =
             new ContinuousAudioDataStream(audioStream);
-        AudioPlayer.player.start(continuousStream);*/
+            AudioPlayer.player.start(continuousStream);*/
+        } catch (FileNotFoundException ex) {
+            Logger.getLogger(MusicRunnable.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(MusicRunnable.class.getName()).log(Level.SEVERE, null, ex);
+        } finally {
+            try {
+                out.close();
+            } catch (IOException ex) {
+                Logger.getLogger(MusicRunnable.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
 
     }
     
@@ -66,15 +83,35 @@ public class MusicRunnable implements Runnable {
     */        
     @Override
     public void run() {
-        AudioData audiodata = new AudioData(musicArray);
-         
-        //AudioData audioData = new AudioStream(url.openStream()).getData();
-        AudioDataStream audioStream = new AudioDataStream(audiodata);
-        // play()
-        AudioPlayer.player.start(audioStream);
+        File songfile = new File(path);
+        Media media = new Media(songfile.toURI().toString());
+        MediaPlayer music_player = new MediaPlayer(media);
+        music_player.play();    
         
-        while(musicRunning);      
+        while(musicRunning){
+          synchronized(musicLock){
+              try {
+                  musicLock.wait();
+              } catch (InterruptedException ex) {
+                  new RuntimeException("interropted");
+              }
+          }
+        }
         
-        AudioPlayer.player.stop(audioStream);
+        music_player.pause();
+        music_player.stop();
+        
+        
+        
+//        AudioData audiodata = new AudioData(musicArray);
+//         
+//        //AudioData audioData = new AudioStream(url.openStream()).getData();
+//        AudioDataStream audioStream = new AudioDataStream(audiodata);
+//        // play()
+//        AudioPlayer.player.start(audioStream);
+//        
+//        while(musicRunning);      
+//        
+//        AudioPlayer.player.stop(audioStream);
     }
 }

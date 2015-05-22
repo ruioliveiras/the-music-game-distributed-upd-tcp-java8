@@ -11,6 +11,8 @@ import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import java.awt.Color;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
@@ -32,6 +34,7 @@ public class MainInterface extends javax.swing.JFrame {
     private Timer timer;
     private String currentChallenge;
     private int currentQuestion, currentAnswer;
+
     /**
      * Creates new form MainInterface
      */
@@ -39,42 +42,43 @@ public class MainInterface extends javax.swing.JFrame {
         initComponents();
         question_area.setLineWrap(true);
         currentQuestion = 0;
-        current_song=null;
+        current_song = null;
         currentPoints = 0;
         questionAnswered = 0;
         music_runnable = new MusicRunnable();
         this.udp_client = udpC;
         setQuestionTheme();
-    }   
-    
+    }
+
     //fechar a janela no fim do desafio ?
     //nao esta a usar um dos campos
-    public void doChallenge(String desafio){
-        
-        int currentPoints = 0, correctAnswer = 0, correctAnswer_index=0, pointsWon = 0;
+    public void doChallenge(String desafio) {
+
+        int currentPoints = 0, correctAnswer = 0, correctAnswer_index = 0, pointsWon = 0;
+        currentChallenge = desafio;
         String args[] = null;
         int answerGiven = 0;
-   
+
         Question actualQ = null;
-        
-        for(currentQuestion=0; currentQuestion<10; currentQuestion++){
-            
+
+        for (currentQuestion = 0; currentQuestion < 10; currentQuestion++) {
+
             actualQ = udp_client.getNextQuestion();
             actualQ.getCorrect();
             createQuestion(actualQ);
-            
+
             correctAnswer_index = actualQ.getCorrect();
-          
-        }      
+
+        }
     }
-    
-    public void refreshFrame(){
+
+    public void refreshFrame() {
         invalidate();
         validate();
         repaint();
     }
-    
-    public synchronized void setQuestionTheme(){
+
+    public synchronized void setQuestionTheme() {
         r1_button.setBackground(Color.blue);
         r2_button.setBackground(Color.blue);
         r3_button.setBackground(Color.blue);
@@ -82,52 +86,60 @@ public class MainInterface extends javax.swing.JFrame {
         r2_button.setEnabled(true);
         r3_button.setEnabled(true);
     }
-        
+
     //falta tratar para o caso em que nao respondeu
-    public void showResult(int given, int correctAnswer){
-        if(correctAnswer == 0) r1_button.setBackground(Color.green); 
-        else if(correctAnswer == 1) r2_button.setBackground(Color.green);
-        else if(correctAnswer == 2) r3_button.setBackground(Color.green);
-        
-        if(correctAnswer != given-1){
-            if(given == 1) r1_button.setBackground(Color.red); 
-            else if(given == 2) r2_button.setBackground(Color.red); 
-            else if(given == 3) r3_button.setBackground(Color.red);    
+    public void showResult(int given, int correctAnswer) {
+        if (correctAnswer == 0) {
+            r1_button.setBackground(Color.green);
+        } else if (correctAnswer == 1) {
+            r2_button.setBackground(Color.green);
+        } else if (correctAnswer == 2) {
+            r3_button.setBackground(Color.green);
+        }
+
+        if (correctAnswer != given - 1) {
+            if (given == 1) {
+                r1_button.setBackground(Color.red);
+            } else if (given == 2) {
+                r2_button.setBackground(Color.red);
+            } else if (given == 3) {
+                r3_button.setBackground(Color.red);
+            }
         }
     }
-    
-    public void setQuestionTexts(Question quest){
+
+    public void setQuestionTexts(Question quest) {
         String[] answers = quest.getAnwser();
         String question_text = quest.getQuestion();
 
         r1_button.setText(answers[0]);
         r2_button.setText(answers[1]);
-        r3_button.setText(answers[2]);           
- 
+        r3_button.setText(answers[2]);
+
         question_area.setText(question_text);
-        
+
     }
-    
+
     //ligar imagem
-    public void createQuestion(Question quest){
-        
+    public void createQuestion(Question quest) {
+
         setQuestionTexts(quest);
         questionAnswered = 0;
         setQuestionTheme();
-                    
+
         playMusic(quest.getByteMusicArray());
-        
+
         try {
             setImage(quest.getImageArray());
         } catch (IOException ex) {
             System.out.println("Não foi possível imprimir imagem");
         }
-        
+
         setTimer(100);
-        
-    }  
-    
-    public void stopMusic(){
+
+    }
+
+    public void stopMusic() {
         music_runnable.terminateMusic();
         try {
             current_song.join();
@@ -135,81 +147,103 @@ public class MainInterface extends javax.swing.JFrame {
             Logger.getLogger(MainInterface.class.getName()).log(Level.SEVERE, null, ex);
         }
         timer.cancel();
-        
+
     }
-    
-    
+
     //falta enviar o datagrama com os valores passados como bytes
     //valor escolhar é variavel answerGiven, valor questao é a variavel pergunta            
-    public void answerQuestion(int answer){
+    public void answerQuestion(int answer) {
 
-        stopMusic();         
+        stopMusic();
         questionAnswered = 1;
         udp_client.makeDatagramAnswer(Byte.MIN_VALUE, currentChallenge, Byte.MIN_VALUE);
-        
-        getScore(answer);     
-        
+
+        getScore(answer);
+
     }
-    
+
     //arranjar melhor forma de atualizar as respostas
     //parametro relativo à questao não está a ser recebido
-    public void getScore(int answerGiven){
+    public void getScore(int answerGiven) {
         PDU receive = udp_client.getNextPDU();
-      
+
         int correctAnswer = (byte) receive.popParameter(PDUType.REPLY_CORRECT);
         int pointsWon = (byte) receive.popParameter(PDUType.REPLY_POINTS);
-        
-        if(correctAnswer == 1) currentPoints += pointsWon;
-        else currentPoints -= pointsWon;
-           
+
+        if (correctAnswer == 1) {
+            currentPoints += pointsWon;
+        } else {
+            currentPoints -= pointsWon;
+        }
+
         showResult(answerGiven, currentAnswer);
         i_points.setText(Integer.toString(currentPoints));
-        
+
         /*
-            mInt.showResult(answerGiven, correctAnswer_index);
-        */ 
+         mInt.showResult(answerGiven, correctAnswer_index);
+         */
     }
-    
-    public void setTimer(double inicial_value){
+
+    public void setTimer(double inicial_value) {
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
             double i = inicial_value;
+
             @Override
             public void run() {
-                i-=1F;
+                i -= 1F;
                 progress_bar.setValue((int) i);
                 progress_bar.setStringPainted(true);
-                if (i <= 1){
-                    questionAnswered=1;
+                if (i <= 1) {
+                    questionAnswered = 1;
                 }
-                if(questionAnswered != 0 ) {
+                if (questionAnswered != 0) {
                     timer.cancel();
                 }
             }
         }, 0, 1000);
     }
-    
-    private void playMusic(byte[] music){
+
+    private void playMusic(byte[] music) {
+        byte[] arr;
+//        try {
+        // arr = Files.readAllBytes(Paths.get("assets/musica/000001.mp3"));
         music_runnable.setSong(music);
+//
+//            for (int i = 0; i < arr.length; i++) {
+//                if (arr[i] != music[i]) {
+//                    System.out.println("asdsad");
+//                }
+//
+//            }
 
         current_song = new Thread(music_runnable);
-            
         current_song.start();
+//        } catch (IOException ex) {
+//            new RuntimeException("asdd");
+//        }
 
     }
-    
-    public void setImage(byte[] iArray) throws IOException{
-                
+
+    public void setImage(byte[] iArray) throws IOException {
+
         ImageIcon imageI = new ImageIcon(iArray);
         JLabel image_label = new JLabel(imageI);
-     
+
         image_panel.removeAll();
         image_panel.add(image_label);
         image_panel.revalidate();
         //image_panel.repaint();       
     }
- 
-    
+
+    public void start(String name, String desafio) {
+        new Thread(()->{
+            this.setVisible(true);
+            this.setTitle(name);
+            this.doChallenge(desafio);            
+        }).start();
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -361,36 +395,36 @@ public class MainInterface extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     /*public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
+     /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-       /* try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }*/
+     * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+     */
+    /* try {
+     for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+     if ("Nimbus".equals(info.getName())) {
+     javax.swing.UIManager.setLookAndFeel(info.getClassName());
+     break;
+     }
+     }
+     } catch (ClassNotFoundException ex) {
+     java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+     } catch (InstantiationException ex) {
+     java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+     } catch (IllegalAccessException ex) {
+     java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+     } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+     java.util.logging.Logger.getLogger(MainInterface.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+     }*/
         //</editor-fold>
 
-        /* Create and display the form */
-        /*java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new MainInterface().setVisible(true);
-            }
-        });
-    }*/
+    /* Create and display the form */
+    /*java.awt.EventQueue.invokeLater(new Runnable() {
+     public void run() {
+     new MainInterface().setVisible(true);
+     }
+     });
+     }*/
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel backgound_panel;
@@ -404,4 +438,5 @@ public class MainInterface extends javax.swing.JFrame {
     private javax.swing.JButton r2_button;
     private javax.swing.JButton r3_button;
     // End of variables declaration//GEN-END:variables
+
 }

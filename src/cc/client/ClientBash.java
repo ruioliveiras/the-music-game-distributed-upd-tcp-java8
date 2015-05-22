@@ -15,6 +15,7 @@ public class ClientBash {
 
     private final UDPClient client;
 
+
     public ClientBash(String sourceIp, String destIp, int destPort) {
         client = new UDPClient(sourceIp, 2020, destIp, destPort);
     }
@@ -178,6 +179,10 @@ public class ClientBash {
         }
     }
 
+    public void setWithoutInterface(boolean withoutInterface) {
+        this.client.setWithoutInterface(withoutInterface);
+    }
+    
     public static void main(String[] args) {
 
         ClientBash c_bash = new ClientBash();

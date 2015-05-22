@@ -119,6 +119,7 @@ public class SystemTest {
     public static void testClient02() throws IOException {
         ClientBash c1 = new ClientBash("127.0.0.66", "127.0.0.1", 5050);
         ClientBash c2 = new ClientBash("127.0.0.67", "127.0.0.1", 5050);
+        c1.setWithoutInterface(true);c2.setWithoutInterface(true);
         LocalDate d = LocalDate.now();
         LocalTime t = LocalTime.now().plus(1, ChronoUnit.MINUTES);
 
@@ -136,7 +137,8 @@ public class SystemTest {
     public static void testClient03() throws IOException {
         ClientBash c1 = new ClientBash("127.0.0.68", "127.0.0.1", 5050);
         ClientBash c2 = new ClientBash("127.0.0.69", "127.0.0.1", 5050);
-
+        c1.setWithoutInterface(true);c2.setWithoutInterface(true);
+        
         c2.execute("LOGIN ruioliveiras 123");
         c2.execute("ACCEPT_CHALLENGE Circo");
         c2.execute("LOGOUT");
@@ -151,7 +153,8 @@ public class SystemTest {
         final ClientBash c1 = new ClientBash("127.0.0.70", "127.0.0.1", 5050);
         final ClientBash c2 = new ClientBash("127.0.0.71", "127.0.0.1", 5050);
         final ClientBash c3 = new ClientBash("127.0.0.72", "127.0.0.1", 5050);
-
+        c1.setWithoutInterface(true);c2.setWithoutInterface(true);c3.setWithoutInterface(true);
+        
         c1.execute("LOGIN prc 123");
         c2.execute("LOGIN ruioliveiras 123");
         c3.execute("LOGIN orlando 123");
@@ -166,6 +169,8 @@ public class SystemTest {
         ClientBash c1 = new ClientBash("127.0.0.73", "127.0.0.2", 5051);
         ClientBash c2 = new ClientBash("127.0.0.74", "127.0.0.2", 5051);
         ClientBash c3 = new ClientBash("127.0.0.75", "127.0.0.2", 5051);
+        c1.setWithoutInterface(true);c2.setWithoutInterface(true);c3.setWithoutInterface(true);
+                
         //cb.execute("REGISTAR nome nick pass");
         c1.execute("REGISTER tiago mct 123");
         c1.execute("LOGIN mct 123");
