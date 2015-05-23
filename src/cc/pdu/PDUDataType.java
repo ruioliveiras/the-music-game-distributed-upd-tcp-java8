@@ -11,6 +11,8 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -42,7 +44,11 @@ public enum PDUDataType {
                 }
 
                 public byte[] toByte(Object o) {
-                    return ((String) o).getBytes();
+                    try {
+                        return ((String) o).getBytes("UTF-8");
+                    } catch (UnsupportedEncodingException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
 
             },

@@ -18,9 +18,12 @@ import cc.server.udpServer.UDPComunication;
 import cc.server.udpServer.UDPChallengeProvider;
 import cc.server.udpServer.UDPServer;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -111,7 +114,10 @@ public class ServerMain {
         imgDir = musicDir = null;
 
         try {
-            reader = new BufferedReader(new FileReader("assets/" + filepath));
+            reader = new BufferedReader( new InputStreamReader(
+                      new FileInputStream(new File("assets/" + filepath)), "UTF8"));
+            
+            
             while ((line = reader.readLine()) != null) {
                 if (line.contains("music_DIR=")) {
                     musicDir = line.split("=")[1];
