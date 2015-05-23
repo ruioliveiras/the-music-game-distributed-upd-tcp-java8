@@ -24,6 +24,7 @@ public class UDPComunication {
     private DatagramSocket socket;
     private int currentLabel;
     private boolean labelMode;
+    private InetAddress sourceIp;
     private InetAddress destIp;
     private int destPort;
     
@@ -37,6 +38,7 @@ public class UDPComunication {
                 socket.setReceiveBufferSize(1024 * 1024 * 50);
 //                System.out.print("HOW MAY KBBYTES: " + socket.getReceiveBufferSize() / 1024);
             }
+            this.sourceIp = sourceIp;
             this.destPort = destPort;
             this.destIp = destIp;
             labelMode = true;
@@ -61,7 +63,7 @@ public class UDPComunication {
         byte b[];
         pdu.setLabel(currentLabel);
         int i = 0;
-
+        System.out.println("I'm["+sourceIp +"] sending to ["+destIp+"] PDU: "+pdu.toString());
         try {
             if (destIp == null){
                 return;

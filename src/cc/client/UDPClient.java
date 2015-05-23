@@ -25,6 +25,7 @@ import java.util.stream.IntStream;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.util.Pair;
+import util.T2;
 
 /**
  *
@@ -204,7 +205,7 @@ public class UDPClient {
         ptu.processChallenges(receive);
     }
 
-    public int makeDatagramAnswer(Byte escolha, String desafio, Byte questao) {
+    public T2<Integer,Boolean> makeDatagramAnswer(Byte escolha, String desafio, Byte questao) {
         PDU send = new PDU(PDUType.ANSWER);
 
         send.addParameter(PDUType.ANSWER_CHOOSE, escolha);
@@ -214,7 +215,7 @@ public class UDPClient {
         udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
-        return (int)(byte) receive.popParameter(PDUType.REPLY_POINTS);
+        return new T2<>((int)(byte) receive.popParameter(PDUType.REPLY_POINTS), ((byte) receive.popParameter(PDUType.REPLY_CORRECT)) != 0);
         //ptu.processAnswer(receive);
     }
 

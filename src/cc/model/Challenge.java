@@ -131,8 +131,13 @@ public class Challenge {
                 scores.put(userNick, scores.get(userNick) + 2);
                 return 2;
             } else {
-                scores.put(userNick, scores.get(userNick) - 1);
-                return -1;
+                int actualScore = scores.get(userNick);
+                if (actualScore - 1 > 0) {
+                    scores.put(userNick, actualScore - 1);    
+                    return -1;
+                } else {
+                    return 0;
+                }
             }            
         }
     }

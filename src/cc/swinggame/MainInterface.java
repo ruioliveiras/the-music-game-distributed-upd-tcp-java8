@@ -20,6 +20,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
+import util.T2;
 
 /**
  *
@@ -47,7 +48,6 @@ public class MainInterface extends javax.swing.JFrame {
         current_song = null;
         currentPoints = 0;
         questionAnswered = 0;
-        music_runnable = new MusicRunnable();
         this.udp_client = udpC;
         setQuestionTheme();
     }
@@ -56,25 +56,32 @@ public class MainInterface extends javax.swing.JFrame {
     //nao esta a usar um dos campos
     public void doChallenge(String desafio) {
         currentChallenge = desafio;
-        loadNextQuestion();
         new Thread(() -> {
+            loadNextQuestion();
             currentQuestion = 0;
+
             do {
+                 i_pergunta.setText((currentQuestion +1)+ "/" + UDPChallengeProvider.CHALLENGE_NUMQUESTION);
                 try {
-                    setTimer(6 * 1000);
+                    setTimer(5 * 1000);
                     synchronized (waitAwswer) {
-                        waitAwswer.wait(6 * 1000);
+                        waitAwswer.wait(5 * 1000);
                     }
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
                 }
                 stopMusic();
                 r1_button.setEnabled(false);r2_button.setEnabled(false);r3_button.setEnabled(false);
-                loadNextQuestion();
-                r1_button.setEnabled(true);r2_button.setEnabled(true);r3_button.setEnabled(true);
+                if (currentQuestion < UDPChallengeProvider.CHALLENGE_NUMQUESTION - 1) {
+                    loadNextQuestion();
+                    r1_button.setEnabled(true);r2_button.setEnabled(true);r3_button.setEnabled(true);    
+                }
                 currentQuestion++;
-            } while (currentQuestion < UDPChallengeProvider.CHALLENGE_NUMQUESTION -1);
-            setVisible(false);
+               
+            } while (currentQuestion < UDPChallengeProvider.CHALLENGE_NUMQUESTION );
+            stopMusic();
+            
+            //setVisible(false);
         }).start();
 //        for (currentQuestion = 0; currentQuestion < 10; currentQuestion++) {
 //
@@ -103,23 +110,15 @@ public class MainInterface extends javax.swing.JFrame {
     }
 
     //falta tratar para o caso em que nao respondeu
-    public void showResult(int given, int correctAnswer) {
-        if (correctAnswer == 0) {
-            r1_button.setBackground(Color.green);
-        } else if (correctAnswer == 1) {
-            r2_button.setBackground(Color.green);
-        } else if (correctAnswer == 2) {
-            r3_button.setBackground(Color.green);
-        }
-
-        if (correctAnswer != given - 1) {
-            if (given == 1) {
-                r1_button.setBackground(Color.red);
-            } else if (given == 2) {
-                r2_button.setBackground(Color.red);
-            } else if (given == 3) {
-                r3_button.setBackground(Color.red);
-            }
+    public void showResult(int given, boolean correctAnswer) {
+        Color c = correctAnswer ? Color.green : Color.red;
+        
+        if (given == 0) {
+            r1_button.setBackground(c);
+        } else if (given == 1) {
+            r2_button.setBackground(c);
+        } else if (given == 2) {
+            r3_button.setBackground(c);
         }
     }
 
@@ -136,7 +135,6 @@ public class MainInterface extends javax.swing.JFrame {
         } catch (IOException ex) {
             System.out.println("Não foi possível imprimir imagem");
         }
-
     }
 
     public void setQuestionTexts(Question quest) {
@@ -161,31 +159,35 @@ public class MainInterface extends javax.swing.JFrame {
         timer.cancel();
 
     }
+    
+    
 
     //falta enviar o datagrama com os valores passados como bytes
     //valor escolhar é variavel answerGiven, valor questao é a variavel pergunta            
     public void answerQuestion(int answer) {
         stopMusic();
         questionAnswered = 1;
-        int points = udp_client.makeDatagramAnswer((byte) answer, currentChallenge, (byte) currentQuestion);
+        T2<Integer,Boolean> ret =
+                udp_client.makeDatagramAnswer((byte) answer, currentChallenge, (byte) currentQuestion);
 
-//        pointsshowResult(answerGiven, currentAnswer);
-        i_points.setText("" + points);
-        // becouse the updClient has concurrency problems, the load next quenstion should be after answer
+        showResult(answer,ret.b);
+
+        i_points.setText("" + ret.a);
         synchronized (waitAwswer) {
             waitAwswer.notify();
         }
     }
 
     public void setTimer(int time) {
+        int timeBetween = 1000;
         timer = new Timer();
         timer.scheduleAtFixedRate(new TimerTask() {
-            double i = 100;
+            int i = 100;
 
             @Override
             public void run() {
-                i -= 1F;
-                progress_bar.setValue((int) i);
+                i -= 100 / ( time / timeBetween);
+                progress_bar.setValue(i);
                 progress_bar.setStringPainted(true);
                 if (i <= 1) {
                     questionAnswered = 1;
@@ -194,28 +196,15 @@ public class MainInterface extends javax.swing.JFrame {
                     timer.cancel();
                 }
             }
-        }, 0, time);
+        }, 0, timeBetween);
     }
 
     private void playMusic(byte[] music) {
-        byte[] arr;
-//        try {
-        // arr = Files.readAllBytes(Paths.get("assets/musica/000001.mp3"));
+        music_runnable = new MusicRunnable();
         music_runnable.setSong(music);
-//
-//            for (int i = 0; i < arr.length; i++) {
-//                if (arr[i] != music[i]) {
-//                    System.out.println("asdsad");
-//                }
-//
-//            }
 
         current_song = new Thread(music_runnable);
         current_song.start();
-//        } catch (IOException ex) {
-//            new RuntimeException("asdd");
-//        }
-
     }
 
     public void setImage(byte[] iArray) throws IOException {
@@ -254,8 +243,10 @@ public class MainInterface extends javax.swing.JFrame {
         question_area = new javax.swing.JTextArea();
         progress_bar = new javax.swing.JProgressBar();
         pontos_label = new javax.swing.JLabel();
-        i_points = new javax.swing.JLabel();
         image_panel = new javax.swing.JPanel();
+        i_points = new javax.swing.JLabel();
+        jLabel1 = new javax.swing.JLabel();
+        i_pergunta = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -288,67 +279,78 @@ public class MainInterface extends javax.swing.JFrame {
 
         progress_bar.setString("");
 
-        pontos_label.setText("Pontos");
+        pontos_label.setText("Pontos:");
+
+        i_points.setFont(new java.awt.Font("Cantarell", 1, 24)); // NOI18N
+        i_points.setText("0");
+
+        jLabel1.setText("nº Pergunta:");
+
+        i_pergunta.setFont(new java.awt.Font("Cantarell", 1, 24)); // NOI18N
+        i_pergunta.setText("0");
 
         javax.swing.GroupLayout backgound_panelLayout = new javax.swing.GroupLayout(backgound_panel);
         backgound_panel.setLayout(backgound_panelLayout);
         backgound_panelLayout.setHorizontalGroup(
             backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgound_panelLayout.createSequentialGroup()
-                .addGap(105, 105, 105)
-                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(r2_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(r1_button, javax.swing.GroupLayout.DEFAULT_SIZE, 600, Short.MAX_VALUE)
-                    .addComponent(r3_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(backgound_panelLayout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
                 .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 73, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(pontos_label))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(image_panel, javax.swing.GroupLayout.DEFAULT_SIZE, 498, Short.MAX_VALUE)
-                .addGap(12, 12, 12))
-            .addGroup(backgound_panelLayout.createSequentialGroup()
-                .addComponent(progress_bar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addContainerGap())
+                    .addGroup(backgound_panelLayout.createSequentialGroup()
+                        .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(r1_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(r2_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(r3_button, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(progress_bar, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap())
+                    .addGroup(backgound_panelLayout.createSequentialGroup()
+                        .addGap(6, 6, 6)
+                        .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(backgound_panelLayout.createSequentialGroup()
+                                .addComponent(pontos_label)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jLabel1)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addComponent(i_pergunta, javax.swing.GroupLayout.PREFERRED_SIZE, 49, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 824, Short.MAX_VALUE)
+                            .addComponent(image_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
         );
         backgound_panelLayout.setVerticalGroup(
             backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(backgound_panelLayout.createSequentialGroup()
-                .addGap(30, 30, 30)
-                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                    .addGroup(backgound_panelLayout.createSequentialGroup()
-                        .addComponent(pontos_label, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 103, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(44, 44, 44))
-                    .addComponent(image_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(progress_bar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addGroup(backgound_panelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(pontos_label, javax.swing.GroupLayout.PREFERRED_SIZE, 28, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(i_points, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel1)
+                    .addComponent(i_pergunta, javax.swing.GroupLayout.PREFERRED_SIZE, 38, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(image_panel, javax.swing.GroupLayout.PREFERRED_SIZE, 395, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(r1_button, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(r2_button, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(r3_button, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(77, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(progress_bar, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(backgound_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(backgound_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(backgound_panel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 231, Short.MAX_VALUE))
+            .addComponent(backgound_panel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
 
         pack();
@@ -418,8 +420,10 @@ public class MainInterface extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel backgound_panel;
+    private javax.swing.JLabel i_pergunta;
     private javax.swing.JLabel i_points;
     private javax.swing.JPanel image_panel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel pontos_label;
     private javax.swing.JProgressBar progress_bar;

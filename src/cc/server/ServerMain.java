@@ -140,7 +140,7 @@ public class ServerMain {
                     aux[5] = aux[5].trim();
                     answers[2] = aux[5].substring(1, aux[5].length() - 1);
                     correctAnsIndex = Integer.parseInt(aux[6]);
-                    question = new Question(questionText, answers.clone(), correctAnsIndex, assetsFolder + "/" + imgPath, assetsFolder + "/" + musicPath);
+                    question = new Question(questionText, answers.clone(), correctAnsIndex - 1, assetsFolder + "/" + imgPath, assetsFolder + "/" + musicPath);
                     state.addQuestion(question);
                 }
             }
