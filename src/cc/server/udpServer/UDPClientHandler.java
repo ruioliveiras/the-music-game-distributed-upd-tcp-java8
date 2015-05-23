@@ -256,20 +256,30 @@ public class UDPClientHandler {
     private PDU answer(String ip, String challengeName, int choice, int questionId) {
         PDU answer = new PDU(PDUType.REPLY);
         Challenge challange = state.getChallenge(challengeName);
+        Question question = challange.getQuestion(questionId);
         String nickname = state.getSession(ip).getNick();
 
         answer.addParameter(PDUType.REPLY_CHALLE, challengeName);
         answer.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) questionId);
 
-        boolean correct = challange.getQuestion(questionId).getCorrect() == choice;
-        int points = challange.answer(nickname, correct);
+        int points ;
+        if (question.isClosed()) {
+            boolean correct = question.getCorrect() == choice;
+            points = challange.answer(nickname, correct);
 
-        if (correct) {
-            answer.addParameter(PDUType.REPLY_CORRECT, (byte) 1);
-        } else {
+            if (correct) {
+                answer.addParameter(PDUType.REPLY_CORRECT, (byte) 1);
+            } else {
+                answer.addParameter(PDUType.REPLY_CORRECT, (byte) 0);
+            }
+        } else{ 
+            points = 0;
             answer.addParameter(PDUType.REPLY_CORRECT, (byte) 0);
+            // may i add type to timeout?
         }
         answer.addParameter(PDUType.REPLY_POINTS, (byte) points);
+
+        
         String owner = state.getOwnerIp(challengeName);
         if (owner.equals("localhost")) {
             challange.getServers().stream()
@@ -287,7 +297,7 @@ public class UDPClientHandler {
         for (User user : state.getGlobalUsers()) {
             answer.addParameter(PDUType.REPLY_NAME, user.getName());
             answer.addParameter(PDUType.REPLY_NICK, user.getNick());
-            answer.addParameter(PDUType.REPLY_SCORE,(Short)(short) user.getRating());
+            answer.addParameter(PDUType.REPLY_SCORE, (Short) (short) user.getRating());
         }
 
         return answer;

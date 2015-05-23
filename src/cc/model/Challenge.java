@@ -35,7 +35,10 @@ public class Challenge {
      * The time (in hours) to start the Challenge.
      */
     private LocalTime time;
-
+    /**
+     * The total number of users in all servers
+     */
+    private int userTotal = 0 ;
     /**
      * The current users that subscribe this challenge.
      */
@@ -44,13 +47,27 @@ public class Challenge {
      * Map from user.nick to his score.
      */
     private final Map<String, Integer> scores;
-    
-    private final Set<TcpClient> servers;
-
     /**
      * Set of the questions generated for the challenge
      */
     private final List<Question> questions;
+    /**
+     * This saves the index of the current Question
+     */
+    private int currentQuestion = 0;
+    /**
+     * Set of the Servers that are subscribed to this challenge
+     */
+    private final Set<TcpClient> servers;
+    /**
+     * Object used to wait the time for each question
+     */
+    private final Object questionWait = new Object();
+    /**
+     * The current number of answer to the actual question. after wait to
+     * nextQuestion is set to zero
+     */
+    private int awnserCount;
 
     public Challenge() {
         subscribers = new HashSet<>();
@@ -94,6 +111,7 @@ public class Challenge {
     }
 
     public void addSubscribers(User u) {
+        userTotal++;
         subscribers.add(u);
         scores.put(u.getNick(), 0);
     }
@@ -103,12 +121,19 @@ public class Challenge {
     }
 
     public int answer(String userNick, boolean isCorrect) {
-        if (isCorrect) {
-            scores.put(userNick, scores.get(userNick) + 2);
-            return 2;
-        } else {
-            scores.put(userNick, scores.get(userNick) - 1);
-            return -1;
+        synchronized (questionWait) {
+            awnserCount++;
+            if (awnserCount >= userTotal){
+                questionWait.notify();
+            }
+            
+            if (isCorrect) {
+                scores.put(userNick, scores.get(userNick) + 2);
+                return 2;
+            } else {
+                scores.put(userNick, scores.get(userNick) - 1);
+                return -1;
+            }            
         }
     }
 
@@ -123,17 +148,34 @@ public class Challenge {
     public Question getQuestion(int index) {
         return questions.get(index);
     }
-    
-    
+
     public void addServer(TcpClient u) {
         servers.add(u);
+        userTotal++;
     }
-    
-    public Set<TcpClient> getServers(){
+
+    public Set<TcpClient> getServers() {
         return servers;
     }
 
     public void addScore(String userNick, int score) {
-        scores.put(userNick, scores.getOrDefault(userNick,0) + score);
+        scores.put(userNick, scores.getOrDefault(userNick, 0) + score);
+    }
+
+    public synchronized Question waitToNext(long timeout) throws InterruptedException {
+        Question ret;
+        synchronized (questionWait) {
+            questionWait.wait(timeout);
+            currentQuestion++;
+            if (currentQuestion < questions.size()) {
+                ret = questions.get(currentQuestion);
+                ret.close();
+            } else {
+                ret = null;
+            }
+            
+            awnserCount = 0;
+        }
+        return ret;
     }
 }

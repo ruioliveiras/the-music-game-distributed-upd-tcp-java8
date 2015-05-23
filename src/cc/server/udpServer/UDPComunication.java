@@ -26,6 +26,7 @@ public class UDPComunication {
     private boolean labelMode;
     private InetAddress destIp;
     private int destPort;
+    
 
     public UDPComunication(int sourcePort, InetAddress sourceIp, int destPort, InetAddress destIp) {
         try {
@@ -78,7 +79,7 @@ public class UDPComunication {
     public void sendPDU(PDU send_pdu) {
         sendPDU(send_pdu, destIp, destPort);
     }
-
+    
     public PDU nextPDU() {
         byte[] pData;
         boolean hasNext = true;

@@ -204,7 +204,7 @@ public class UDPClient {
         ptu.processChallenges(receive);
     }
 
-    public void makeDatagramAnswer(Byte escolha, String desafio, Byte questao) {
+    public int makeDatagramAnswer(Byte escolha, String desafio, Byte questao) {
         PDU send = new PDU(PDUType.ANSWER);
 
         send.addParameter(PDUType.ANSWER_CHOOSE, escolha);
@@ -214,7 +214,7 @@ public class UDPClient {
         udp_com.sendPDU(send);
 
         PDU receive = udp_com.nextPDU();
-        receive.popParameter(PDUType.REPLY_CORRECT);
+        return (int)(byte) receive.popParameter(PDUType.REPLY_POINTS);
         //ptu.processAnswer(receive);
     }
 

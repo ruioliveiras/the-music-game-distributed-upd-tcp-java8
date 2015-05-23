@@ -43,6 +43,15 @@ public class UDPChallengeProvider {
     }
 
     public void startChallenge(Challenge challenge) {
+        long timeMili;
+
+        if (challenge.getName().equals("circo")) {
+            timeMili = 2000;
+        } else if (challenge.getName().equals("GrandaFesta")) {
+            timeMili = 2000;
+        } else {
+            timeMili = LocalDateTime.now().until(challenge.getDateTime(), ChronoUnit.MILLIS);
+        }
 
         ScheduledExecutorService executor = Executors.newScheduledThreadPool(1024);
         executor.schedule(() -> {
@@ -56,8 +65,7 @@ public class UDPChallengeProvider {
                 ex.printStackTrace();
                 System.err.println(ex.toString());
             }
-            //}, LocalDateTime.now().until(challenge.getDateTime(), ChronoUnit.NANOS), TimeUnit.NANOSECONDS);
-        }, 2000, TimeUnit.MILLISECONDS);
+        }, timeMili, TimeUnit.MILLISECONDS);
 
     }
 
@@ -98,7 +106,14 @@ public class UDPChallengeProvider {
             this.sendQuestion(challenge.getName(), i, q.getQuestion(), q.getCorrect(),
                     q.getAnwser(), q.getImageArray(), q.getMusicArray());
 
-            Thread.sleep(1000);
+            int waitTime;
+            if (challenge.getName().equals("circo")) {
+                waitTime = 1000;
+            } else {
+                waitTime = 1000 * 6;                
+            }
+            challenge.waitToNext(waitTime);
+           
         }
     }
 

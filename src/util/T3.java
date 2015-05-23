@@ -5,6 +5,8 @@
  */
 package util;
 
+import java.util.Arrays;
+
 /**
  *
  * @author ruioliveiras
@@ -24,5 +26,9 @@ public class T3<A,B,C> {
         this.a = a;
         this.b = b;
         this.c = c;
+    }
+    
+    public Object[] toArray(){
+        return new Object[]{a,b,c};
     }
 }

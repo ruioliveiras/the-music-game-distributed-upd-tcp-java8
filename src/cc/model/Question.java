@@ -55,6 +55,11 @@ public class Question {
     public List<byte[]> musicArray;
 
     /**
+     * Boolean expression to save if the question was closed
+     */
+    public boolean questionClosed  =true;
+
+    /**
      * Main constructor
      *
      * @param question
@@ -83,7 +88,7 @@ public class Question {
         this.musicArray = musicArray;
     }
 
-    public void loadImage () {
+    public void loadImage() {
         if (imageArray != null) {
             return;
         }
@@ -103,19 +108,19 @@ public class Question {
         try {
             //Path path = Paths.get(musicPath);
             FileInputStream fis = new FileInputStream(musicPath);
-            while (fis.available()> 0){
+            while (fis.available() > 0) {
                 int available = fis.available();
                 byte[] buffer;
-                if (available < 1024*48){
+                if (available < 1024 * 48) {
                     buffer = new byte[available];
-                } else{
-                    buffer = new byte[1024*48];
+                } else {
+                    buffer = new byte[1024 * 48];
                 }
                 fis.read(buffer);
                 musicArray.add(buffer);
             }
             fis.close();
-            
+
         } catch (IOException ex) {
             throw new RuntimeException("reading music");
         }
@@ -145,23 +150,31 @@ public class Question {
         return musicArray;
     }
 
-    public byte[] getByteMusicArray(){
-        
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream( );
-        
-        for(byte[] b: this.musicArray){
+    public byte[] getByteMusicArray() {
+
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+
+        for (byte[] b : this.musicArray) {
             try {
                 outputStream.write(b);
             } catch (IOException ex) {
                 Logger.getLogger(Question.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
-        
+
         return outputStream.toByteArray();
     }
-    
+
     public byte[] getImageArray() {
         return imageArray;
+    }
+
+    public synchronized void close() {
+        this.questionClosed = true;
+    }
+
+    public synchronized boolean isClosed() {
+        return this.questionClosed;
     }
 
     @Override
@@ -182,11 +195,9 @@ public class Question {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj instanceof Question){
-            return ((Question)obj).getQuestion().equals(getQuestion());
+        if (obj instanceof Question) {
+            return ((Question) obj).getQuestion().equals(getQuestion());
         }
         return false;
     }
-
-    
 }

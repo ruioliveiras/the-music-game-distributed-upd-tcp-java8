@@ -39,6 +39,7 @@ public class ScaleTimeTest {
         cOrlando = new ClientBash("127.0.0.66", "127.0.0.2", 5050);
         cPaulo = new ClientBash("127.0.0.67", "127.0.0.3", 5050);
 
+        
         registerLogin();
         makeChallengeAccept();
 
