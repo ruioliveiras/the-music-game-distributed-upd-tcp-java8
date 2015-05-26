@@ -155,17 +155,6 @@ public class ClientBash {
                     System.out.println("Número de argumentos inválido!");
                 }
                 break;
-//            case "RETRANSMIT":
-//                if (checkTotalArgs(nargs, 4)) {
-//                    if (testNumeric(args[2]) && testNumeric(args[3])) {
-//                        client.makeDatagramRetransmit();
-//                    } else {
-//                        System.out.println("Formato de argumentos inválido!");
-//                    }
-//                } else {
-//                    System.out.println("Número de argumentos inválido!");
-//                }
-//                break;
             case "LIST_RANKING":
                 if (checkTotalArgs(nargs, 1)) {
                     client.makeDatagramList_Ranking();
@@ -193,7 +182,6 @@ public class ClientBash {
             while (!(command = in.readLine()).toUpperCase().equals("END")) {
                 c_bash.execute(command.toUpperCase());
             }
-            //c_bash.execute("ACCEPT_CHALLENGE desafio");   
             
             System.out.println("Obrigado e Até à Próxima!");
         } catch (IOException ex) {

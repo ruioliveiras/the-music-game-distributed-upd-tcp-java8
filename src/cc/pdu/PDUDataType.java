@@ -11,8 +11,6 @@ import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
@@ -23,13 +21,8 @@ public enum PDUDataType {
     string {
                 public Object read(byte[] b, int offset, int sizeByte) {
                     try {
-// no need to calculate string size anymore  
-//                      int i;
-                        //for (i = 0; i < b.length && b[offset + i] != 0; i++) {
-                        //}
-                        //if (sizeByte != i) {
-                            //erro
-//                        }
+                        // no need to calculate string size anymore  
+
                         String str = new String(b, offset, sizeByte, "UTF-8");
 
                         return str;

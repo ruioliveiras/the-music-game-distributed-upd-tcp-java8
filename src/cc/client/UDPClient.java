@@ -5,25 +5,13 @@ import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.udpServer.UDPComunication;
 import cc.swinggame.MainInterface;
-import cc.thegame.AppController;
-import cc.thegame.AppMain;
 import java.net.*;
-import java.nio.ByteBuffer;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
-import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.util.Pair;
 import util.T2;
 
@@ -33,12 +21,10 @@ import util.T2;
  */
 public class UDPClient {
 
-    private InetAddress dest_ip;
-    private int dest_port;
-    //private UDPClientCommunication udp_com;
     private UDPComunication udp_com;
     private PDUToUser ptu;
     private String name;
+
     /**
      * This attribute is used for testing
      */
@@ -46,8 +32,6 @@ public class UDPClient {
 
     public UDPClient(String sourceIp, int sourcePort, String dest, int port) {
         try {
-            dest_ip = InetAddress.getByName(dest);
-            dest_port = port;
             udp_com = new UDPComunication(sourcePort, InetAddress.getByName(sourceIp), port, InetAddress.getByName(dest));
             ptu = new PDUToUser(true, "C" + sourceIp + "]");
         } catch (UnknownHostException ex) {
@@ -57,8 +41,6 @@ public class UDPClient {
 
     public UDPClient(String dest, int port) {
         try {
-            dest_ip = InetAddress.getByName(dest);
-            dest_port = port;
             udp_com = new UDPComunication(0, null, port, InetAddress.getByName(dest));
             ptu = new PDUToUser();
         } catch (UnknownHostException ex) {
@@ -80,10 +62,6 @@ public class UDPClient {
 
         PDU receive = udp_com.nextPDU();
         ptu.processOk();
-//        if(receive.getLabel() == current_label) {
-//            
-//            current_label++;
-//        }        
     }
 
     public void makeDatagramRegister(String name, String alcunha, byte[] sec_info) {
@@ -97,10 +75,6 @@ public class UDPClient {
 
         PDU receive = udp_com.nextPDU();
         ptu.processOk();
-//        if(receive.getLabel() == current_label) {
-//            
-//            current_label++;
-//        }   
     }
 
     public void makeDatagramLogin(String alcunha, byte[] sec_info) {

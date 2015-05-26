@@ -5,7 +5,6 @@
  */
 package cc.pdu;
 
-import com.sun.javafx.fxml.expression.BinaryExpression;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -113,12 +112,6 @@ public class PDU {
             }
 
             this.addParameter(parameter, obj);
-//            Object oldObj = parameters.put(parameter, obj);
-            // if is fragmented, and there alreay exist one object, and is from type ByteBuffer
-            //if (this.label > 0 && oldObj != null && oldObj instanceof ByteBuffer) {
-            //        ((ByteBuffer) oldObj).put((ByteBuffer) obj);
-//                parameters.put(parameter, oldObj);
-//            }
 
             i++;
         }
@@ -155,21 +148,8 @@ public class PDU {
         if(sizeBytes > Short.MAX_VALUE * 2){
             throw  new RuntimeException("max size of PDU");
         }
+        
         //params:
-//        boolean done;
-//        do {
-//            done = true;
-//            for (Map.Entry<PDUType, List<Object>> entrySet : parameters.entrySet()) {
-//                PDUType key = entrySet.getKey();
-//                if (entrySet.getValue().size() > 0) {
-//                    Object value = entrySet.getValue().remove(0);
-//                    b.put((byte) key.getId());
-//                    b.put((byte) key.getDataType().getSize(value));
-//                    b.put(key.getDataType().toByte(value));
-//                    done = false;
-//                }
-//            }
-//        } while (!done);
         parameters.entrySet().stream()
                 .forEach((entrySet) -> {
                     final PDUType key = entrySet.getKey();

@@ -2,27 +2,18 @@ package cc.server.udpServer;
 
 import cc.model.Challenge;
 import cc.model.Question;
-import cc.model.User;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.tcpServer.ServerState;
 import cc.server.tcpServer.facade.TcpClient;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.Condition;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.IntStream;
-import javafx.util.Pair;
 import util.T3;
 import util.T2;
 

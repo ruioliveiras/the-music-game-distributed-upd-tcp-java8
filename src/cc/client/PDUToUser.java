@@ -4,8 +4,6 @@ import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.List;
-import java.util.Map;
 
 /**
  *
@@ -99,11 +97,6 @@ public class PDUToUser {
         }
     }
 
-/*    void processAnswer(PDU receive) {
-
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-*/
     void processRankings(PDU receive) {
         String answer, name = null; String nick = null; int score = 0;
         StringBuilder sb = new StringBuilder();

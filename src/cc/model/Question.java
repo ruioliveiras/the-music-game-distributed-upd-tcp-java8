@@ -1,21 +1,15 @@
 package cc.model;
 
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.IntStream;
-import javax.imageio.ImageIO;
 
 /**
  *
@@ -50,7 +44,7 @@ public class Question {
     public byte[] imageArray;
 
     /**
-     * Byte array of this question's Music
+     * Byte array of this question's Music 
      */
     public List<byte[]> musicArray;
 

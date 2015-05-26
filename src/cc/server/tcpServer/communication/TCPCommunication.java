@@ -15,8 +15,6 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * This class as purpose encapsulate a socket - to use PDU. So it will read PDU
