@@ -23,7 +23,10 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="backgound_panel" min="-2" max="-2" attributes="0"/>
+          <Group type="102" alignment="0" attributes="0">
+              <Component id="backgound_panel" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+          </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -38,36 +41,27 @@
       <Layout>
         <DimensionLayout dim="0">
           <Group type="103" groupAlignment="0" attributes="0">
-              <Group type="102" attributes="0">
+              <Group type="102" alignment="0" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
+                      <Component id="jScrollPane1" max="32767" attributes="0"/>
                       <Group type="102" attributes="0">
-                          <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="r1_button" max="32767" attributes="0"/>
-                              <Component id="r2_button" alignment="0" max="32767" attributes="0"/>
-                              <Component id="r3_button" alignment="0" max="32767" attributes="0"/>
-                              <Component id="progress_bar" alignment="1" max="32767" attributes="0"/>
-                          </Group>
+                          <Component id="pontos_label" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="i_points" min="-2" pref="49" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
+                          <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
+                          <EmptySpace type="unrelated" max="-2" attributes="0"/>
+                          <Component id="i_pergunta" min="-2" pref="49" max="-2" attributes="0"/>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                       </Group>
-                      <Group type="102" attributes="0">
-                          <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
-                          <Group type="103" groupAlignment="0" max="-2" attributes="0">
-                              <Group type="102" attributes="0">
-                                  <Component id="pontos_label" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="i_points" min="-2" pref="49" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                                  <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                  <Component id="i_pergunta" min="-2" pref="49" max="-2" attributes="0"/>
-                              </Group>
-                              <Component id="jScrollPane1" pref="824" max="32767" attributes="0"/>
-                              <Component id="image_panel" alignment="0" max="32767" attributes="0"/>
-                          </Group>
-                          <EmptySpace min="271" max="32767" attributes="0"/>
-                      </Group>
+                      <Component id="r1_button" max="32767" attributes="0"/>
+                      <Component id="r2_button" alignment="0" max="32767" attributes="0"/>
+                      <Component id="r3_button" alignment="0" max="32767" attributes="0"/>
+                      <Component id="progress_bar" alignment="0" max="32767" attributes="0"/>
+                      <Component id="image_panel" alignment="0" max="32767" attributes="0"/>
                   </Group>
+                  <EmptySpace max="-2" attributes="0"/>
               </Group>
           </Group>
         </DimensionLayout>
@@ -83,8 +77,8 @@
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="jScrollPane1" pref="110" max="32767" attributes="0"/>
-                  <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                  <Component id="image_panel" min="-2" pref="395" max="-2" attributes="0"/>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Component id="image_panel" min="-2" pref="401" max="-2" attributes="0"/>
                   <EmptySpace type="unrelated" max="-2" attributes="0"/>
                   <Component id="r1_button" min="-2" pref="50" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>

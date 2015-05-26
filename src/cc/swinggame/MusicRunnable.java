@@ -84,6 +84,7 @@ public class MusicRunnable implements Runnable {
     @Override
     public void run() {
         File songfile = new File(path);
+        try{
         Media media = new Media(songfile.toURI().toString());
         MediaPlayer music_player = new MediaPlayer(media);
         music_player.play();    
@@ -100,7 +101,9 @@ public class MusicRunnable implements Runnable {
         
         music_player.pause();
         music_player.stop();
-        
+        }catch(Exception ex){
+            // smile and wave
+        }
         
         
 //        AudioData audiodata = new AudioData(musicArray);
