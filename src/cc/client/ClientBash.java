@@ -20,6 +20,11 @@ public class ClientBash {
         client = new UDPClient(sourceIp, 2020, destIp, destPort);
     }
 
+        public ClientBash(String destIp, int destPort) {
+        client = new UDPClient(destIp, destPort);
+    }
+
+    
     public ClientBash() {
         client = new UDPClient("127.0.0.65", 2020, "127.0.0.1", 5050);
     }
@@ -174,7 +179,7 @@ public class ClientBash {
     
     public static void main(String[] args) {
 
-        ClientBash c_bash = new ClientBash();
+        ClientBash c_bash = new ClientBash("192.168.0.47",5050);
         BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
         String command;
 

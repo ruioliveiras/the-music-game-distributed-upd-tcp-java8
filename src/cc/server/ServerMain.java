@@ -67,6 +67,7 @@ public class ServerMain {
 
         udpHandler = new UDPClientHandler(state, tcpLocal, tcpHub, udpCom, udpChallenge);
     }
+    
 
     public void init(String initIp, String initPort) throws UnknownHostException {
         tcpLocal.registerServer(InetAddress.getByName(initIp), Integer.parseInt(initPort));
@@ -149,5 +150,12 @@ public class ServerMain {
             Logger.getLogger(ServerMain.class.getName()).log(Level.SEVERE, null, ex);
         }
 
+    }
+    
+    
+    public static void main(String[] args) throws IOException {
+        ServerMain sm = new ServerMain(5050, DEFAULT_TCP_PORT, InetAddress.getByName("192.168.0.47"));
+        sm.startTCP();
+        sm.startUdp();
     }
 }
