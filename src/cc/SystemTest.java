@@ -159,9 +159,9 @@ public class SystemTest {
         c2.execute("LOGIN ruioliveiras 123");
         c3.execute("LOGIN orlando 123");
 
-        startUDPChallengeClient_OtherThread("ThreadPaulo", c1, "Circo", Arrays.asList(1, 3, 3)); // one correct
-        startUDPChallengeClient_OtherThread("ThreadRui", c2, "Circo", Arrays.asList(3, 2, 3)); // all questions anwsers are correct
-        startUDPChallengeClient_OtherThread("ThreadOrlando", c3, "Circo", Arrays.asList(1, 2, 3)); // two correcct
+        startUDPChallengeClient_OtherThread("ThreadPaulo", c1, "Circo", Arrays.asList(0, 2, 2)); // one correct
+        startUDPChallengeClient_OtherThread("ThreadRui", c2, "Circo", Arrays.asList(2, 1, 2)); // all questions anwsers are correct
+        startUDPChallengeClient_OtherThread("ThreadOrlando", c3, "Circo", Arrays.asList(0, 1, 2)); // two correcct
 
     }
 
@@ -184,9 +184,9 @@ public class SystemTest {
         c3.execute("LOGIN rodrigues 123");
         c3.execute("ACCEPT_CHALLENGE Circo");
 
-        startUDPChallengeClient_OtherThread("ThreadTiago", c1, "Circo", Arrays.asList(3, 1, 1));
-        startUDPChallengeClient_OtherThread("ThreadMendes", c2, "Circo", Arrays.asList(1, 1, 1));
-        startUDPChallengeClient_OtherThread("ThreadRodrigues", c3, "Circo", Arrays.asList(3, 2, 3));
+        startUDPChallengeClient_OtherThread("ThreadTiago", c1, "Circo", Arrays.asList(2, 0, 0));
+        startUDPChallengeClient_OtherThread("ThreadMendes", c2, "Circo", Arrays.asList(0, 0,0));
+        startUDPChallengeClient_OtherThread("ThreadRodrigues", c3, "Circo", Arrays.asList(2, 1, 2));
     }
 
     public static void startUDPChallengeClient_OtherThread(String threadName, ClientBash cb, String challenge, List<Integer> anwsers) {

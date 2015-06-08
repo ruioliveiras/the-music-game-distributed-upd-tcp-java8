@@ -109,6 +109,11 @@ public class User {
     public String getActualChallenge() {
         return actualChallenge;
     }
+
+    public int addRating(int score) {
+       rating += score;
+       return rating;
+    }
     
     
 }

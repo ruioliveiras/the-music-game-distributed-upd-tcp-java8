@@ -36,7 +36,7 @@ public class UDPChallengeProvider {
     public void startChallenge(Challenge challenge) {
         long timeMili;
 
-        if (challenge.getName().equals("circo")) {
+        if (challenge.getName().equals("Circo")) {
             timeMili = 2000;
         } else if (challenge.getName().equals("GrandaFesta")) {
             timeMili = 2000;

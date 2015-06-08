@@ -161,7 +161,9 @@ public class UDPClient {
 
 //        doChallenge(desafio);
         if (!withoutInterface) {
-            startChallenge(desafio);
+            new Thread(()->{
+                startChallenge(desafio);
+            }).start();
         }
 
         //@todo: ficar a espera de resposta do servidor com proxima questao ou erro

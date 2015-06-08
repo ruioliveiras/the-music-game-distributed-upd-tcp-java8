@@ -11,6 +11,7 @@ import cc.model.User;
 import cc.pdu.PDU;
 import cc.pdu.PDUType;
 import cc.server.tcpServer.ServerState;
+import cc.server.tcpServer.facade.TcpClient;
 import cc.server.tcpServer.facade.TcpHub;
 import cc.server.tcpServer.facade.TcpLocal;
 import java.net.InetAddress;
@@ -248,7 +249,7 @@ public class UDPClientHandler {
         answer.addParameter(PDUType.REPLY_CHALLE, challengeName);
         answer.addParameter(PDUType.REPLY_NUM_QUESTION, (byte) questionId);
 
-        int points ;
+        int points;
         if (question.isClosed()) {
             boolean correct = question.getCorrect() == choice;
             points = challange.answer(nickname, correct);
@@ -258,21 +259,23 @@ public class UDPClientHandler {
             } else {
                 answer.addParameter(PDUType.REPLY_CORRECT, (byte) 0);
             }
-        } else{ 
+        } else {
             points = 0;
             answer.addParameter(PDUType.REPLY_CORRECT, (byte) 0);
             // may i add type to timeout?
         }
         answer.addParameter(PDUType.REPLY_POINTS, (byte) points);
 
-        
-        String owner = state.getOwnerIp(challengeName);
-        if (owner.equals("localhost")) {
-            challange.getServers().stream()
-                    .forEach(s -> s.registerScore(challengeName, nickname, points));
-        } else {
-            state.getNeighbor(owner).registerScore(challengeName, nickname, points);
-        }
+        tcpLocal.registerScore(challengeName, nickname, points);
+        state.getNeighbors().stream()
+                .filter((server) -> (server instanceof TcpClient))
+                .forEach(s -> s.registerScore(challengeName, nickname, points));
+//        String owner = state.getOwnerIp(challengeName);
+//        if (owner.equals("localhost")) {
+//
+//        } else {
+//            state.getNeighbor(owner).registerScore(challengeName, nickname, points);
+//        }
 
         return answer;
     }

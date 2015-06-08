@@ -206,7 +206,7 @@ public class ServerState {
      * @param who
      * @return 
      */
-    public User getGlobalUses(String who) {
+    public User getGlobalUser(String who) {
         return globalUsers.get(who);
     }
 

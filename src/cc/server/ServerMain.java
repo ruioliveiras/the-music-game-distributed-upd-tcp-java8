@@ -155,7 +155,18 @@ public class ServerMain {
     
     public static void main(String[] args) throws IOException {
         ServerMain sm = new ServerMain(5050, DEFAULT_TCP_PORT, InetAddress.getByName("192.168.0.47"));
-        sm.startTCP();
-        sm.startUdp();
+        new Thread(()->{ try {
+            sm.startTCP();
+            } catch (IOException ex) {
+                Logger.getLogger(ServerMain.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }).start();
+                new Thread(()->{ try {
+            sm.startUdp();
+            } catch (IOException ex) {
+                Logger.getLogger(ServerMain.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }).start();
+
     }
 }

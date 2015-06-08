@@ -71,11 +71,14 @@ public class ServerHandler implements Runnable {
                 }
             }
         }catch (SocketTimeoutException ste){
-            // do nothing just close
+                System.out.println("sadasdddddddddddddddddddddddddddddddddddddddddddddddd");
+               // do nothing just close
+                        comm.close();
         }catch (IOException ex) {
             ex.printStackTrace(System.err);
-        } finally {
             comm.close();
+        } finally {
+    
         }
     }
 

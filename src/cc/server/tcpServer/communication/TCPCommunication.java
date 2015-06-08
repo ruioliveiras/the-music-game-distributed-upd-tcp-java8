@@ -24,7 +24,7 @@ import java.net.SocketTimeoutException;
  */
 public class TCPCommunication {
 
-    public static int TIMEOUT_DEFAULT = 1000; // milisecods;
+    public static int TIMEOUT_DEFAULT = 10*60*1000; // milisecods;
     public static int TTL_DEFAULT = 3;
     private Socket socket;
     private InputStream is;
