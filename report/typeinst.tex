@@ -48,9 +48,9 @@
 % their surnames. This ensures that the names appear correctly in
 % the running heads and the author index.
 %
-\author{Oliveira Rui, Araujo Paulo, Costa Orlando}
+\author{Oliveira Rui, Araújo Paulo, Costa Orlando}
 %
-\authorrunning{liveira Rui, Araujo Paulo, Costa Orlando}
+\authorrunning{Oliveira Rui, Araújo Paulo, Costa Orlando}
 % (feature abused for this document to repeat the title also on left hand pages)
 
 % the affiliations are given next; don't give your e-mail address
@@ -71,15 +71,14 @@
 
 
 \begin{abstract}
-The abstract should summarize the contents of the paper and should
-contain at least 70 and at most 150 words. It should be written using the
-\emph{abstract} environment.
-\keywords{We would like to encourage you to list your keywords within
-the abstract section}
+O propósito deste trabalho consiste na implementação de um jogo em tempo real que se baseia num serviço de distribuição de conteúdos com posterior interação por parte dos utilizadores e que otimize a utilização da largura de banda. A aplicação encontra-se implementada utilizando a linguagem de programação Java, e aborda paradigmas de distribuição de dados tais como \emph{broadcast} e \emph{unicast}. O jogo consiste num quiz (do estilo quem quer ser milionário), e permite aos utilizadores registarem-se e participar em desafios, assim como criar desafios outros para competir com demais utilizadores. A arquitetura encontra-se dividida em aplicações cliente e servidor, sendo que estas comunicam não apenas entre si (cliente-servidor), mas consigo próprias (servidor-servidor), permitindo trocar informação sobre a massa global de utilizadores que participam no jogo. A troca de informação é efetuada através de protocolos TCP e UDP, estando definido um PDU personalizado com o objetivo de diminuir a utilização de largura de banda. Este documento apresenta o trabalho desenvolvido.
+\keywords{PDU, TCP, UDP, Servidores, Clientes, Comunicação por Computadores}
 \end{abstract}
 
 
 \section{Introdução}
+
+Os servidores possuem a capacidade de processar diversos clientes simultaneamente (através de \emph{threads}), e possuem toda a lógica do jogo, nomeadamente as questões a serem realizadas e o controlo e anúncio dos resultados. Estes possuem também a capacidade de comunicar não apenas com os clientes mas entre si, de forma a homogeneizar o estado da aplicação. Na aplicação cliente reside a interface gráfica que interage com o utilizador, e onde são apresentadas as questões e imagens relacionadas com o jogo, assim como a música. O sistema distribuído implementa comunicações TCP entre servidores e comunicações UDP entre clientes e servidores, e essas comunicações são realizadas através de PDU's criados com o intuito de poupar largura de banda e transferir dados entre unidades computacionais. As diferenças entre os PDU's implementados e os descritos no enunciado encontram-se descritas neste documento, assim como toda a estrutura dos diferentes componentes que constituem a aplicação geral.
 
 \section{Diferenças da especificação}
 
@@ -99,14 +98,14 @@ Adicionou-se também um tipo de PDU de controlo para os servidores fecharem os s
 \label{fig:diagram-pdu}
 \end{figure}
 
-Para a abstração dos Bits, foi criada a classe PDU, que é capaz de criar as PDU’s e depois transformas em Bytes e também inicializar-se através de array de Bytes.
+Para a abstração dos Bits, foi criada a classe PDU, que é capaz de criar as PDU’s e depois transforma-as em Bytes e também inicializar-se através de array de Bytes.
 Internamente existem os parâmetros do cabeçalho da PDU [\#(1)] (versão, segurança, label, tipo da PDU, número de campos e tamanho tamanho total dos campos em Bytes), toda esta informação pode ser consultada com os seus respetivos métodos.
-Para guardar os campos da PDU, utiliza-se um Map [\#(2)] onde a chave é o tipo do campo e o valor é uma lista de valores. Uma lista porque a mesma PDU pode ter varias campos com o mesmo tipo como é o exemplo de uma questão que têm varias respostas.
+Para guardar os campos da PDU, utiliza-se um Map [\#(2)] onde a chave é o tipo do campo e o valor é uma lista de valores. Trata-se de uma lista devido a que a mesma PDU pode ter vários campos com o mesmo tipo como p.e. uma questão que tem varias respostas.
 
-A Enumeração PDUType [\#(3)] é uma enumeração hierárquica, isto é: existem os valores de origem que representam o tipo da PDU como por exemplo: Register, Login, Replay. Depois existem os valores que representam os campos, como por exemplo: Register\_Name ou Register\_Nick.
-A Diferença entre estes dois está no construtor utilizada [\#(4)]. No caso do construtor de um campo podemos reparar que recebe um tipo de dados (PDUDataType).
+A Enumeração PDUType [\#(3)] é uma enumeração hierárquica: existem os valores de origem que representam o tipo da PDU como por exemplo: Register, Login, Reply. Existem também os valores que representam os campos, como por exemplo: Register\_Name ou Register\_Nick.
+A diferença entre estes dois está no construtor utilizado [\#(4)]. No caso do construtor de um campo podemos reparar que recebe um tipo de dados (PDUDataType).
 
-A enumeração PDUDataType [\#(6)] tem todos os tipos de dados que o PDU suposta, e aqui ficam implementadas as funções de leitura e conversão para arrays de bytes.
+A enumeração PDUDataType [\#(6)] tem todos os tipos de dados que o PDU suporta, e aqui ficam implementadas as funções de leitura e conversão para arrays de bytes.
 Desta forma é fácil a adição de novos tipos de dados.
 
 O diagrama \ref{fig:diagram-pdu} UML explica o funcionamento da interpretação do campos do PDU (função initParamsFromBytes).
@@ -114,7 +113,7 @@ O diagrama \ref{fig:diagram-pdu} UML explica o funcionamento da interpretação 
 \begin{figure}
 \centering
 \includegraphics[height=6.2cm]{PDU_interpretation.jpg}
-\caption{Diagrama UMP da interpretação de PDU}
+\caption{Diagrama UML da interpretação de PDU}
 \label{fig:diagram-pdu}
 \end{figure}
 
@@ -122,10 +121,10 @@ O diagrama \ref{fig:diagram-pdu} UML explica o funcionamento da interpretação 
 
 \subsection{Servidor}
 
-O Servidor é responsável guardar a informação sobre do sistema tais como os desafios e utilizadores existentes. Por outro lado o servidor também é responsável por partilhar o seu conhecimento com os outros servidores.
-No arranque o servidor cria 2 threads, um deles para atender clientes, e outro para atender outros  servidores 
+O servidor é responsável por guardar a informação sobre o sistema tal como os desafios e utilizadores existentes. Por outro lado o servidor também é responsável por partilhar o seu conhecimento com os outros servidores.
+No arranque o servidor cria 2 threads, uma deles para atender clientes, e outra para atender outros servidores.
 
-A arquitetura geral de um servidor posso ser vista no diagrama \ref{fig:diagram-arq-geral}.
+A arquitetura geral de um servidor pode ser vista no diagrama \ref{fig:diagram-arq-geral}.
 
 \begin{figure}
 \centering
@@ -137,33 +136,34 @@ A arquitetura geral de um servidor posso ser vista no diagrama \ref{fig:diagram-
 
 \subsubsection{Dados Guardados}
 
-Toda a informação relativa ao actual estado de um servidor são guardos na classe ServerState:
+Toda a informação relativa ao atual estado de um servidor são guardados na classe ServerState:
 \begin{itemize}
-  \item Utilizadores identificados por o seu nick
-  \item Sessões, guardam os utilizadores identificados por o seu ip actual
-  \item Utilizadores globais, para guarda o ranking global do sistema.
-  \item Desafios identificados por o seu nome
-  \item Questões para criar novos desafios, identificados por o seu ip
-  \item Servidores vizinhos poder comunicar.
+  \item Utilizadores, identificados pelo seu nick.
+  \item Sessões, guardam os utilizadores identificados pelo seu ip actual.
+  \item Utilizadores globais, para guardar o ranking global do sistema.
+  \item Desafios, identificados pelo seu nome.
+  \item Questões para criar novos desafios, identificados pelo seu ip.
+  \item Servidores vizinhos, com os quais comunicar.
 \end{itemize}
 
-No caso dos desafios cada desafio tem: o ranking atual dos utilizadores inscritos nesse desafio, os utilizadores e servidores subscritos e as questões selecionadas.
+Cada desafio tem o ranking atual dos utilizadores inscritos nesse desafio, os utilizadores e servidores subscritos e as questões selecionadas.
 
 \subsubsection{Atender Clientes}
 
-Um pedido vindo de um cliente é reencaminhado para a class UDPClientHandler, aqui mediante o tipo de desafio, é realizada as regras de negocio correspondente e enviada uma resposta para o cliente.
+Um pedido vindo de um cliente é reencaminhado para a class UDPClientHandler. Mediante o tipo de desafio, são realizadas as regras de negócio correspondentes e é enviada uma resposta para o cliente.
 
-Existem alguns pedidos do cliente que podem gerar que o servidor que esteja a antender tenha que informar os restantes servidores como por exemplo: makeChallenge, que inicia um desafio e irá ser explicado de seguida. 
-Iniciar desafio
+Existem alguns pedidos do cliente que podem obrigar o servidor a informar os restantes servidores, como p.e., makeChallenge, que inicia um desafio e irá ser explicado de seguida.
 
-Quando um makeChallenge e gerado, o sistema cria uma nova thread que terá um temporalizador para correr às horas pretendidas. Quando esta thread inicia o seu processo confirma que existem pessoas suficientes no desafio, caso não existam cancela o desafio. Caso esteja tudo bem continua e envia a primeira pergunta.
+\subsubsection{Iniciar desafio}
 
-As perguntas ao longo do desafio são enviadas para todos os clientes subscritos e para todos os servidores subscritos, depois cada um destes servidores reencainhará para os clientes finais.
+Quando um makeChallenge e gerado, o sistema cria uma nova thread que terá um temporizador para correr às horas pretendidas. Quando esta thread inicia o seu processo confirma que existem pessoas suficientes no desafio, caso não existam cancela o desafio. Caso esteja tudo bem continua e envia a primeira pergunta.
+
+As perguntas ao longo do desafio são enviadas para todos os clientes subscritos e para todos os servidores subscritos, depois cada um destes servidores reencaminhará para os clientes finais.
 
 \subsubsection{Atender Servidores}
 
-O processo de atender servidores é semelhante ao de atender clientes.  Os pedidos são interpretados na class ServerHandler, esta class mediante os parametros existentes irá executar a logica de negocio necessária.
-O negocio está implementado em 3 classes distintas: TCPLocal, TCPHub e TCPClient. Cada uma destas implementam a interface ServerToServerFacade que especifica todos os métodos existentes no negocio da aplicação (diagrama \ref{fig:diagram-facades}).
+O processo de atender servidores é semelhante ao de atender clientes. Os pedidos são interpretados na class ServerHandler, que mediante os parâmetros existentes irá executar a lógica necessária.
+A lógica está implementado em 3 classes distintas: TCPLocal, TCPHub e TCPClient. Cada uma destas implementa a interface ServerToServerFacade que especifica todos os métodos existentes no negócio da aplicação (diagrama \ref{fig:diagram-facades}).
 
 Cada uma das implementações implementa o negocio de forma diferente:
 \begin{itemize}
@@ -184,12 +184,12 @@ O socket que permite a comunicação entre servidores é terminado com um timeou
 
 \subsubsection{Informar Servidores Vizinhos}
 
-Para comunicar com outros servidores utiliza-se ou TCPHub ou TCPClient mediante as necessidades.
-O TCPClient que irá fazer é abrir um socket se necessário, e enviar uma PDU do tipo INFO com a informação pretendida.
+Para comunicar com outros servidores utiliza-se TCPHub ou TCPClient mediante as necessidades.
+O TCPClient abre um socket caso seja necessário, e envia uma PDU do tipo INFO com a informação pretendida.
 
 \section{Testes Realizados}
 
-De forma a validar o trabalho realizado, foram efetuados alguns testes. Os testes foram realizados com a utilização de um router, sendo que foi necessária a sua configuração de modo a que, a partir do MAC Address dos pc’s conectados, fossem atribuídos IP’s escolhidos por nós. Através da criação de várias instâncias de clientes e servidores nos computadores conectados, é possível criar uma simulação de um ambiente de comunicação real no qual existem servidores dedicados que recebem os pedidos de ligação dos respetivos clientes.
+De forma a validar o trabalho realizado, foram efetuados testes sobre a plataforma. Os testes foram realizados com a utilização de um router, sendo que foi necessária a sua configuração de modo a que, a partir do MAC Address dos pc’s conectados, fossem atribuídos IP’s escolhidos por nós. Através da criação de várias instâncias de clientes e servidores nos computadores conectados, é possível criar uma simulação de um ambiente de comunicação real no qual existem servidores dedicados que recebem os pedidos de ligação dos respetivos clientes.
 
 \subsection{Registo de um Utilizador}
 
