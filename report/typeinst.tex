@@ -124,6 +124,14 @@ A aplicação cliente encontra-se implementada com o auxílio da classe UDPClien
 \subsubsection{Interface gráfica}
 
 A interface com a qual a aplicação interage com o utilizador encontra-se desenvolvida em Java Swing, e apresenta de forma simples o conteúdo recebido na aplicação cliente referente às questões de um dado desafio. Assim, quando o utilizador aceita entrar num desafio, é iniciada a interface gráfica, bloqueando o utilizador de participar em mais desafios simultaneamente. Quando é alcançada a hora marcada para efetuar o desafio, a 1ª questão é apresentada, sendo possível escutar a música e observar a imagem associadas a esta. O utilizador responde à pergunta apresentada clicando nos botões disponíveis para responder, sendo que esta ação pára a música atualmente a tocar, e bloqueia os restantes botões de forma a não permitir comportamentos indesejados na aplicação. Após a resposta à pergunta, o datagrama de resposta é enviado através da aplicação cliente, e o resultado é apresentado ao utilizador. Este processo repete-se até ao fim do desafio, altura na qual é apresentado ao utilizador a sua pontuação final. 
+\ref{fig:interface}
+
+\begin{figure}
+\centering
+\includegraphics[height=6.2cm]{interaface.png}
+\caption{Imagem da interface gráfica do cliente}
+\label{fig:interface}
+\end{figure}
 
 \subsection{Servidor}
 
@@ -131,6 +139,7 @@ O servidor é responsável por guardar a informação sobre o sistema tal como o
 No arranque o servidor cria 2 threads, uma deles para atender clientes, e outra para atender outros servidores.
 
 A arquitetura geral de um servidor pode ser vista no diagrama \ref{fig:diagram-arq-geral}.
+Também em anexado a este relatório existe um diagrama com a arquitetura de 3 servidores ligados entre si.
 
 \begin{figure}
 \centering
@@ -191,7 +200,7 @@ O socket que permite a comunicação entre servidores é terminado com um timeou
 \subsubsection{Informar Servidores Vizinhos}
 
 Para comunicar com outros servidores utiliza-se TCPHub ou TCPClient mediante as necessidades.
-O TCPClient abre um socket caso seja necessário, e envia uma PDU do tipo INFO com a informação pretendida.
+Existe um TCPClient para cada servidor vizinho, e quando invocamos um método desta classe começa por abrir um socket caso seja necessário, e envia uma PDU do tipo INFO com a informação pretendida.
 
 \section{Testes Realizados}
 
