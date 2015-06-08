@@ -193,46 +193,45 @@ De forma a validar o trabalho realizado, foram efetuados testes sobre a platafor
 
 \subsection{Registo de um Utilizador}
 
-\begin{itemsize}
+\begin{itemize}
 
 \item IP Servidor: 127.0.0.2
 \item IP Cliente: 127.0.0.75
 
-\end{itemsize}
+\end{itemize}
+Cliente: REGISTER joao rodrigues 123
 
-Cliente > REGISTER joao rodrigues 123
+I'm[/127.0.0.75] sending to [/127.0.0.2] PDU: PDU,parameters:\{REGISTER\_PASS=[[B@1d56ce6a], REGISTER\_NAME=[joao], REGISTER\_NICK=[rodrigues]\}
 
-I'm[/127.0.0.75] sending to [/127.0.0.2] PDU: PDU,parameters:{REGISTER_PASS=[[B@1d56ce6a], REGISTER_NAME=[joao], REGISTER_NICK=[rodrigues]}
+I'm[/127.0.0.2] sending to [/127.0.0.75] PDU: PDU,parameters:\{REPLY\_OK=[0]\}
 
-I'm[/127.0.0.2] sending to [/127.0.0.75] PDU: PDU,parameters:{REPLY_OK=[0]}
-
-Servidor > OK
+Servidor: OK
 
 \subsection{Participação em Desafio}
 
-\begin{itemsize}
+\begin{itemize}
 
 \item IP Servidor: 127.0.0.1
 \item IP Cliente1: 127.0.0.66
 \item IP Cliente2: 127.0.0.69
 
-\end{itemsize}
+\end{itemize}
 
-Cliente1 > MAKE_CHALLENGE Circo 2015-05-02 15:00
+Cliente1: MAKE\_CHALLENGE Circo 2015-05-02 15:00
 
-I'm[/127.0.0.66] sending to [/127.0.0.1] PDU: PDU,parameters:{MAKE_CHALLENGE_CHALLENGE=[Circo], MAKE_CHALLENGE_HOUR=[15:00], MAKE_CHALLENGE_DATE=[2015-05-02]}
+I'm[/127.0.0.66] sending to [/127.0.0.1] PDU: PDU,parameters:\{MAKE\_CHALLENGE\_CHALLENGE=[Circo], MAKE\_CHALLENGE\_HOUR=[15:00], MAKE\_CHALLENGE\_DATE=[2015-05-02]\}
 
-I'm[/127.0.0.1] sending to [/127.0.0.66] PDU: PDU,parameters:{REPLY_CHALLE=[Circo], REPLY_DATE=[2015-05-02], REPLY_HOUR=[15:00]}
+I'm[/127.0.0.1] sending to [/127.0.0.66] PDU: PDU,parameters:\{REPLY\_CHALLE=[Circo], REPLY\_DATE=[2015-05-02], REPLY\_HOUR=[15:00]\}
 
-Servidor >  Desafio: Circo Data: 2015-05-02 Hora: 15:00
+Servidor:  Desafio: Circo Data: 2015-05-02 Hora: 15:00
 
-Cliente2 > ACCEPT_CHALLENGE Circo
+Cliente2: ACCEPT\_CHALLENGE Circo
 
-I'm[/127.0.0.69] sending to [/127.0.0.1] PDU: PDU,parameters:{ACCEPT_CHALLENGE_CHALLENGE=[Circo]}
+I'm[/127.0.0.69] sending to [/127.0.0.1] PDU: PDU,parameters:\{ACCEPT\_CHALLENGE\_CHALLENGE=[Circo]\}
 
-I'm[/127.0.0.1] sending to [/127.0.0.69] PDU: PDU,parameters:{REPLY_OK=[0]}
+I'm[/127.0.0.1] sending to [/127.0.0.69] PDU: PDU,parameters:\{REPLY\_OK=[0]\}
 
-Servidor > OK
+Servidor: OK
 
 
 \end{document}
