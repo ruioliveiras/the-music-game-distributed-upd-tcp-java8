@@ -37,12 +37,10 @@
 \mainmatter  % start of an individual contribution
 
 % first the title is needed
-\title{Lecture Notes in Computer Science:\\Authors' Instructions
-for the Preparation\\of Camera-Ready
-Contributions\\to LNCS/LNAI/LNBI Proceedings}
+\title{Desenho e implementação de um jogo distribuído na Internet}
 
 % a short form should be given in case it is too long for the running head
-\titlerunning{Lecture Notes in Computer Science: Authors' Instructions}
+\titlerunning{Desenho e implementação de um jogo distribuído na Internet}
 
 % the name(s) of the author(s) follow(s) next
 %
@@ -50,25 +48,15 @@ Contributions\\to LNCS/LNAI/LNBI Proceedings}
 % their surnames. This ensures that the names appear correctly in
 % the running heads and the author index.
 %
-\author{Alfred Hofmann%
-\thanks{Please note that the LNCS Editorial assumes that all authors have used
-the western naming convention, with given names preceding surnames. This determines
-the structure of the names in the running heads and the author index.}%
-\and Ursula Barth\and Ingrid Haas\and Frank Holzwarth\and\\
-Anna Kramer\and Leonie Kunz\and Christine Rei\ss\and\\
-Nicole Sator\and Erika Siebert-Cole\and Peter Stra\ss er}
+\author{Oliveira Rui, Araujo Paulo, Costa Orlando}
 %
-\authorrunning{Lecture Notes in Computer Science: Authors' Instructions}
+\authorrunning{liveira Rui, Araujo Paulo, Costa Orlando}
 % (feature abused for this document to repeat the title also on left hand pages)
 
 % the affiliations are given next; don't give your e-mail address
 % unless you accept that it will be published
-\institute{Springer-Verlag, Computer Science Editorial,\\
-Tiergartenstr. 17, 69121 Heidelberg, Germany\\
-\mailsa\\
-\mailsb\\
-\mailsc\\
-\url{http://www.springer.com/lncs}}
+\institute{Universidade do Minho, Gualtar, Portugal\\
+\url{http://www.uminho.pt}}
 
 %
 % NB: a more complex sample for affiliations and the mapping to the
@@ -149,7 +137,7 @@ A arquitetura geral de um servidor posso ser vista no diagrama \ref{fig:diagram-
 
 \subsubsection{Dados Guardados}
 
-Toda a informação é guardada na classe ServerState, aqui são guardados:
+Toda a informação relativa ao actual estado de um servidor são guardos na classe ServerState:
 \begin{itemize}
   \item Utilizadores identificados por o seu nick
   \item Sessões, guardam os utilizadores identificados por o seu ip actual
@@ -168,20 +156,19 @@ Um pedido vindo de um cliente é reencaminhado para a class UDPClientHandler, aq
 Existem alguns pedidos do cliente que podem gerar que o servidor que esteja a antender tenha que informar os restantes servidores como por exemplo: makeChallenge, que inicia um desafio e irá ser explicado de seguida. 
 Iniciar desafio
 
-Quando um makeChallenge e gerado, o sistema cria uma nova thread que terá um temporalizador para correr às horas pretendidas.
-
-Quando esta thread inicia o seu processo confirma que existem pessoas suficientes no desafio, caso não existam cancela o desafio. Caso esteja tudo bem continua e envia a primeira pergunta.
+Quando um makeChallenge e gerado, o sistema cria uma nova thread que terá um temporalizador para correr às horas pretendidas. Quando esta thread inicia o seu processo confirma que existem pessoas suficientes no desafio, caso não existam cancela o desafio. Caso esteja tudo bem continua e envia a primeira pergunta.
 
 As perguntas ao longo do desafio são enviadas para todos os clientes subscritos e para todos os servidores subscritos, depois cada um destes servidores reencainhará para os clientes finais.
 
 \subsubsection{Atender Servidores}
 
 O processo de atender servidores é semelhante ao de atender clientes.  Os pedidos são interpretados na class ServerHandler, esta class mediante os parametros existentes irá executar a logica de negocio necessária.
-O negocio está implementado em 3 classes distintas: TCPLocal, TCPHub e TCPClient. cada uma destas implementam a interface ServerToServerFacade que especifica todos os métodos existentes no negocio da aplicação.
+O negocio está implementado em 3 classes distintas: TCPLocal, TCPHub e TCPClient. Cada uma destas implementam a interface ServerToServerFacade que especifica todos os métodos existentes no negocio da aplicação (diagrama \ref{fig:diagram-facades}).
+
 Cada uma das implementações implementa o negocio de forma diferente:
 \begin{itemize}
 \item TCPLocal aplica as regras de negocio na propria maquina.
-\item TCPClient aplica as regras de negocio a um servidor.
+\item TCPClient envia um pedido a um servidor para aplicar aquele método.
 \item TCPHub aplica as regras de negocio a todos os servidores chamando o TCPClient de cada servidor.
 \end{itemize}
 
@@ -195,9 +182,10 @@ O socket que permite a comunicação entre servidores é terminado com um timeou
 \end{figure}
 
 
-\subsubsection{Informar Servidores}
-Como se envia PDU’s info para outro servidor.
+\subsubsection{Informar Servidores Vizinhos}
 
+Para comunicar com outros servidores utiliza-se ou TCPHub ou TCPClient mediante as necessidades.
+O TCPClient que irá fazer é abrir um socket se necessário, e enviar uma PDU do tipo INFO com a informação pretendida.
 
 \section{Testes Realizados}
 
