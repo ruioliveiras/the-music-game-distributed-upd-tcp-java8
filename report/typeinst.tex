@@ -119,6 +119,12 @@ O diagrama \ref{fig:diagram-pdu} UML explica o funcionamento da interpretação 
 
 \subsection{Cliente}
 
+A aplicação cliente encontra-se implementada com o auxílio da classe UDPClient. Este classe contém todos os métodos que formam os pacotes de dados a serem transmitidos através de protocolos UDP, sendo que a lógica desta comunicação encontra-se definida na classe UDPCommunication. A interface gráfica possui assim uma instância de UDPClient, com a qual efetua todos os desafios e troca de informação com os servidores. Esta classe constrói-se através dos parâmetros referente ao IP e porta local, assim como o IP e porta do servidor com o qual comunica nesse momento. Esta instância é criada assim que o utilizador inicia a bash através da qual introduz os comandos de comunicação com o servidor. Quando o servidor se encontra conectado ao cliente e este efetua login, o servidor é capaz de manter o estado do cliente dado o seu IP. 
+
+\subsubsection{Interface gráfica}
+
+A interface com a qual a aplicação interage com o utilizador encontra-se desenvolvida em Java Swing, e apresenta de forma simples o conteúdo recebido na aplicação cliente referente às questões de um dado desafio. Assim, quando o utilizador aceita entrar num desafio, é iniciada a interface gráfica, bloqueando o utilizador de participar em mais desafios simultaneamente. Quando é alcançada a hora marcada para efetuar o desafio, a 1ª questão é apresentada, sendo possível escutar a música e observar a imagem associadas a esta. O utilizador responde à pergunta apresentada clicando nos botões disponíveis para responder, sendo que esta ação pára a música atualmente a tocar, e bloqueia os restantes botões de forma a não permitir comportamentos indesejados na aplicação. Após a resposta à pergunta, o datagrama de resposta é enviado através da aplicação cliente, e o resultado é apresentado ao utilizador. Este processo repete-se até ao fim do desafio, altura na qual é apresentado ao utilizador a sua pontuação final. 
+
 \subsection{Servidor}
 
 O servidor é responsável por guardar a informação sobre o sistema tal como os desafios e utilizadores existentes. Por outro lado o servidor também é responsável por partilhar o seu conhecimento com os outros servidores.
