@@ -201,4 +201,50 @@ Como se envia PDU’s info para outro servidor.
 
 \section{Testes Realizados}
 
+De forma a validar o trabalho realizado, foram efetuados alguns testes. Os testes foram realizados com a utilização de um router, sendo que foi necessária a sua configuração de modo a que, a partir do MAC Address dos pc’s conectados, fossem atribuídos IP’s escolhidos por nós. Através da criação de várias instâncias de clientes e servidores nos computadores conectados, é possível criar uma simulação de um ambiente de comunicação real no qual existem servidores dedicados que recebem os pedidos de ligação dos respetivos clientes.
+
+\subsection{Registo de um Utilizador}
+
+\begin{itemsize}
+
+\item IP Servidor: 127.0.0.2
+\item IP Cliente: 127.0.0.75
+
+\end{itemsize}
+
+Cliente > REGISTER joao rodrigues 123
+
+I'm[/127.0.0.75] sending to [/127.0.0.2] PDU: PDU,parameters:{REGISTER_PASS=[[B@1d56ce6a], REGISTER_NAME=[joao], REGISTER_NICK=[rodrigues]}
+
+I'm[/127.0.0.2] sending to [/127.0.0.75] PDU: PDU,parameters:{REPLY_OK=[0]}
+
+Servidor > OK
+
+\subsection{Participação em Desafio}
+
+\begin{itemsize}
+
+\item IP Servidor: 127.0.0.1
+\item IP Cliente1: 127.0.0.66
+\item IP Cliente2: 127.0.0.69
+
+\end{itemsize}
+
+Cliente1 > MAKE_CHALLENGE Circo 2015-05-02 15:00
+
+I'm[/127.0.0.66] sending to [/127.0.0.1] PDU: PDU,parameters:{MAKE_CHALLENGE_CHALLENGE=[Circo], MAKE_CHALLENGE_HOUR=[15:00], MAKE_CHALLENGE_DATE=[2015-05-02]}
+
+I'm[/127.0.0.1] sending to [/127.0.0.66] PDU: PDU,parameters:{REPLY_CHALLE=[Circo], REPLY_DATE=[2015-05-02], REPLY_HOUR=[15:00]}
+
+Servidor >  Desafio: Circo Data: 2015-05-02 Hora: 15:00
+
+Cliente2 > ACCEPT_CHALLENGE Circo
+
+I'm[/127.0.0.69] sending to [/127.0.0.1] PDU: PDU,parameters:{ACCEPT_CHALLENGE_CHALLENGE=[Circo]}
+
+I'm[/127.0.0.1] sending to [/127.0.0.69] PDU: PDU,parameters:{REPLY_OK=[0]}
+
+Servidor > OK
+
+
 \end{document}
