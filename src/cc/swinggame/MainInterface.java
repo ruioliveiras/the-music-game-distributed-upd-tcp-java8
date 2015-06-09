@@ -59,9 +59,9 @@ public class MainInterface extends javax.swing.JFrame {
             do {
                  i_pergunta.setText((currentQuestion +1)+ "/" + UDPChallengeProvider.CHALLENGE_NUMQUESTION);
                 try {
-                    setTimer(29 * 1000);
+                    setTimer(5 * 1000);
                     synchronized (waitAwswer) {
-                        waitAwswer.wait(29 * 1000);
+                        waitAwswer.wait(5 * 1000);
                     }
                 } catch (InterruptedException ex) {
                     throw new RuntimeException(ex);
