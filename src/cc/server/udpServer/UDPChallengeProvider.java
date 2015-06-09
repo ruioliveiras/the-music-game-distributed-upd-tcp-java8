@@ -101,7 +101,7 @@ public class UDPChallengeProvider {
             if (challenge.getName().equals("circo")) {
                 waitTime = 1000;
             } else {
-                waitTime = 1000 * 6;                
+                waitTime = 1000 * 30;                
             }
             challenge.waitToNext(waitTime);
            
